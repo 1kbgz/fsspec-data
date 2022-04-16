@@ -1,5 +1,6 @@
 graft fsspec_data
 include LICENSE
+include CONTRIBUTING.md
 include README.md
 
 include setup.cfg
@@ -8,6 +9,10 @@ include .bumpversion.cfg
 include Makefile
 
 graft fsspec_data/tests
+
+# remove docs
+prune docs
+prune ci
 
 # Patterns to exclude from any directory
 global-exclude *~
