@@ -56,6 +56,11 @@ setup(
     include_package_data=True,
     zip_safe=False,
     packages=find_packages(),
+    entry_points={
+        "fsspec.specs": [
+            "http=fsspec_data.backends.Http",
+        ],
+    },
     install_requires=requires,
     test_suite="fsspec_data.tests",
     tests_require=requires_test,
