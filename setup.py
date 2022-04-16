@@ -58,7 +58,8 @@ setup(
     packages=find_packages(),
     entry_points={
         "fsspec.specs": [
-            "http=fsspec_data.backends.Http",
+            "http=fsspec_data.backends.HTTPFilesystem",
+            "sql=fsspec_data.backends.SQLAlchemyFilesystem",
         ],
     },
     install_requires=requires,

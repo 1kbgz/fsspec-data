@@ -1,2 +1,5 @@
-class Http:
+from .base import Base
+
+
+class HTTPFilesystem(Base):
     ...
