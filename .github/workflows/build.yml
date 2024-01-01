@@ -6,6 +6,11 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
@@ -32,7 +37,7 @@ jobs:
       run: |
         make develop
 
-    - name: Build 
+    - name: Build
       run: |
         make build
 
