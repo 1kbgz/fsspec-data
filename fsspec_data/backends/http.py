@@ -1,5 +1,5 @@
-from .base import Base
+from .base import BaseFileSystem
 
 
-class HTTPFilesystem(Base):
+class HTTPFilesystem(BaseFileSystem):
     ...

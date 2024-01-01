@@ -1,5 +1,5 @@
-from .base import Base
+from .base import BaseFileSystem
 
 
-class SQLAlchemyFilesystem(Base):
+class SQLAlchemyFilesystem(BaseFileSystem):
     ...

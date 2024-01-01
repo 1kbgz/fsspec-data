@@ -1,51 +1,107 @@
-dockerup:
-	docker-compose -f ci/docker-compose.yml up -d
+#########
+# BUILD #
+#########
+.PHONY: develop build install
 
-dockerdown:
-	docker-compose -f ci/docker-compose.yml down
-
-tests: ## Clean and Make unit tests
-	python -m pytest fsspec_data --cov=fsspec_data --junitxml=python_junit.xml --cov-report=xml --cov-branch
-
-lint: ## run linter
-	python -m flake8 fsspec_data setup.py docs/conf.py
-
-fix:  ## run black fix
-	python -m black fsspec_data/ setup.py docs/conf.py
-
-check: checks
-checks:  ## run lint and other checks
-	check-manifest -v
-
-build:  ## build python
-	python setup.py build 
-
-develop:  ## install to site-packages in editable mode
-	python -m pip install --upgrade build pip setuptools twine wheel
+develop:  ## install dependencies and build library
 	python -m pip install -e .[develop]
 
-install:  ## install to site-packages
+build:  ## build the python library
+	python setup.py build build_ext --inplace
+
+install:  ## install library
 	python -m pip install .
 
-docs:  ## make documentation
-	make -C ./docs html
-	open ./docs/_build/html/index.html
+#########
+# LINTS #
+#########
+.PHONY: lint lints fix format
 
-dist:  ## create dists
-	rm -rf dist build
-	python setup.py sdist bdist_wheel
+lint:  ## run python linter with ruff
+	python -m ruff fsspec_data setup.py
+
+# Alias
+lints: lint
+
+fix:  ## fix python formatting with ruff
+	python -m ruff format fsspec_data setup.py
+
+# alias
+format: fix
+
+################
+# Other Checks #
+################
+.PHONY: check-manifest checks check
+
+check-manifest:  ## check python sdist manifest with check-manifest
+	check-manifest -v
+
+checks: check-manifest
+
+# Alias
+check: checks
+
+#########
+# TESTS #
+#########
+.PHONY: test coverage tests
+
+test:  ## run python tests
+	python -m pytest -v fsspec_data/tests --junitxml=junit.xml
+
+coverage:  ## run tests and collect test coverage
+	python -m pytest -v fsspec_data/tests --junitxml=junit.xml --cov=fsspec_data --cov-branch --cov-fail-under=75 --cov-report term-missing --cov-report xml
+
+# Alias
+tests: test
+
+###########
+# VERSION #
+###########
+.PHONY: show-version patch minor major
+
+show-version:  ## show current library version
+	bump2version --dry-run --allow-dirty setup.py --list | grep current | awk -F= '{print $2}'
+
+patch:  ## bump a patch version
+	bump2version patch
+
+minor:  ## bump a minor version
+	bump2version minor
+
+major:  ## bump a major version
+	bump2version major
+
+########
+# DIST #
+########
+.PHONY: dist dist-build dist-sdist dist-local-wheel publish
+
+dist-build:  # build python dists
+	python -m build -w -s
+
+dist-check:  ## run python dist checker with twine
 	python -m twine check dist/*
-	
-publish: dist  ## dist to pypi
-	python -m twine upload dist/* --skip-existing
+
+dist: clean build dist-build dist-check  ## build all dists
+
+publish: dist  # publish python assets
+
+#########
+# CLEAN #
+#########
+.PHONY: deep-clean clean
+
+deep-clean: ## clean everything from the repository
+	git clean -fdx
 
 clean: ## clean the repository
-	find . -name "__pycache__" | xargs  rm -rf 
-	find . -name "*.pyc" | xargs rm -rf 
-	find . -name ".ipynb_checkpoints" | xargs  rm -rf 
-	rm -rf .coverage cover htmlcov logs build dist *.egg-info
-	rm -rf ./*.gv*
-	make -C ./docs clean
+	rm -rf .coverage coverage cover htmlcov logs build dist *.egg-info
+
+############################################################################################
+
+.PHONY: help
 
 # Thanks to Francoise at marmelab.com for this
 .DEFAULT_GOAL := help
@@ -54,5 +110,3 @@ help:
 
 print-%:
 	@echo '$*=$($*)'
-
-.PHONY: tests lint fix checks check build develop install dist publish docs clean help
