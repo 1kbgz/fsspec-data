@@ -18,12 +18,14 @@ install:  ## install library
 .PHONY: lint lints fix format
 
 lint:  ## run python linter with ruff
-	python -m ruff fsspec_data setup.py
+	python -m ruff check fsspec_data setup.py
+	python -m ruff format --check fsspec_data setup.py
 
 # Alias
 lints: lint
 
 fix:  ## fix python formatting with ruff
+	python -m ruff check --fix fsspec_data setup.py
 	python -m ruff format fsspec_data setup.py
 
 # alias
