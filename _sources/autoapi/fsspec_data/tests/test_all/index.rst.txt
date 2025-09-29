@@ -1,0 +1,19 @@
+fsspec_data.tests.test_all
+==========================
+
+.. py:module:: fsspec_data.tests.test_all
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_all.test_all
+
+
+Module Contents
+---------------
+
+.. py:function:: test_all()
+
