@@ -4,31 +4,43 @@
 .PHONY: develop build install
 
 develop:  ## install dependencies and build library
-	python -m pip install -e .[develop]
+	uv pip install -e .[develop]
+
+requirements:  ## install prerequisite python build requirements
+	python -m pip install --upgrade pip toml
+	python -m pip install `python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join(c["build-system"]["requires"]))'`
+	python -m pip install `python -c 'import toml; c = toml.load("pyproject.toml"); print(" ".join(c["project"]["optional-dependencies"]["develop"]))'`
 
 build:  ## build the python library
-	python setup.py build build_ext --inplace
+	python -m build -n
 
 install:  ## install library
-	python -m pip install .
+	uv pip install .
 
 #########
 # LINTS #
 #########
-.PHONY: lint lints fix format
+.PHONY: lint-py lint-docs fix-py fix-docs lint lints fix format
 
-lint:  ## run python linter with ruff
-	python -m ruff check fsspec_data setup.py
-	python -m ruff format --check fsspec_data setup.py
+lint-py:  ## lint python with ruff
+	python -m ruff check fsspec_data
+	python -m ruff format --check fsspec_data
 
-# Alias
+lint-docs:  ## lint docs with mdformat and codespell
+	python -m mdformat --check README.md 
+	python -m codespell_lib README.md 
+
+fix-py:  ## autoformat python code with ruff
+	python -m ruff check --fix fsspec_data
+	python -m ruff format fsspec_data
+
+fix-docs:  ## autoformat docs with mdformat and codespell
+	python -m mdformat README.md 
+	python -m codespell_lib --write README.md 
+
+lint: lint-py lint-docs  ## run all linters
 lints: lint
-
-fix:  ## fix python formatting with ruff
-	python -m ruff check --fix fsspec_data setup.py
-	python -m ruff format fsspec_data setup.py
-
-# alias
+fix: fix-py fix-docs  ## run all autoformatters
 format: fix
 
 ################
@@ -50,10 +62,10 @@ check: checks
 .PHONY: test coverage tests
 
 test:  ## run python tests
-	python -m pytest -v fsspec_data/tests --junitxml=junit.xml
+	python -m pytest -v fsspec_data/tests
 
 coverage:  ## run tests and collect test coverage
-	python -m pytest -v fsspec_data/tests --junitxml=junit.xml --cov=fsspec_data --cov-branch --cov-fail-under=75 --cov-report term-missing --cov-report xml
+	python -m pytest -v fsspec_data/tests --cov=fsspec_data --cov-report term-missing --cov-report xml
 
 # Alias
 tests: test
@@ -64,16 +76,16 @@ tests: test
 .PHONY: show-version patch minor major
 
 show-version:  ## show current library version
-	bump2version --dry-run --allow-dirty setup.py --list | grep current | awk -F= '{print $2}'
+	@bump-my-version show current_version
 
 patch:  ## bump a patch version
-	bump2version patch
+	@bump-my-version bump patch
 
 minor:  ## bump a minor version
-	bump2version minor
+	@bump-my-version bump minor
 
 major:  ## bump a major version
-	bump2version major
+	@bump-my-version bump major
 
 ########
 # DIST #
@@ -86,9 +98,9 @@ dist-build:  # build python dists
 dist-check:  ## run python dist checker with twine
 	python -m twine check dist/*
 
-dist: clean build dist-build dist-check  ## build all dists
+dist: clean dist-build dist-check  ## build all dists
 
-publish: dist  # publish python assets
+publish: dist  ## publish python assets
 
 #########
 # CLEAN #

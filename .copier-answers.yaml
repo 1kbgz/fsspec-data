@@ -1,0 +1,12 @@
+# Changes here will be overwritten by Copier
+_commit: a74894d
+_src_path: https://github.com/python-project-templates/base.git
+add_docs: true
+add_extension: python
+add_wiki: false
+email: t.paine154@gmail.com
+github: timkpaine
+project_description: filesystem specs for non filesystem data backends
+project_name: fsspec-data
+python_version_primary: '3.11'
+team: the fsspec-data authors
