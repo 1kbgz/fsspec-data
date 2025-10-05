@@ -5,7 +5,7 @@ add_docs: true
 add_extension: python
 add_wiki: false
 email: t.paine154@gmail.com
-github: timkpaine
+github: 1kbgz
 project_description: filesystem specs for non filesystem data backends
 project_name: fsspec-data
 python_version_primary: '3.11'

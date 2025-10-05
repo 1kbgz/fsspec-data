@@ -1,2 +1,0 @@
-CREATE TABLE test(col1 INT);
-INSERT INTO test(col1) VALUES(1);
