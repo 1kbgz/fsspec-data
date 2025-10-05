@@ -50,8 +50,8 @@ develop = [
 [project.scripts]
 
 [project.urls]
-Repository = "https://github.com/timkpaine/fsspec-data"
-Homepage = "https://github.com/timkpaine/fsspec-data"
+Repository = "https://github.com/1kbgz/fsspec-data"
+Homepage = "https://github.com/1kbgz/fsspec-data"
 
 [tool.bumpversion]
 current_version = "0.1.0"
@@ -73,7 +73,6 @@ replace = 'version = "{new_version}"'
 ignore = [
     ".copier-answers.yaml",
     "Makefile",
-    "ci/**/*",
     "docs/**/*",
 ]
 
