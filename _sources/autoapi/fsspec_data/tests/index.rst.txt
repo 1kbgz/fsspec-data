@@ -1,0 +1,16 @@
+fsspec_data.tests
+=================
+
+.. py:module:: fsspec_data.tests
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/fsspec_data/tests/conftest/index
+   /autoapi/fsspec_data/tests/test_all/index
+
+

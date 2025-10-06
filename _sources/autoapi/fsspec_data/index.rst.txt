@@ -1,0 +1,32 @@
+fsspec_data
+===========
+
+.. py:module:: fsspec_data
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/fsspec_data/_version/index
+   /autoapi/fsspec_data/backends/index
+   /autoapi/fsspec_data/tests/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.__version__
+
+
+Package Contents
+----------------
+
+.. py:data:: __version__
+   :value: '0.1.0'
+
+
