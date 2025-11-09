@@ -9,13 +9,8 @@ description = "filesystem specs for non filesystem data backends"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 version = "0.1.0"
-<<<<<<< before updating
-requires-python = ">=3.9"
-keywords = ["fsspec", "filesystem", "sql", "data"]
-=======
 requires-python = ">=3.10"
-keywords = []
->>>>>>> after updating
+keywords = ["fsspec", "filesystem", "sql", "data"]
 
 classifiers = [
     "Development Status :: 3 - Alpha",
