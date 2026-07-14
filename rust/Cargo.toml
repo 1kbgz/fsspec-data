@@ -1,0 +1,20 @@
+[package]
+name = "fsspec_data"
+version = "0.1.0"
+authors = ["the fsspec-data authors <dev@1kbgz.com>"]
+edition = "2021"
+license = "Apache-2.0"
+readme = "../README.md"
+repository = "https://github.com/1kbgz/fsspec-data"
+description = "Arrow interchange planning for the fsspec ecosystem"
+
+[lib]
+name = "fsspec_data"
+path = "src/lib.rs"
+crate-type = ["rlib"]
+
+[dependencies]
+arrow = "54.3.1"
+bytes = "1"
+parquet = { version = "54.3.1", features = ["arrow"] }
+thiserror = "2"

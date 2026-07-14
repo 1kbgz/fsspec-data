@@ -6,6 +6,9 @@
 develop:  ## install dependencies and build library
 	uv pip install -e .[develop]
 
+rust-test:  ## test the pure Rust interchange core
+	cargo test --workspace
+
 requirements:  ## install prerequisite python build requirements
 	python -m pip install --upgrade pip toml
 	python -m pip install `python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join(c["build-system"]["requires"]))'`
@@ -25,18 +28,20 @@ install:  ## install library
 lint-py:  ## lint python with ruff
 	python -m ruff check fsspec_data
 	python -m ruff format --check fsspec_data
+	cargo fmt --all -- --check
+	cargo clippy --workspace --all-targets -- -D warnings
 
 lint-docs:  ## lint docs with mdformat and codespell
-	python -m mdformat --check README.md 
-	python -m codespell_lib README.md 
+	python -m mdformat --check README.md docs/tutorial.md docs/how-to-integrate.md docs/explanation.md docs/api.md
+	python -m codespell_lib README.md docs/tutorial.md docs/how-to-integrate.md docs/explanation.md docs/api.md
 
 fix-py:  ## autoformat python code with ruff
 	python -m ruff check --fix fsspec_data
 	python -m ruff format fsspec_data
 
 fix-docs:  ## autoformat docs with mdformat and codespell
-	python -m mdformat README.md 
-	python -m codespell_lib --write README.md 
+	python -m mdformat README.md docs/tutorial.md docs/how-to-integrate.md docs/explanation.md docs/api.md
+	python -m codespell_lib --write README.md docs/tutorial.md docs/how-to-integrate.md docs/explanation.md docs/api.md
 
 lint: lint-py lint-docs  ## run all linters
 lints: lint
@@ -49,7 +54,7 @@ format: fix
 .PHONY: check-dist check-types checks check
 
 check-dist:  ## check python sdist and wheel with check-dist
-	check-dist -v
+	check-dist --rebuild -v
 
 check-types:  ## check python types with ty
 	ty check --python $$(which python)
@@ -64,10 +69,10 @@ check: checks
 #########
 .PHONY: test coverage tests
 
-test:  ## run python tests
+test: rust-test  ## run Rust and Python tests
 	python -m pytest -v fsspec_data/tests
 
-coverage:  ## run tests and collect test coverage
+coverage: rust-test  ## run tests and collect test coverage
 	python -m pytest -v fsspec_data/tests --cov=fsspec_data --cov-report term-missing --cov-report xml
 
 # Alias
