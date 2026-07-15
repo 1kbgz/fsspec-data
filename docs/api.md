@@ -1,0 +1,196 @@
+# Interchange API reference
+
+## `DataFormat`
+
+Identifies an interchange encoding. Values are `arrow`, `parquet`, `csv`, and `jsonl`.
+`arrow` denotes an Arrow IPC stream. `jsonl` denotes line-delimited JSON records.
+
+## `SchemaPolicy`
+
+Controls schema reconciliation.
+
+| Value        | Behavior                                                                 |
+| ------------ | ------------------------------------------------------------------------ |
+| `exact`      | Requires equal names, order, Arrow types, and nullability.               |
+| `projection` | Selects or reorders fields without casts or nullable narrowing.          |
+| `compatible` | Preserves field order and permits lossless casts and nullable widening.  |
+| `coerce`     | Preserves field order and applies casts registered by the coercion core. |
+
+Compatible casts are signed and unsigned integer widening, unsigned-to-signed integer casts
+where the target has more bits, float widening, UTF-8 to large UTF-8, date32 to date64, and
+null to a requested type. Coercion additionally supports primitive numeric conversions,
+large UTF-8 to UTF-8, and conversions between primitive numeric or boolean types and
+strings.
+
+Coercions are classified as `safe`, `lossy`, or `runtime_checked`. Nullable-to-required
+coercion performs a runtime null check. Nested-type coercions are not registered.
+
+## `FieldMapping`
+
+Describes one output field.
+
+Attributes:
+
+- `source_index: int`: index in the provided schema.
+- `target_index: int`: index in the requested schema.
+- `cast: str | None`: `safe`, `lossy`, `runtime_checked`, or `None`.
+- `check_nulls: bool`: whether execution must reject null input values.
+
+## `CodecCapabilities`
+
+Describes operations supported by a codec.
+
+Attributes:
+
+- `encode: bool`: accepts Arrow record batches and produces encoded bytes.
+- `decode: bool`: accepts encoded bytes and produces Arrow record batches.
+- `streaming: bool`: consumes and produces record batches without requiring an Arrow table.
+
+## `DecodedBatches`
+
+Contains buffered decoded output.
+
+Attributes:
+
+- `schema: pyarrow.Schema`: decoded schema.
+- `batches: tuple[pyarrow.RecordBatch, ...]`: decoded batches in order.
+
+## `DecodedBatchStream`
+
+Iterates lazily over decoded `pyarrow.RecordBatch` values.
+
+Attributes:
+
+- `schema: pyarrow.Schema`: decoded schema.
+
+Methods:
+
+### `cancel()`
+
+Cancels the stream. Its next iteration raises `RuntimeError`; later iterations stop.
+
+### `collect()`
+
+Consumes the stream and returns `DecodedBatches`.
+
+## `Codec`
+
+Represents a registered format codec.
+
+Attributes:
+
+- `format: DataFormat`: encoding handled by the codec.
+- `capabilities: CodecCapabilities`: supported operations.
+
+### `encode_batches(batches, *, schema=None)`
+
+Returns encoded `bytes` for Arrow record batches. `schema` is required when `batches` is
+empty. All batches must match the encoding schema.
+
+Raises `TypeError` for non-Arrow inputs and `ValueError` for missing or mismatched schemas.
+
+### `iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None)`
+
+Returns `DecodedBatchStream`.
+
+Parameters:
+
+- `data: bytes | bytearray | memoryview`: encoded input.
+- `schema: pyarrow.Schema | None`: required for CSV and JSONL; optional for Arrow IPC and
+  Parquet.
+- `batch_size: int`: maximum rows yielded in one batch. Must be greater than zero.
+- `row_limit: int | None`: maximum total rows yielded. The last batch is sliced as needed.
+- `byte_limit: int | None`: maximum cumulative Arrow array memory referenced by yielded
+  batches. Exceeding it raises `ValueError`.
+
+### `decode_batches(...)`
+
+Calls `iter_batches(...)`, consumes the stream, and returns `DecodedBatches`. Parameters and
+errors match `iter_batches`.
+
+## `CodecRegistry`
+
+### `get(format)`
+
+Returns the registered `Codec` for a `DataFormat` or its string value. Raises `ValueError`
+for unknown values and `NotImplementedError` when a known format has no registered codec.
+
+`DEFAULT_REGISTRY` contains Arrow IPC stream, Parquet, CSV, and JSONL codecs.
+
+Arrow IPC preserves input batch boundaries up to `batch_size`. Parquet preserves schema and
+row order but may select different output batch boundaries. CSV writes a header row. CSV
+and JSONL require an explicit decode schema because neither encoding stores a complete
+Arrow schema.
+
+## `InterchangeRequest`
+
+Describes one planned conversion.
+
+Attributes:
+
+- `provided_format: DataFormat`: source encoding.
+- `requested_format: DataFormat`: target encoding.
+- `provided_schema: pyarrow.Schema`: source schema.
+- `requested_schema: pyarrow.Schema`: target schema.
+- `policy: SchemaPolicy`: reconciliation policy.
+
+### `plan()`
+
+Validates registered source and target codecs and returns `InterchangePlan`. Planning reads
+no data.
+
+## `InterchangePlan`
+
+Represents a validated format and schema conversion.
+
+Attributes:
+
+- `provided_schema: pyarrow.Schema`: schema accepted as input.
+- `requested_schema: pyarrow.Schema`: schema produced as output.
+- `policy: SchemaPolicy`: applied schema policy.
+- `mappings: tuple[FieldMapping, ...]`: ordered field mappings.
+- `provided_format: DataFormat`: source encoding.
+- `requested_format: DataFormat`: target encoding.
+
+### `apply_table(table)`
+
+Returns a `pyarrow.Table` with mappings, casts, and null checks applied.
+
+### `apply_batch(batch)`
+
+Returns a `pyarrow.RecordBatch` with mappings, casts, and null checks applied.
+
+Both methods raise `ValueError` when the input schema differs from `provided_schema`, a
+runtime null check fails, or a runtime-checked cast fails.
+
+### `iter_batches(data, *, batch_size=1024, row_limit=None, byte_limit=None)`
+
+Returns `PlannedBatchStream`. It decodes `provided_format` lazily and applies the schema plan
+to each batch. Limits apply to decoded input batches.
+
+### `convert(data, *, batch_size=1024, row_limit=None, byte_limit=None)`
+
+Consumes `iter_batches`, encodes `requested_format`, and returns `bytes`. This method is an
+explicit buffering adapter.
+
+## `PlannedBatchStream`
+
+Iterates lazily over planned `pyarrow.RecordBatch` values. `schema` is the requested schema.
+`cancel()` cancels the underlying decoded stream.
+
+## `plan_schema(provided_schema, requested_schema, policy)`
+
+Returns an Arrow-to-Arrow `InterchangePlan` without reading data.
+
+Raises `TypeError` for non-PyArrow schemas and `ValueError` when schemas violate the selected
+policy or require an unregistered cast.
+
+```python
+import pyarrow as pa
+
+from fsspec_data import SchemaPolicy, plan_schema
+
+provided = pa.schema([pa.field("id", pa.int32(), nullable=False)])
+requested = pa.schema([pa.field("id", pa.int64(), nullable=True)])
+plan = plan_schema(provided, requested, SchemaPolicy.COMPATIBLE)
+```

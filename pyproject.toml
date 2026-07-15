@@ -1,6 +1,7 @@
 [build-system]
 requires = [
     "hatchling",
+    "hatch-rs>=0.2.1",
 ]
 build-backend = "hatchling.build"
 
@@ -9,15 +10,16 @@ name = "fsspec-data"
 authors = [
     {name = "the fsspec-data authors", email = "t.paine154@gmail.com"},
 ]
-description = "filesystem specs for non filesystem data backends"
+description = "Arrow interchange planning for the fsspec data ecosystem"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 version = "0.1.0"
 requires-python = ">=3.11"
-keywords = ["fsspec", "filesystem", "sql", "data"]
+keywords = ["arrow", "data", "fsspec", "interchange"]
 
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Programming Language :: Rust",
     "Programming Language :: Python",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
@@ -30,6 +32,7 @@ classifiers = [
 
 dependencies = [
     "fsspec",
+    "pyarrow",
 ]
 
 [project.optional-dependencies]
@@ -39,6 +42,7 @@ develop = [
     "check-dist",
     "codespell",
     "hatchling",
+    "hatch-rs",
     "mdformat",
     "mdformat-tables>=1",
     "pytest",
@@ -72,6 +76,16 @@ filename = "pyproject.toml"
 search = 'version = "{current_version}"'
 replace = 'version = "{new_version}"'
 
+[[tool.bumpversion.files]]
+filename = "Cargo.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "rust/Cargo.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
 [tool.coverage.run]
 branch = true
 omit = [
@@ -88,14 +102,30 @@ ignore_errors = true
 fail_under = 10
 
 [tool.hatch.build]
-artifacts = []
+artifacts = [
+    "fsspec_data/*.dll",
+    "fsspec_data/*.dylib",
+    "fsspec_data/*.so",
+]
 
 [tool.hatch.build.sources]
 src = "/"
 
+[tool.hatch.build.hooks.hatch-rs]
+verbose = true
+abi3 = true
+module = "fsspec_data"
+path = "."
+
 [tool.hatch.build.targets.sdist]
 packages = [
     "fsspec_data",
+    "rust",
+    "Cargo.toml",
+    "Cargo.lock",
+]
+exclude = [
+    "target",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -143,6 +173,5 @@ section-order = [
 [tool.yardang]
 title = "fsspec-data"
 root = "README.md"
-pages = []
+pages = ["docs/tutorial.md", "docs/how-to-integrate.md", "docs/explanation.md", "docs/api.md"]
 use-autoapi = true
-

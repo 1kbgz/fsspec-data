@@ -1,0 +1,22 @@
+[package]
+name = "fsspec_data_py"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "fsspec_data"
+path = "rust/python/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+fsspec_data = { path = "./rust", version = "*" }
+arrow = { version = "54.3.1", features = ["pyarrow"] }
+pyo3 = { version = "0.23", features = ["abi3-py311", "extension-module"] }
+
+[profile.release]
+panic = "abort"
+lto = true
+
+[workspace]
+members = ["rust"]
