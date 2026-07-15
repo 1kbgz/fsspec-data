@@ -3,10 +3,10 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="fsspec_data" href="fsspec_data/index.html"><link rel="prev" title="Interchange API reference" href="../docs/api.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Interchange API reference" href="api.html"><link rel="prev" title="How to connect a batch producer or consumer" href="how-to-integrate.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>API Reference - fsspec-data v0.1.0</title>
+        <title>Interchange design - fsspec-data v0.1.0</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -197,23 +197,23 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../docs/tutorial.html">Convert tabular data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../docs/how-to-integrate.html">How to connect a batch producer or consumer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../docs/explanation.html">Interchange design</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../docs/api.html">Interchange API reference</a></li>
-<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="fsspec_data/index.html">fsspec_data</a><input aria-label="Toggle navigation of fsspec_data" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="fsspec_data/_version/index.html">fsspec_data._version</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="fsspec_data/backends/index.html">fsspec_data.backends</a><input aria-label="Toggle navigation of fsspec_data.backends" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="fsspec_data/backends/base/index.html">fsspec_data.backends.base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="fsspec_data/backends/http/index.html">fsspec_data.backends.http</a></li>
-<li class="toctree-l4"><a class="reference internal" href="fsspec_data/backends/sqlalchemy/index.html">fsspec_data.backends.sqlalchemy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Convert tabular data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-integrate.html">How to connect a batch producer or consumer</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Interchange design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Interchange API reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../autoapi/fsspec_data/index.html">fsspec_data</a><input aria-label="Toggle navigation of fsspec_data" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/_version/index.html">fsspec_data._version</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/fsspec_data/backends/index.html">fsspec_data.backends</a><input aria-label="Toggle navigation of fsspec_data.backends" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/backends/base/index.html">fsspec_data.backends.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/backends/http/index.html">fsspec_data.backends.http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/backends/sqlalchemy/index.html">fsspec_data.backends.sqlalchemy</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="fsspec_data/interchange/index.html">fsspec_data.interchange</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="fsspec_data/tests/index.html">fsspec_data.tests</a><input aria-label="Toggle navigation of fsspec_data.tests" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="fsspec_data/tests/conftest/index.html">fsspec_data.tests.conftest</a></li>
-<li class="toctree-l4"><a class="reference internal" href="fsspec_data/tests/test_all/index.html">fsspec_data.tests.test_all</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/interchange/index.html">fsspec_data.interchange</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/fsspec_data/tests/index.html">fsspec_data.tests</a><input aria-label="Toggle navigation of fsspec_data.tests" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/conftest/index.html">fsspec_data.tests.conftest</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_all/index.html">fsspec_data.tests.test_all</a></li>
 </ul>
 </li>
 </ul>
@@ -240,7 +240,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/autoapi/index.rst.txt" title="View this page">
+  <a class="muted-link" href="../_sources/docs/explanation.md.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -253,40 +253,64 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
-<p>This page contains auto-generated API reference documentation <a class="footnote-reference brackets" href="#f1" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="fsspec_data/index.html">fsspec_data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fsspec_data/_version/index.html">fsspec_data._version</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsspec_data/backends/index.html">fsspec_data.backends</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="fsspec_data/backends/base/index.html">fsspec_data.backends.base</a></li>
-<li class="toctree-l3"><a class="reference internal" href="fsspec_data/backends/http/index.html">fsspec_data.backends.http</a></li>
-<li class="toctree-l3"><a class="reference internal" href="fsspec_data/backends/sqlalchemy/index.html">fsspec_data.backends.sqlalchemy</a></li>
+          <section class="tex2jax_ignore mathjax_ignore" id="interchange-design">
+<h1>Interchange design<a class="headerlink" href="#interchange-design" title="Link to this heading">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">fsspec-data</span></code> is the interchange boundary between packages that produce tabular data and
+packages that consume it. It reconciles formats and schemas without absorbing database,
+dataframe, or user-interface responsibilities.</p>
+<section id="arrow-is-the-internal-boundary">
+<h2>Arrow is the internal boundary<a class="headerlink" href="#arrow-is-the-internal-boundary" title="Link to this heading">¶</a></h2>
+<p>Arrow provides one typed, columnar representation for schema comparison, casting, and
+batch transport. Codecs translate external encodings into Arrow batches and back again.
+Adding a format therefore requires one Arrow decoder and encoder instead of converters for
+every pair of formats.</p>
+<p>The Rust core and Python bindings share this boundary. Schema decisions, cast
+classifications, batch limits, and cancellation semantics remain consistent whether an
+integration enters through Rust or PyArrow.</p>
+</section>
+<section id="planning-precedes-execution">
+<h2>Planning precedes execution<a class="headerlink" href="#planning-precedes-execution" title="Link to this heading">¶</a></h2>
+<p>An <code class="docutils literal notranslate"><span class="pre">InterchangeRequest</span></code> separates validation from data access. Planning checks that codecs,
+field mappings, nullability changes, and casts can satisfy the requested contract without
+reading input. Execution then applies that stable plan to each batch.</p>
+<p>This split lets an integrating package reject an unsupported request before starting a
+database scan or opening an output sink. Runtime checks remain necessary only for facts the
+schema cannot prove, such as whether a string contains an integer or a nullable column
+actually contains nulls.</p>
+</section>
+<section id="streaming-is-the-default-execution-model">
+<h2>Streaming is the default execution model<a class="headerlink" href="#streaming-is-the-default-execution-model" title="Link to this heading">¶</a></h2>
+<p>Record batches keep memory bounded and allow a consumer to stop early. Row, batch, and byte
+limits protect previews and interactive clients from unexpectedly large inputs.
+Cancellation propagates through the planned stream to its decoder.</p>
+<p>Encoded conversion is a buffering adapter on top of that stream. It exists for consumers
+that require a complete byte buffer, while the batch iterator remains the primary boundary
+for scans and previews.</p>
+</section>
+<section id="package-responsibilities-remain-narrow">
+<h2>Package responsibilities remain narrow<a class="headerlink" href="#package-responsibilities-remain-narrow" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Database libraries own connections, discovery, SQL, predicate pushdown, and
+database-to-Arrow mapping.</p></li>
+<li><p>Dataframe integrations own expression translation and local fallback execution.</p></li>
+<li><p>Browsers own pagination, rendering, and request lifecycles.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fsspec-data</span></code> owns format codecs, schema reconciliation, casts, and interchange limits.</p></li>
 </ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="fsspec_data/interchange/index.html">fsspec_data.interchange</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsspec_data/tests/index.html">fsspec_data.tests</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="fsspec_data/tests/conftest/index.html">fsspec_data.tests.conftest</a></li>
-<li class="toctree-l3"><a class="reference internal" href="fsspec_data/tests/test_all/index.html">fsspec_data.tests.test_all</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="f1" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>Created with <a class="reference external" href="https://github.com/readthedocs/sphinx-autoapi">sphinx-autoapi</a></p>
-</aside>
-</aside>
+<p>These boundaries keep backend-specific semantics close to each backend and make the
+interchange layer reusable by all of them.</p>
+</section>
+<section id="current-transport-boundary">
+<h2>Current transport boundary<a class="headerlink" href="#current-transport-boundary" title="Link to this heading">¶</a></h2>
+<p>Python codec methods currently accept encoded input as bytes-like objects. This keeps the
+first public contract small while preserving lazy decoding after the input crosses the
+binding. Reader-backed adapters can extend the transport boundary without changing schema
+planning or batch-stream semantics.</p>
+</section>
 </section>
 
         </article>
@@ -294,23 +318,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="fsspec_data/index.html">
+          <a class="next-page" href="api.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">fsspec_data</div>
+                <div class="title">Interchange API reference</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../docs/api.html">
+          <a class="prev-page" href="how-to-integrate.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Interchange API reference</div>
+                <div class="title">How to connect a batch producer or consumer</div>
                 
               </div>
             </a>
@@ -332,8 +356,31 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Interchange design</a><ul>
+<li><a class="reference internal" href="#arrow-is-the-internal-boundary">Arrow is the internal boundary</a></li>
+<li><a class="reference internal" href="#planning-precedes-execution">Planning precedes execution</a></li>
+<li><a class="reference internal" href="#streaming-is-the-default-execution-model">Streaming is the default execution model</a></li>
+<li><a class="reference internal" href="#package-responsibilities-remain-narrow">Package responsibilities remain narrow</a></li>
+<li><a class="reference internal" href="#current-transport-boundary">Current transport boundary</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

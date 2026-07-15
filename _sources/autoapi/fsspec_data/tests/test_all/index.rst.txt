@@ -9,11 +9,98 @@ Functions
 
 .. autoapisummary::
 
-   fsspec_data.tests.test_all.test_all
+   fsspec_data.tests.test_all.schemas
+   fsspec_data.tests.test_all.test_exact_schema_plan
+   fsspec_data.tests.test_all.test_projection_selects_and_reorders_table
+   fsspec_data.tests.test_all.test_projection_applies_to_record_batch
+   fsspec_data.tests.test_all.test_projection_rejects_missing_field
+   fsspec_data.tests.test_all.test_projection_rejects_type_change
+   fsspec_data.tests.test_all.test_projection_rejects_nullability_narrowing
+   fsspec_data.tests.test_all.test_exact_rejects_nullability_widening
+   fsspec_data.tests.test_all.test_compatible_widens_type_and_nullability
+   fsspec_data.tests.test_all.test_compatible_rejects_lossy_cast
+   fsspec_data.tests.test_all.test_coerce_applies_runtime_checked_cast
+   fsspec_data.tests.test_all.test_coerce_checks_nullable_to_required_at_runtime
+   fsspec_data.tests.test_all.test_coerce_rejects_unregistered_cast
+   fsspec_data.tests.test_all.test_interchange_request_plans_arrow_to_arrow
+   fsspec_data.tests.test_all.test_interchange_request_plans_registered_format_path
+   fsspec_data.tests.test_all.test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast
+   fsspec_data.tests.test_all.test_plan_rejects_different_input_schema
+   fsspec_data.tests.test_all.test_arrow_codec_declares_capabilities
+   fsspec_data.tests.test_all.test_registry_contains_all_formats
+   fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries
+   fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_empty_stream_schema
+   fsspec_data.tests.test_all.test_arrow_codec_requires_schema_for_empty_stream
+   fsspec_data.tests.test_all.test_parquet_round_trip_preserves_schema_and_rows
+   fsspec_data.tests.test_all.test_parquet_round_trip_preserves_empty_file_schema
+   fsspec_data.tests.test_all.test_text_codec_round_trip_preserves_schema_and_rows
+   fsspec_data.tests.test_all.test_text_codec_decode_requires_schema
+   fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits
+   fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation
+   fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit
+   fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size
 
 
 Module Contents
 ---------------
 
-.. py:function:: test_all()
+.. py:function:: schemas()
+
+.. py:function:: test_exact_schema_plan()
+
+.. py:function:: test_projection_selects_and_reorders_table()
+
+.. py:function:: test_projection_applies_to_record_batch()
+
+.. py:function:: test_projection_rejects_missing_field()
+
+.. py:function:: test_projection_rejects_type_change()
+
+.. py:function:: test_projection_rejects_nullability_narrowing()
+
+.. py:function:: test_exact_rejects_nullability_widening()
+
+.. py:function:: test_compatible_widens_type_and_nullability()
+
+.. py:function:: test_compatible_rejects_lossy_cast()
+
+.. py:function:: test_coerce_applies_runtime_checked_cast()
+
+.. py:function:: test_coerce_checks_nullable_to_required_at_runtime()
+
+.. py:function:: test_coerce_rejects_unregistered_cast()
+
+.. py:function:: test_interchange_request_plans_arrow_to_arrow()
+
+.. py:function:: test_interchange_request_plans_registered_format_path()
+
+.. py:function:: test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast()
+
+.. py:function:: test_plan_rejects_different_input_schema()
+
+.. py:function:: test_arrow_codec_declares_capabilities()
+
+.. py:function:: test_registry_contains_all_formats()
+
+.. py:function:: test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries()
+
+.. py:function:: test_arrow_ipc_round_trip_preserves_empty_stream_schema()
+
+.. py:function:: test_arrow_codec_requires_schema_for_empty_stream()
+
+.. py:function:: test_parquet_round_trip_preserves_schema_and_rows()
+
+.. py:function:: test_parquet_round_trip_preserves_empty_file_schema()
+
+.. py:function:: test_text_codec_round_trip_preserves_schema_and_rows(format, prefix)
+
+.. py:function:: test_text_codec_decode_requires_schema(format)
+
+.. py:function:: test_lazy_decode_applies_batch_and_row_limits()
+
+.. py:function:: test_lazy_decode_observes_cancellation()
+
+.. py:function:: test_lazy_decode_enforces_byte_limit()
+
+.. py:function:: test_lazy_decode_rejects_zero_batch_size()
 

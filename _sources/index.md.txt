@@ -6,19 +6,41 @@ hidden: true
 
 
 
+docs/tutorial.md
+
+docs/how-to-integrate.md
+
+docs/explanation.md
+
+docs/api.md
+
 
 ```
 
 # fsspec-data
 
-filesystem specs for non filesystem data backends
+Arrow interchange planning for the fsspec data ecosystem.
 
 [![Build Status](https://github.com/1kbgz/fsspec-data/actions/workflows/build.yaml/badge.svg?branch=main&event=push)](https://github.com/1kbgz/fsspec-data/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/gh/1kbgz/fsspec-data/branch/main/graph/badge.svg)](https://codecov.io/gh/1kbgz/fsspec-data)
 [![License](https://img.shields.io/github/license/1kbgz/fsspec-data)](https://github.com/1kbgz/fsspec-data)
 [![PyPI](https://img.shields.io/pypi/v/fsspec-data.svg)](https://pypi.python.org/pypi/fsspec-data)
 
-## Overview
+`fsspec-data` reconciles provided and requested tabular schemas and formats without taking
+ownership of database discovery or dataframe query planning. A pure-Rust core and Python
+bindings apply the same decisions to Arrow record batches and PyArrow objects.
 
-> [!NOTE]
-> This library was generated using [copier](https://copier.readthedocs.io/en/stable/) from the [Base Python Project Template repository](https://github.com/python-project-templates/base).
+The first release supports format-aware conversion plans, exact/projection/compatible/
+coerce schema policies, registered Arrow IPC/Parquet/CSV/JSONL codecs, and bounded lazy
+batch iteration with cancellation.
+
+## Documentation
+
+- [Convert tabular data](https://github.com/1kbgz/fsspec-data/blob/main/docs/tutorial.md) in a
+  guided first example.
+- [Connect a batch producer or consumer](https://github.com/1kbgz/fsspec-data/blob/main/docs/how-to-integrate.md)
+  to the interchange layer.
+- [Understand the interchange design](https://github.com/1kbgz/fsspec-data/blob/main/docs/explanation.md)
+  and package boundaries.
+- [Look up the interchange API](https://github.com/1kbgz/fsspec-data/blob/main/docs/api.md),
+  including policies, codecs, and errors.

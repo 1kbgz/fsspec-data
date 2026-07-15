@@ -197,6 +197,10 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/tutorial.html">Convert tabular data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/how-to-integrate.html">How to connect a batch producer or consumer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/explanation.html">Interchange design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/api.html">Interchange API reference</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../../../index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l2 current has-children"><a class="reference internal" href="../../index.html">fsspec_data</a><input aria-label="Toggle navigation of fsspec_data" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../../_version/index.html">fsspec_data._version</a></li>
@@ -206,6 +210,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../backends/sqlalchemy/index.html">fsspec_data.backends.sqlalchemy</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../../interchange/index.html">fsspec_data.interchange</a></li>
 <li class="toctree-l3 current has-children"><a class="reference internal" href="../index.html">fsspec_data.tests</a><input aria-label="Toggle navigation of fsspec_data.tests" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="../conftest/index.html">fsspec_data.tests.conftest</a></li>
 <li class="toctree-l4 current current-page"><a class="current reference internal" href="#">fsspec_data.tests.test_all</a></li>
@@ -260,7 +265,94 @@
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_all" title="fsspec_data.tests.test_all.test_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_all</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.schemas" title="fsspec_data.tests.test_all.schemas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">schemas</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_exact_schema_plan" title="fsspec_data.tests.test_all.test_exact_schema_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_exact_schema_plan</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_projection_selects_and_reorders_table" title="fsspec_data.tests.test_all.test_projection_selects_and_reorders_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_projection_selects_and_reorders_table</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_projection_applies_to_record_batch" title="fsspec_data.tests.test_all.test_projection_applies_to_record_batch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_projection_applies_to_record_batch</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_projection_rejects_missing_field" title="fsspec_data.tests.test_all.test_projection_rejects_missing_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_projection_rejects_missing_field</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_projection_rejects_type_change" title="fsspec_data.tests.test_all.test_projection_rejects_type_change"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_projection_rejects_type_change</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_projection_rejects_nullability_narrowing" title="fsspec_data.tests.test_all.test_projection_rejects_nullability_narrowing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_projection_rejects_nullability_narrowing</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_exact_rejects_nullability_widening" title="fsspec_data.tests.test_all.test_exact_rejects_nullability_widening"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_exact_rejects_nullability_widening</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_compatible_widens_type_and_nullability" title="fsspec_data.tests.test_all.test_compatible_widens_type_and_nullability"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_compatible_widens_type_and_nullability</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_compatible_rejects_lossy_cast" title="fsspec_data.tests.test_all.test_compatible_rejects_lossy_cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_compatible_rejects_lossy_cast</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_coerce_applies_runtime_checked_cast" title="fsspec_data.tests.test_all.test_coerce_applies_runtime_checked_cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_coerce_applies_runtime_checked_cast</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_coerce_checks_nullable_to_required_at_runtime" title="fsspec_data.tests.test_all.test_coerce_checks_nullable_to_required_at_runtime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_coerce_checks_nullable_to_required_at_runtime</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_coerce_rejects_unregistered_cast" title="fsspec_data.tests.test_all.test_coerce_rejects_unregistered_cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_coerce_rejects_unregistered_cast</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_interchange_request_plans_arrow_to_arrow" title="fsspec_data.tests.test_all.test_interchange_request_plans_arrow_to_arrow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_interchange_request_plans_arrow_to_arrow</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_interchange_request_plans_registered_format_path" title="fsspec_data.tests.test_all.test_interchange_request_plans_registered_format_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_interchange_request_plans_registered_format_path</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast" title="fsspec_data.tests.test_all.test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_plan_rejects_different_input_schema" title="fsspec_data.tests.test_all.test_plan_rejects_different_input_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_plan_rejects_different_input_schema</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_arrow_codec_declares_capabilities" title="fsspec_data.tests.test_all.test_arrow_codec_declares_capabilities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_arrow_codec_declares_capabilities</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_registry_contains_all_formats" title="fsspec_data.tests.test_all.test_registry_contains_all_formats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_registry_contains_all_formats</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries" title="fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_empty_stream_schema" title="fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_empty_stream_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_arrow_ipc_round_trip_preserves_empty_stream_schema</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_arrow_codec_requires_schema_for_empty_stream" title="fsspec_data.tests.test_all.test_arrow_codec_requires_schema_for_empty_stream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_arrow_codec_requires_schema_for_empty_stream</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_parquet_round_trip_preserves_schema_and_rows" title="fsspec_data.tests.test_all.test_parquet_round_trip_preserves_schema_and_rows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_parquet_round_trip_preserves_schema_and_rows</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_parquet_round_trip_preserves_empty_file_schema" title="fsspec_data.tests.test_all.test_parquet_round_trip_preserves_empty_file_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_parquet_round_trip_preserves_empty_file_schema</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_text_codec_round_trip_preserves_schema_and_rows" title="fsspec_data.tests.test_all.test_text_codec_round_trip_preserves_schema_and_rows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_text_codec_round_trip_preserves_schema_and_rows</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_text_codec_decode_requires_schema" title="fsspec_data.tests.test_all.test_text_codec_decode_requires_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_text_codec_decode_requires_schema</span></code></a>(format)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits" title="fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_lazy_decode_applies_batch_and_row_limits</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation" title="fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_lazy_decode_observes_cancellation</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit" title="fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_lazy_decode_enforces_byte_limit</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size" title="fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_lazy_decode_rejects_zero_batch_size</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -270,8 +362,153 @@
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_all">
-<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/fsspec_data/tests/test_all.html#test_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tests.test_all.test_all" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.schemas">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">schemas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.schemas" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_exact_schema_plan">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_exact_schema_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_exact_schema_plan" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_projection_selects_and_reorders_table">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_projection_selects_and_reorders_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_projection_selects_and_reorders_table" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_projection_applies_to_record_batch">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_projection_applies_to_record_batch</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_projection_applies_to_record_batch" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_projection_rejects_missing_field">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_projection_rejects_missing_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_projection_rejects_missing_field" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_projection_rejects_type_change">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_projection_rejects_type_change</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_projection_rejects_type_change" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_projection_rejects_nullability_narrowing">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_projection_rejects_nullability_narrowing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_projection_rejects_nullability_narrowing" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_exact_rejects_nullability_widening">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_exact_rejects_nullability_widening</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_exact_rejects_nullability_widening" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_compatible_widens_type_and_nullability">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_compatible_widens_type_and_nullability</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_compatible_widens_type_and_nullability" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_compatible_rejects_lossy_cast">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_compatible_rejects_lossy_cast</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_compatible_rejects_lossy_cast" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_coerce_applies_runtime_checked_cast">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_coerce_applies_runtime_checked_cast</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_coerce_applies_runtime_checked_cast" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_coerce_checks_nullable_to_required_at_runtime">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_coerce_checks_nullable_to_required_at_runtime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_coerce_checks_nullable_to_required_at_runtime" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_coerce_rejects_unregistered_cast">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_coerce_rejects_unregistered_cast</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_coerce_rejects_unregistered_cast" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_interchange_request_plans_arrow_to_arrow">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_interchange_request_plans_arrow_to_arrow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_interchange_request_plans_arrow_to_arrow" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_interchange_request_plans_registered_format_path">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_interchange_request_plans_registered_format_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_interchange_request_plans_registered_format_path" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_plan_rejects_different_input_schema">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_plan_rejects_different_input_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_plan_rejects_different_input_schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_arrow_codec_declares_capabilities">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_arrow_codec_declares_capabilities</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_arrow_codec_declares_capabilities" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_registry_contains_all_formats">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_registry_contains_all_formats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_registry_contains_all_formats" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_empty_stream_schema">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_arrow_ipc_round_trip_preserves_empty_stream_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_empty_stream_schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_arrow_codec_requires_schema_for_empty_stream">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_arrow_codec_requires_schema_for_empty_stream</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_arrow_codec_requires_schema_for_empty_stream" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_parquet_round_trip_preserves_schema_and_rows">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_parquet_round_trip_preserves_schema_and_rows</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_parquet_round_trip_preserves_schema_and_rows" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_parquet_round_trip_preserves_empty_file_schema">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_parquet_round_trip_preserves_empty_file_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_parquet_round_trip_preserves_empty_file_schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_text_codec_round_trip_preserves_schema_and_rows">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_text_codec_round_trip_preserves_schema_and_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_text_codec_round_trip_preserves_schema_and_rows" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_text_codec_decode_requires_schema">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_text_codec_decode_requires_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_text_codec_decode_requires_schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_lazy_decode_applies_batch_and_row_limits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_lazy_decode_observes_cancellation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_lazy_decode_enforces_byte_limit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_lazy_decode_rejects_zero_batch_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -327,7 +564,36 @@
 <li><a class="reference internal" href="#">fsspec_data.tests.test_all</a><ul>
 <li><a class="reference internal" href="#functions">Functions</a></li>
 <li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
-<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_all"><code class="docutils literal notranslate"><span class="pre">test_all()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.schemas"><code class="docutils literal notranslate"><span class="pre">schemas()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_exact_schema_plan"><code class="docutils literal notranslate"><span class="pre">test_exact_schema_plan()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_projection_selects_and_reorders_table"><code class="docutils literal notranslate"><span class="pre">test_projection_selects_and_reorders_table()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_projection_applies_to_record_batch"><code class="docutils literal notranslate"><span class="pre">test_projection_applies_to_record_batch()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_projection_rejects_missing_field"><code class="docutils literal notranslate"><span class="pre">test_projection_rejects_missing_field()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_projection_rejects_type_change"><code class="docutils literal notranslate"><span class="pre">test_projection_rejects_type_change()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_projection_rejects_nullability_narrowing"><code class="docutils literal notranslate"><span class="pre">test_projection_rejects_nullability_narrowing()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_exact_rejects_nullability_widening"><code class="docutils literal notranslate"><span class="pre">test_exact_rejects_nullability_widening()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_compatible_widens_type_and_nullability"><code class="docutils literal notranslate"><span class="pre">test_compatible_widens_type_and_nullability()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_compatible_rejects_lossy_cast"><code class="docutils literal notranslate"><span class="pre">test_compatible_rejects_lossy_cast()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_coerce_applies_runtime_checked_cast"><code class="docutils literal notranslate"><span class="pre">test_coerce_applies_runtime_checked_cast()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_coerce_checks_nullable_to_required_at_runtime"><code class="docutils literal notranslate"><span class="pre">test_coerce_checks_nullable_to_required_at_runtime()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_coerce_rejects_unregistered_cast"><code class="docutils literal notranslate"><span class="pre">test_coerce_rejects_unregistered_cast()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_interchange_request_plans_arrow_to_arrow"><code class="docutils literal notranslate"><span class="pre">test_interchange_request_plans_arrow_to_arrow()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_interchange_request_plans_registered_format_path"><code class="docutils literal notranslate"><span class="pre">test_interchange_request_plans_registered_format_path()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast"><code class="docutils literal notranslate"><span class="pre">test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_plan_rejects_different_input_schema"><code class="docutils literal notranslate"><span class="pre">test_plan_rejects_different_input_schema()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_arrow_codec_declares_capabilities"><code class="docutils literal notranslate"><span class="pre">test_arrow_codec_declares_capabilities()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_registry_contains_all_formats"><code class="docutils literal notranslate"><span class="pre">test_registry_contains_all_formats()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries"><code class="docutils literal notranslate"><span class="pre">test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_empty_stream_schema"><code class="docutils literal notranslate"><span class="pre">test_arrow_ipc_round_trip_preserves_empty_stream_schema()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_arrow_codec_requires_schema_for_empty_stream"><code class="docutils literal notranslate"><span class="pre">test_arrow_codec_requires_schema_for_empty_stream()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_parquet_round_trip_preserves_schema_and_rows"><code class="docutils literal notranslate"><span class="pre">test_parquet_round_trip_preserves_schema_and_rows()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_parquet_round_trip_preserves_empty_file_schema"><code class="docutils literal notranslate"><span class="pre">test_parquet_round_trip_preserves_empty_file_schema()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_text_codec_round_trip_preserves_schema_and_rows"><code class="docutils literal notranslate"><span class="pre">test_text_codec_round_trip_preserves_schema_and_rows()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_text_codec_decode_requires_schema"><code class="docutils literal notranslate"><span class="pre">test_text_codec_decode_requires_schema()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits"><code class="docutils literal notranslate"><span class="pre">test_lazy_decode_applies_batch_and_row_limits()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation"><code class="docutils literal notranslate"><span class="pre">test_lazy_decode_observes_cancellation()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit"><code class="docutils literal notranslate"><span class="pre">test_lazy_decode_enforces_byte_limit()</span></code></a></li>
+<li><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size"><code class="docutils literal notranslate"><span class="pre">test_lazy_decode_rejects_zero_batch_size()</span></code></a></li>
 </ul>
 </li>
 </ul>

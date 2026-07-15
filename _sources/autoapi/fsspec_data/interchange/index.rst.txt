@@ -1,0 +1,310 @@
+fsspec_data.interchange
+=======================
+
+.. py:module:: fsspec_data.interchange
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.interchange._rust
+   fsspec_data.interchange.DEFAULT_REGISTRY
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.interchange.DataFormat
+   fsspec_data.interchange.SchemaPolicy
+   fsspec_data.interchange.CodecCapabilities
+   fsspec_data.interchange.DecodedBatches
+   fsspec_data.interchange.DecodedBatchStream
+   fsspec_data.interchange.PlannedBatchStream
+   fsspec_data.interchange.Codec
+   fsspec_data.interchange.CodecRegistry
+   fsspec_data.interchange.FieldMapping
+   fsspec_data.interchange.InterchangeRequest
+   fsspec_data.interchange.InterchangePlan
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.interchange.plan_schema
+   fsspec_data.interchange._ensure_pyarrow
+
+
+Module Contents
+---------------
+
+.. py:data:: _rust
+
+.. py:class:: DataFormat
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   str(object='') -> str
+   str(bytes_or_buffer[, encoding[, errors]]) -> str
+
+   Create a new string object from the given object. If encoding or
+   errors is specified, then the object must expose a data buffer
+   that will be decoded using the given encoding and error handler.
+   Otherwise, returns the result of object.__str__() (if defined)
+   or repr(object).
+   encoding defaults to sys.getdefaultencoding().
+   errors defaults to 'strict'.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: ARROW
+      :value: 'arrow'
+
+
+
+   .. py:attribute:: PARQUET
+      :value: 'parquet'
+
+
+
+   .. py:attribute:: CSV
+      :value: 'csv'
+
+
+
+   .. py:attribute:: JSONL
+      :value: 'jsonl'
+
+
+
+.. py:class:: SchemaPolicy
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   str(object='') -> str
+   str(bytes_or_buffer[, encoding[, errors]]) -> str
+
+   Create a new string object from the given object. If encoding or
+   errors is specified, then the object must expose a data buffer
+   that will be decoded using the given encoding and error handler.
+   Otherwise, returns the result of object.__str__() (if defined)
+   or repr(object).
+   encoding defaults to sys.getdefaultencoding().
+   errors defaults to 'strict'.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: EXACT
+      :value: 'exact'
+
+
+
+   .. py:attribute:: PROJECTION
+      :value: 'projection'
+
+
+
+   .. py:attribute:: COMPATIBLE
+      :value: 'compatible'
+
+
+
+   .. py:attribute:: COERCE
+      :value: 'coerce'
+
+
+
+.. py:class:: CodecCapabilities
+
+   .. py:attribute:: encode
+      :type:  bool
+
+
+   .. py:attribute:: decode
+      :type:  bool
+
+
+   .. py:attribute:: streaming
+      :type:  bool
+
+
+.. py:class:: DecodedBatches
+
+   .. py:attribute:: schema
+      :type:  pyarrow.Schema
+
+
+   .. py:attribute:: batches
+      :type:  tuple[pyarrow.RecordBatch, Ellipsis]
+
+
+.. py:class:: DecodedBatchStream(schema: pyarrow.Schema, native: Any)
+
+   .. py:attribute:: schema
+
+
+   .. py:attribute:: _native
+
+
+   .. py:method:: __iter__() -> DecodedBatchStream
+
+
+   .. py:method:: __next__() -> pyarrow.RecordBatch
+
+
+   .. py:method:: cancel() -> None
+
+
+   .. py:method:: collect() -> DecodedBatches
+
+
+.. py:class:: PlannedBatchStream(plan: InterchangePlan, source: DecodedBatchStream)
+
+   .. py:attribute:: schema
+
+
+   .. py:attribute:: _plan
+
+
+   .. py:attribute:: _source
+
+
+   .. py:method:: __iter__() -> PlannedBatchStream
+
+
+   .. py:method:: __next__() -> pyarrow.RecordBatch
+
+
+   .. py:method:: cancel() -> None
+
+
+.. py:class:: Codec
+
+   .. py:attribute:: format
+      :type:  DataFormat
+
+
+   .. py:attribute:: capabilities
+      :type:  CodecCapabilities
+
+
+   .. py:method:: encode_batches(batches: list[pyarrow.RecordBatch] | tuple[pyarrow.RecordBatch, Ellipsis], *, schema: pyarrow.Schema | None = None) -> bytes
+
+
+   .. py:method:: decode_batches(data: bytes | bytearray | memoryview, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatches
+
+
+   .. py:method:: iter_batches(data: bytes | bytearray | memoryview, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatchStream
+
+
+.. py:class:: CodecRegistry
+
+   .. py:method:: get(format: DataFormat | str) -> Codec
+
+
+.. py:data:: DEFAULT_REGISTRY
+
+.. py:class:: FieldMapping
+
+   .. py:attribute:: source_index
+      :type:  int
+
+
+   .. py:attribute:: target_index
+      :type:  int
+
+
+   .. py:attribute:: cast
+      :type:  str | None
+      :value: None
+
+
+
+   .. py:attribute:: check_nulls
+      :type:  bool
+      :value: False
+
+
+
+.. py:class:: InterchangeRequest
+
+   .. py:attribute:: provided_format
+      :type:  DataFormat
+
+
+   .. py:attribute:: requested_format
+      :type:  DataFormat
+
+
+   .. py:attribute:: provided_schema
+      :type:  pyarrow.Schema
+
+
+   .. py:attribute:: requested_schema
+      :type:  pyarrow.Schema
+
+
+   .. py:attribute:: policy
+      :type:  SchemaPolicy
+
+
+   .. py:method:: plan() -> InterchangePlan
+
+
+.. py:class:: InterchangePlan
+
+   .. py:attribute:: provided_schema
+      :type:  pyarrow.Schema
+
+
+   .. py:attribute:: requested_schema
+      :type:  pyarrow.Schema
+
+
+   .. py:attribute:: policy
+      :type:  SchemaPolicy
+
+
+   .. py:attribute:: mappings
+      :type:  tuple[FieldMapping, Ellipsis]
+
+
+   .. py:attribute:: provided_format
+      :type:  DataFormat
+
+
+   .. py:attribute:: requested_format
+      :type:  DataFormat
+
+
+   .. py:method:: apply_table(table: pyarrow.Table) -> pyarrow.Table
+
+
+   .. py:method:: apply_batch(batch: pyarrow.RecordBatch) -> pyarrow.RecordBatch
+
+
+   .. py:method:: _apply_mapping(array: pyarrow.Array | pyarrow.ChunkedArray, mapping: FieldMapping)
+
+
+   .. py:method:: _validate_input_schema(schema: pyarrow.Schema) -> None
+
+
+   .. py:method:: iter_batches(data: bytes | bytearray | memoryview, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> PlannedBatchStream
+
+
+   .. py:method:: convert(data: bytes | bytearray | memoryview, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> bytes
+
+
+.. py:function:: plan_schema(provided_schema: pyarrow.Schema, requested_schema: pyarrow.Schema, policy: SchemaPolicy | str) -> InterchangePlan
+
+.. py:function:: _ensure_pyarrow(value: Any) -> pyarrow.Schema
+
