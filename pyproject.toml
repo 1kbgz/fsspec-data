@@ -13,7 +13,7 @@ authors = [
 description = "Arrow interchange planning for the fsspec data ecosystem"
 readme = "README.md"
 license = { text = "Apache-2.0" }
-version = "0.2.0"
+version = "0.2.1"
 requires-python = ">=3.11"
 keywords = ["arrow", "data", "fsspec", "interchange"]
 
@@ -65,7 +65,7 @@ Repository = "https://github.com/1kbgz/fsspec-data"
 Homepage = "https://github.com/1kbgz/fsspec-data"
 
 [tool.bumpversion]
-current_version = "0.2.0"
+current_version = "0.2.1"
 commit = true
 tag = false
 commit_args = "-s"
