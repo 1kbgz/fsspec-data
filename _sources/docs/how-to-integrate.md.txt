@@ -80,4 +80,14 @@ Arrow IPC emits bytes during batch writes. Parquet accepts batches incrementally
 buffer encoded bytes until `finish`. Use `encode_stream` when the complete iterator can be
 consumed by one call.
 
+If the writer session must be stored beyond the scope that creates it, pass a boxed shared
+sink to `start_owned_writer`:
+
+```rust
+let sink = SharedSink::default();
+let output = sink.clone();
+let writer = target.start_owned_writer(target_schema, Box::new(sink))?;
+let file = EncodedFile::new(writer, output);
+```
+
 See the [API reference](api.md) for supported formats, limits, casts, and errors.

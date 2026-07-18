@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="API Reference" href="../autoapi/index.html"><link rel="prev" title="Interchange design" href="explanation.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Interchange API reference - fsspec-data v0.2.0</title>
+        <title>Interchange API reference - fsspec-data v0.2.1</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
@@ -167,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.2.0</code></div></a>
+      <a href="../index.html"><div class="brand">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.2.1</code></div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -188,7 +188,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
-  <span class="sidebar-brand-text">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.2.0</code></span>
+  <span class="sidebar-brand-text">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.2.1</code></span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -432,6 +432,17 @@ sink remains owned by the caller.</p></li>
 <p>Arrow IPC makes encoded batch bytes available to the sink during <code class="docutils literal notranslate"><span class="pre">write_batch</span></code>. The Parquet
 writer accepts batches incrementally but may buffer its output until <code class="docutils literal notranslate"><span class="pre">finish</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">Codec::encode_stream</span></code> uses the same writer session for Arrow IPC and Parquet.</p>
+<section id="codec-start-writer-schema-output">
+<h3><code class="docutils literal notranslate"><span class="pre">Codec::start_writer(schema,</span> <span class="pre">output)</span></code><a class="headerlink" href="#codec-start-writer-schema-output" title="Link to this heading">¶</a></h3>
+<p>Borrows a <code class="docutils literal notranslate"><span class="pre">Write</span> <span class="pre">+</span> <span class="pre">Send</span></code> sink and returns a writer session with the same lifetime. This form
+supports scoped encoding while preserving direct access to the sink after <code class="docutils literal notranslate"><span class="pre">finish</span></code>.</p>
+</section>
+<section id="codec-start-owned-writer-schema-output">
+<h3><code class="docutils literal notranslate"><span class="pre">Codec::start_owned_writer(schema,</span> <span class="pre">output)</span></code><a class="headerlink" href="#codec-start-owned-writer-schema-output" title="Link to this heading">¶</a></h3>
+<p>Takes a boxed <code class="docutils literal notranslate"><span class="pre">Write</span> <span class="pre">+</span> <span class="pre">Send</span></code> sink and returns a writer session without a borrowed lifetime.
+This form supports storing the writer in a long-lived file or stream object. Shared or
+cloneable sinks allow the caller to observe output while the session owns its sink handle.</p>
+</section>
 </section>
 <section id="codecregistry">
 <h2><code class="docutils literal notranslate"><span class="pre">CodecRegistry</span></code><a class="headerlink" href="#codecregistry" title="Link to this heading">¶</a></h2>
@@ -591,7 +602,11 @@ policy or require an unregistered cast.</p>
 <li><a class="reference internal" href="#decode-batches"><code class="docutils literal notranslate"><span class="pre">decode_batches(...)</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#rust-codecwriter">Rust <code class="docutils literal notranslate"><span class="pre">CodecWriter</span></code></a></li>
+<li><a class="reference internal" href="#rust-codecwriter">Rust <code class="docutils literal notranslate"><span class="pre">CodecWriter</span></code></a><ul>
+<li><a class="reference internal" href="#codec-start-writer-schema-output"><code class="docutils literal notranslate"><span class="pre">Codec::start_writer(schema,</span> <span class="pre">output)</span></code></a></li>
+<li><a class="reference internal" href="#codec-start-owned-writer-schema-output"><code class="docutils literal notranslate"><span class="pre">Codec::start_owned_writer(schema,</span> <span class="pre">output)</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#codecregistry"><code class="docutils literal notranslate"><span class="pre">CodecRegistry</span></code></a><ul>
 <li><a class="reference internal" href="#get-format"><code class="docutils literal notranslate"><span class="pre">get(format)</span></code></a></li>
 </ul>
@@ -620,7 +635,7 @@ policy or require an unregistered cast.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=938c9ccc"></script>
+</div><script src="../_static/documentation_options.js?v=37f418d5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
