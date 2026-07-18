@@ -28,6 +28,11 @@ pub struct DecodedBatches {
     pub batches: Vec<RecordBatch>,
 }
 
+pub trait CodecWriter: Send {
+    fn write_batch(&mut self, batch: &RecordBatch) -> Result<()>;
+    fn finish(self: Box<Self>) -> Result<()>;
+}
+
 pub trait Codec: Send + Sync {
     fn format(&self) -> DataFormat;
     fn capabilities(&self) -> CodecCapabilities;
@@ -44,6 +49,16 @@ pub trait Codec: Send + Sync {
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<DecodedStream>;
+
+    fn start_writer<'a>(
+        &self,
+        _schema: SchemaRef,
+        _output: &'a mut (dyn Write + Send),
+    ) -> Result<Box<dyn CodecWriter + 'a>> {
+        Err(InterchangeError::CodecWriterNotSupported(
+            self.format().as_str().to_string(),
+        ))
+    }
 
     fn encode(&self, schema: SchemaRef, batches: &[RecordBatch]) -> Result<Vec<u8>> {
         let mut output = Vec::new();
@@ -98,6 +113,25 @@ pub static DEFAULT_REGISTRY: LazyLock<CodecRegistry> = LazyLock::new(|| {
 
 pub struct ArrowIpcCodec;
 
+struct ArrowIpcWriter<'a> {
+    schema: SchemaRef,
+    writer: StreamWriter<&'a mut (dyn Write + Send)>,
+}
+
+impl CodecWriter for ArrowIpcWriter<'_> {
+    fn write_batch(&mut self, batch: &RecordBatch) -> Result<()> {
+        validate_batch(&self.schema, batch)?;
+        self.writer.write(batch)?;
+        self.writer.flush()?;
+        Ok(())
+    }
+
+    fn finish(mut self: Box<Self>) -> Result<()> {
+        self.writer.finish()?;
+        Ok(())
+    }
+}
+
 impl Codec for ArrowIpcCodec {
     fn format(&self) -> DataFormat {
         DataFormat::Arrow
@@ -117,18 +151,11 @@ impl Codec for ArrowIpcCodec {
         batches: &mut dyn Iterator<Item = Result<RecordBatch>>,
         output: &mut (dyn Write + Send),
     ) -> Result<()> {
-        {
-            let mut writer = StreamWriter::try_new(output, schema.as_ref())?;
-            for batch in batches {
-                let batch = batch?;
-                if batch.schema() != schema {
-                    return Err(InterchangeError::InputSchema);
-                }
-                writer.write(&batch)?;
-            }
-            writer.finish()?;
+        let mut writer = self.start_writer(schema, output)?;
+        for batch in batches {
+            writer.write_batch(&batch?)?;
         }
-        Ok(())
+        writer.finish()
     }
 
     fn decode_stream(
@@ -147,9 +174,37 @@ impl Codec for ArrowIpcCodec {
             cancellation,
         )
     }
+
+    fn start_writer<'a>(
+        &self,
+        schema: SchemaRef,
+        output: &'a mut (dyn Write + Send),
+    ) -> Result<Box<dyn CodecWriter + 'a>> {
+        let writer = StreamWriter::try_new(output, schema.as_ref())?;
+        Ok(Box::new(ArrowIpcWriter { schema, writer }))
+    }
 }
 
 pub struct ParquetCodec;
+
+struct ParquetWriter<'a> {
+    schema: SchemaRef,
+    writer: ArrowWriter<&'a mut (dyn Write + Send)>,
+}
+
+impl CodecWriter for ParquetWriter<'_> {
+    fn write_batch(&mut self, batch: &RecordBatch) -> Result<()> {
+        validate_batch(&self.schema, batch)?;
+        self.writer.write(batch)?;
+        self.writer.flush()?;
+        Ok(())
+    }
+
+    fn finish(mut self: Box<Self>) -> Result<()> {
+        self.writer.finish()?;
+        Ok(())
+    }
+}
 
 impl Codec for ParquetCodec {
     fn format(&self) -> DataFormat {
@@ -170,18 +225,11 @@ impl Codec for ParquetCodec {
         batches: &mut dyn Iterator<Item = Result<RecordBatch>>,
         output: &mut (dyn Write + Send),
     ) -> Result<()> {
-        {
-            let mut writer = ArrowWriter::try_new(output, schema.clone(), None)?;
-            for batch in batches {
-                let batch = batch?;
-                if batch.schema() != schema {
-                    return Err(InterchangeError::InputSchema);
-                }
-                writer.write(&batch)?;
-            }
-            writer.close()?;
+        let mut writer = self.start_writer(schema, output)?;
+        for batch in batches {
+            writer.write_batch(&batch?)?;
         }
-        Ok(())
+        writer.finish()
     }
 
     fn decode_stream(
@@ -201,6 +249,15 @@ impl Codec for ParquetCodec {
             options,
             cancellation,
         )
+    }
+
+    fn start_writer<'a>(
+        &self,
+        schema: SchemaRef,
+        output: &'a mut (dyn Write + Send),
+    ) -> Result<Box<dyn CodecWriter + 'a>> {
+        let writer = ArrowWriter::try_new(output, schema.clone(), None)?;
+        Ok(Box::new(ParquetWriter { schema, writer }))
     }
 }
 
@@ -318,12 +375,46 @@ fn required_schema(format: DataFormat, schema: Option<SchemaRef>) -> Result<Sche
     schema.ok_or_else(|| InterchangeError::DecodeSchemaRequired(format.as_str().to_string()))
 }
 
+fn validate_batch(schema: &SchemaRef, batch: &RecordBatch) -> Result<()> {
+    if batch.schema().as_ref() != schema.as_ref() {
+        return Err(InterchangeError::InputSchema);
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
+    use std::io;
+    use std::sync::Mutex;
+
     use arrow::array::{Int64Array, RecordBatch, StringArray};
     use arrow::datatypes::{DataType, Field, Schema};
 
     use super::*;
+
+    #[derive(Clone, Default)]
+    struct SharedSink(Arc<Mutex<Vec<u8>>>);
+
+    impl SharedSink {
+        fn bytes(&self) -> Vec<u8> {
+            self.0.lock().unwrap().clone()
+        }
+
+        fn len(&self) -> usize {
+            self.0.lock().unwrap().len()
+        }
+    }
+
+    impl Write for SharedSink {
+        fn write(&mut self, buffer: &[u8]) -> io::Result<usize> {
+            self.0.lock().unwrap().extend_from_slice(buffer);
+            Ok(buffer.len())
+        }
+
+        fn flush(&mut self) -> io::Result<()> {
+            Ok(())
+        }
+    }
 
     fn fixture() -> (SchemaRef, Vec<RecordBatch>) {
         let schema = Arc::new(Schema::new(vec![
@@ -396,6 +487,74 @@ mod tests {
 
         assert_eq!(decoded.schema, schema);
         assert!(decoded.batches.is_empty());
+    }
+
+    #[test]
+    fn resumable_writers_encode_batches_incrementally() {
+        let (schema, batches) = fixture();
+
+        for format in [DataFormat::Arrow, DataFormat::Parquet] {
+            let codec = DEFAULT_REGISTRY.get(format).unwrap();
+            let mut sink = SharedSink::default();
+            let observed = sink.clone();
+            let mut writer = codec.start_writer(schema.clone(), &mut sink).unwrap();
+            let header_len = observed.len();
+            writer.write_batch(&batches[0]).unwrap();
+            let first_len = observed.len();
+            writer.write_batch(&batches[1]).unwrap();
+            let second_len = observed.len();
+            writer.finish().unwrap();
+
+            match format {
+                DataFormat::Arrow => {
+                    assert!(first_len > header_len);
+                    assert!(second_len > first_len);
+                }
+                DataFormat::Parquet => {
+                    assert_eq!(first_len, header_len);
+                    assert_eq!(second_len, first_len);
+                }
+                _ => unreachable!(),
+            }
+            assert!(observed.len() > second_len);
+            let encoded = observed.bytes();
+            let decoded = codec.decode(&encoded, None).unwrap();
+            let combined = arrow::compute::concat_batches(&schema, &decoded.batches).unwrap();
+            let expected = arrow::compute::concat_batches(&schema, &batches).unwrap();
+            assert_eq!(combined, expected);
+        }
+    }
+
+    #[test]
+    fn resumable_writers_reject_mismatched_batches() {
+        let (schema, _) = fixture();
+        let mismatched = RecordBatch::new_empty(Arc::new(Schema::empty()));
+
+        for format in [DataFormat::Arrow, DataFormat::Parquet] {
+            let codec = DEFAULT_REGISTRY.get(format).unwrap();
+            let mut encoded = Vec::new();
+            let mut writer = codec.start_writer(schema.clone(), &mut encoded).unwrap();
+            let error = writer.write_batch(&mismatched).unwrap_err().to_string();
+
+            assert!(error.contains("input schema"));
+        }
+    }
+
+    #[test]
+    fn text_codecs_reject_resumable_writers() {
+        let (schema, _) = fixture();
+
+        for format in [DataFormat::Csv, DataFormat::JsonLines] {
+            let codec = DEFAULT_REGISTRY.get(format).unwrap();
+            let mut encoded = Vec::new();
+            let error = codec
+                .start_writer(schema.clone(), &mut encoded)
+                .err()
+                .unwrap()
+                .to_string();
+
+            assert!(error.contains("does not support resumable encoding"));
+        }
     }
 
     #[test]

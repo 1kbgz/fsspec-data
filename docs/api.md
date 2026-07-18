@@ -146,6 +146,25 @@ Parameters:
 Calls `iter_batches(...)`, consumes the stream, and returns `DecodedBatches`. Parameters and
 errors match `iter_batches`.
 
+## Rust `CodecWriter`
+
+A resumable encoded-output session returned by `Codec::start_writer`.
+
+Methods:
+
+- `write_batch(&mut self, batch: &RecordBatch)`: validates the batch against the session
+  schema and submits it to the format writer.
+- `finish(self: Box<Self>)`: writes the format footer and consumes the session. The borrowed
+  sink remains owned by the caller.
+
+Arrow IPC and Parquet codecs support resumable writers. CSV and JSONL return
+`InterchangeError::CodecWriterNotSupported`.
+
+Arrow IPC makes encoded batch bytes available to the sink during `write_batch`. The Parquet
+writer accepts batches incrementally but may buffer its output until `finish`.
+
+`Codec::encode_stream` uses the same writer session for Arrow IPC and Parquet.
+
 ## `CodecRegistry`
 
 ### `get(format)`

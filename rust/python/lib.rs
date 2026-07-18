@@ -145,7 +145,9 @@ fn plan_schema(
 
 fn to_python_error(error: InterchangeError) -> PyErr {
     match error {
-        InterchangeError::UnsupportedPolicy(_) | InterchangeError::CodecNotRegistered(_) => {
+        InterchangeError::UnsupportedPolicy(_)
+        | InterchangeError::CodecNotRegistered(_)
+        | InterchangeError::CodecWriterNotSupported(_) => {
             pyo3::exceptions::PyNotImplementedError::new_err(error.to_string())
         }
         InterchangeError::StreamCancelled => {

@@ -68,7 +68,16 @@ let decoded = source.decode_stream(
 )?;
 let mut batches = plan.apply_stream(decoded);
 let mut output = Vec::new();
-target.encode_stream(target_schema, &mut batches, &mut output)?;
+let mut writer = target.start_writer(target_schema, &mut output)?;
+for batch in batches {
+    writer.write_batch(&batch?)?;
+}
+writer.finish()?;
 ```
+
+Use `start_writer` for Arrow IPC or Parquet when the producer supplies batches over time.
+Arrow IPC emits bytes during batch writes. Parquet accepts batches incrementally but may
+buffer encoded bytes until `finish`. Use `encode_stream` when the complete iterator can be
+consumed by one call.
 
 See the [API reference](api.md) for supported formats, limits, casts, and errors.
