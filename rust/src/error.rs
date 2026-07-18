@@ -6,6 +6,8 @@ pub enum InterchangeError {
     UnknownFormat(String),
     #[error("no codec is registered for format: {0}")]
     CodecNotRegistered(String),
+    #[error("codec does not support resumable encoding: {0}")]
+    CodecWriterNotSupported(String),
     #[error("decoding {0} requires an Arrow schema")]
     DecodeSchemaRequired(String),
     #[error("schema policy is not implemented: {0}")]
