@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="How to convert a file through an fsspec chain" href="how-to-chain-filesystems.html"><link rel="prev" title="Convert tabular data" href="tutorial.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>How to connect a batch producer or consumer - fsspec-data v0.1.0</title>
+        <title>How to connect a batch producer or consumer - fsspec-data v0.2.0</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
@@ -167,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.1.0</code></div></a>
+      <a href="../index.html"><div class="brand">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.2.0</code></div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -188,7 +188,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
-  <span class="sidebar-brand-text">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.1.0</code></span>
+  <span class="sidebar-brand-text">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.2.0</code></span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -322,9 +322,17 @@ and database reads.</p>
 <span class="p">)</span><span class="o">?</span><span class="p">;</span>
 <span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">batches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">plan</span><span class="p">.</span><span class="n">apply_stream</span><span class="p">(</span><span class="n">decoded</span><span class="p">);</span>
 <span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Vec</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
-<span class="n">target</span><span class="p">.</span><span class="n">encode_stream</span><span class="p">(</span><span class="n">target_schema</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">batches</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">output</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">writer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">target</span><span class="p">.</span><span class="n">start_writer</span><span class="p">(</span><span class="n">target_schema</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">output</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="k">for</span><span class="w"> </span><span class="n">batch</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">batches</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">writer</span><span class="p">.</span><span class="n">write_batch</span><span class="p">(</span><span class="o">&amp;</span><span class="n">batch</span><span class="o">?</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">writer</span><span class="p">.</span><span class="n">finish</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
 </pre></div>
 </div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">start_writer</span></code> for Arrow IPC or Parquet when the producer supplies batches over time.
+Arrow IPC emits bytes during batch writes. Parquet accepts batches incrementally but may
+buffer encoded bytes until <code class="docutils literal notranslate"><span class="pre">finish</span></code>. Use <code class="docutils literal notranslate"><span class="pre">encode_stream</span></code> when the complete iterator can be
+consumed by one call.</p>
 <p>See the <a class="reference internal" href="api.html"><span class="std std-doc">API reference</span></a> for supported formats, limits, casts, and errors.</p>
 </section>
 </section>
@@ -400,7 +408,7 @@ and database reads.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=01f34227"></script>
+</div><script src="../_static/documentation_options.js?v=938c9ccc"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

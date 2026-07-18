@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="API Reference" href="../autoapi/index.html"><link rel="prev" title="Interchange design" href="explanation.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Interchange API reference - fsspec-data v0.1.0</title>
+        <title>Interchange API reference - fsspec-data v0.2.0</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
@@ -167,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.1.0</code></div></a>
+      <a href="../index.html"><div class="brand">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.2.0</code></div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -188,7 +188,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
-  <span class="sidebar-brand-text">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.1.0</code></span>
+  <span class="sidebar-brand-text">fsspec-data <code style='font-size: var(--font-size--small--4);color: var(--sd-color-primary);'>v0.2.0</code></span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -417,6 +417,22 @@ batches. Exceeding it raises <code class="docutils literal notranslate"><span cl
 errors match <code class="docutils literal notranslate"><span class="pre">iter_batches</span></code>.</p>
 </section>
 </section>
+<section id="rust-codecwriter">
+<h2>Rust <code class="docutils literal notranslate"><span class="pre">CodecWriter</span></code><a class="headerlink" href="#rust-codecwriter" title="Link to this heading">¶</a></h2>
+<p>A resumable encoded-output session returned by <code class="docutils literal notranslate"><span class="pre">Codec::start_writer</span></code>.</p>
+<p>Methods:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">write_batch(&amp;mut</span> <span class="pre">self,</span> <span class="pre">batch:</span> <span class="pre">&amp;RecordBatch)</span></code>: validates the batch against the session
+schema and submits it to the format writer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">finish(self:</span> <span class="pre">Box&lt;Self&gt;)</span></code>: writes the format footer and consumes the session. The borrowed
+sink remains owned by the caller.</p></li>
+</ul>
+<p>Arrow IPC and Parquet codecs support resumable writers. CSV and JSONL return
+<code class="docutils literal notranslate"><span class="pre">InterchangeError::CodecWriterNotSupported</span></code>.</p>
+<p>Arrow IPC makes encoded batch bytes available to the sink during <code class="docutils literal notranslate"><span class="pre">write_batch</span></code>. The Parquet
+writer accepts batches incrementally but may buffer its output until <code class="docutils literal notranslate"><span class="pre">finish</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Codec::encode_stream</span></code> uses the same writer session for Arrow IPC and Parquet.</p>
+</section>
 <section id="codecregistry">
 <h2><code class="docutils literal notranslate"><span class="pre">CodecRegistry</span></code><a class="headerlink" href="#codecregistry" title="Link to this heading">¶</a></h2>
 <section id="get-format">
@@ -575,6 +591,7 @@ policy or require an unregistered cast.</p>
 <li><a class="reference internal" href="#decode-batches"><code class="docutils literal notranslate"><span class="pre">decode_batches(...)</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#rust-codecwriter">Rust <code class="docutils literal notranslate"><span class="pre">CodecWriter</span></code></a></li>
 <li><a class="reference internal" href="#codecregistry"><code class="docutils literal notranslate"><span class="pre">CodecRegistry</span></code></a><ul>
 <li><a class="reference internal" href="#get-format"><code class="docutils literal notranslate"><span class="pre">get(format)</span></code></a></li>
 </ul>
@@ -603,7 +620,7 @@ policy or require an unregistered cast.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=01f34227"></script>
+</div><script src="../_static/documentation_options.js?v=938c9ccc"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
