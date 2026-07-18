@@ -1,0 +1,74 @@
+fsspec_data.tests.test_filesystem
+=================================
+
+.. py:module:: fsspec_data.tests.test_filesystem
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_filesystem.SCHEMA
+   fsspec_data.tests.test_filesystem.SCHEMA_OPTIONS
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_filesystem.memory_fs
+   fsspec_data.tests.test_filesystem.test_chained_filesystem_converts_csv_to_seekable_parquet
+   fsspec_data.tests.test_filesystem.test_fsspec_url_builds_chained_filesystem
+   fsspec_data.tests.test_filesystem.test_source_url_constructs_target_filesystem
+   fsspec_data.tests.test_filesystem.test_target_filesystem_arguments_are_mutually_exclusive
+   fsspec_data.tests.test_filesystem.test_embedded_schema_can_be_projected
+   fsspec_data.tests.test_filesystem.test_embedded_schema_is_asserted
+   fsspec_data.tests.test_filesystem.test_converted_output_rolls_over_at_spool_limit
+   fsspec_data.tests.test_filesystem.test_info_and_listing_describe_converted_path
+   fsspec_data.tests.test_filesystem.test_filesystem_is_read_only
+   fsspec_data.tests.test_filesystem.test_text_input_requires_schema
+   fsspec_data.tests.test_filesystem.test_unknown_extension_requires_explicit_format
+   fsspec_data.tests.test_filesystem.test_extensionless_path_requires_explicit_format
+   fsspec_data.tests.test_filesystem.test_schema_options_accept_a_field_sequence
+   fsspec_data.tests.test_filesystem.test_invalid_schema_options_are_rejected
+
+
+Module Contents
+---------------
+
+.. py:data:: SCHEMA
+
+.. py:data:: SCHEMA_OPTIONS
+
+.. py:function:: memory_fs()
+
+.. py:function:: test_chained_filesystem_converts_csv_to_seekable_parquet(memory_fs)
+
+.. py:function:: test_fsspec_url_builds_chained_filesystem(memory_fs)
+
+.. py:function:: test_source_url_constructs_target_filesystem(memory_fs)
+
+.. py:function:: test_target_filesystem_arguments_are_mutually_exclusive(memory_fs)
+
+.. py:function:: test_embedded_schema_can_be_projected(memory_fs)
+
+.. py:function:: test_embedded_schema_is_asserted(memory_fs)
+
+.. py:function:: test_converted_output_rolls_over_at_spool_limit(memory_fs)
+
+.. py:function:: test_info_and_listing_describe_converted_path(memory_fs)
+
+.. py:function:: test_filesystem_is_read_only(memory_fs)
+
+.. py:function:: test_text_input_requires_schema(memory_fs)
+
+.. py:function:: test_unknown_extension_requires_explicit_format(memory_fs)
+
+.. py:function:: test_extensionless_path_requires_explicit_format(memory_fs)
+
+.. py:function:: test_schema_options_accept_a_field_sequence(memory_fs)
+
+.. py:function:: test_invalid_schema_options_are_rejected(memory_fs, schema, error, message)
+

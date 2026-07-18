@@ -197,6 +197,7 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="docs/tutorial.html">Convert tabular data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/how-to-integrate.html">How to connect a batch producer or consumer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/how-to-chain-filesystems.html">How to convert a file through an fsspec chain</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/explanation.html">Interchange design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/api.html">Interchange API reference</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
@@ -208,10 +209,12 @@
 <li class="toctree-l4"><a class="reference internal" href="autoapi/fsspec_data/backends/sqlalchemy/index.html">fsspec_data.backends.sqlalchemy</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/fsspec_data/filesystem/index.html">fsspec_data.filesystem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="autoapi/fsspec_data/interchange/index.html">fsspec_data.interchange</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/fsspec_data/tests/index.html">fsspec_data.tests</a><input aria-label="Toggle navigation of fsspec_data.tests" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="autoapi/fsspec_data/tests/conftest/index.html">fsspec_data.tests.conftest</a></li>
 <li class="toctree-l4"><a class="reference internal" href="autoapi/fsspec_data/tests/test_all/index.html">fsspec_data.tests.test_all</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/fsspec_data/tests/test_filesystem/index.html">fsspec_data.tests.test_filesystem</a></li>
 </ul>
 </li>
 </ul>
@@ -291,11 +294,21 @@
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangePlan._apply_mapping">(fsspec_data.InterchangePlan method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem._convert">_convert() (fsspec_data.DataFileSystem method)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem._convert">(fsspec_data.filesystem.DataFileSystem method)</a>
+</li>
+        </ul></li>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange._ensure_pyarrow">_ensure_pyarrow() (in module fsspec_data.interchange)</a>
 </li>
         <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseBufferedFile._fetch_range">_fetch_range() (fsspec_data.backends.base.BaseBufferedFile method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem._field_from_options">_field_from_options() (in module fsspec_data.filesystem)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem._format_from_path">_format_from_path() (in module fsspec_data.filesystem)</a>
 </li>
         <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseBufferedFile._initiate_upload">_initiate_upload() (fsspec_data.backends.base.BaseBufferedFile method)</a>
 </li>
@@ -303,6 +316,12 @@
 
         <ul>
           <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.DecodedBatchStream._native">(fsspec_data.interchange.DecodedBatchStream attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem._open">_open() (fsspec_data.DataFileSystem method)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem._open">(fsspec_data.filesystem.DataFileSystem method)</a>
 </li>
         </ul></li>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.PlannedBatchStream._plan">_plan (fsspec_data.interchange.PlannedBatchStream attribute)</a>
@@ -315,12 +334,22 @@
 </li>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange._rust">_rust (in module fsspec_data.interchange)</a>
 </li>
+        <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem._schema_from_options">_schema_from_options() (in module fsspec_data.filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem._sizes">_sizes (fsspec_data.DataFileSystem attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem._sizes">(fsspec_data.filesystem.DataFileSystem attribute)</a>
+</li>
+        </ul></li>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.PlannedBatchStream._source">_source (fsspec_data.interchange.PlannedBatchStream attribute)</a>
 
         <ul>
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.PlannedBatchStream._source">(fsspec_data.PlannedBatchStream attribute)</a>
 </li>
         </ul></li>
+        <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem._SUFFIX_FORMATS">_SUFFIX_FORMATS (in module fsspec_data.filesystem)</a>
+</li>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangePlan._validate_input_schema">_validate_input_schema() (fsspec_data.interchange.InterchangePlan method)</a>
 
         <ul>
@@ -367,12 +396,24 @@
 </li>
         <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem">BaseFileSystem (class in fsspec_data.backends.base)</a>
 </li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.batch_size">batch_size (fsspec_data.DataFileSystem attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.batch_size">(fsspec_data.filesystem.DataFileSystem attribute)</a>
+</li>
+        </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DecodedBatches.batches">batches (fsspec_data.DecodedBatches attribute)</a>
 
         <ul>
           <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.DecodedBatches.batches">(fsspec_data.interchange.DecodedBatches attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.byte_limit">byte_limit (fsspec_data.DataFileSystem attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.byte_limit">(fsspec_data.filesystem.DataFileSystem attribute)</a>
 </li>
         </ul></li>
     </ul></td>
@@ -475,6 +516,12 @@
   <h2>D</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem">DataFileSystem (class in fsspec_data)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem">(class in fsspec_data.filesystem)</a>
+</li>
+        </ul></li>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFormat">DataFormat (class in fsspec_data)</a>
 
         <ul>
@@ -557,10 +604,22 @@
           <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.FieldMapping">(class in fsspec_data.interchange)</a>
 </li>
         </ul></li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.fo">fo (fsspec_data.DataFileSystem attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.fo">(fsspec_data.filesystem.DataFileSystem attribute)</a>
+</li>
+        </ul></li>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Codec.format">format (fsspec_data.Codec attribute)</a>
 
         <ul>
           <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.Codec.format">(fsspec_data.interchange.Codec attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.fs">fs (fsspec_data.DataFileSystem attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.fs">(fsspec_data.filesystem.DataFileSystem attribute)</a>
 </li>
         </ul></li>
         <li>
@@ -608,6 +667,13 @@
 </li>
         </ul></li>
         <li>
+    fsspec_data.filesystem
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#module-fsspec_data.filesystem">module</a>
+</li>
+        </ul></li>
+        <li>
     fsspec_data.interchange
 
         <ul>
@@ -633,6 +699,13 @@
 
         <ul>
           <li><a href="autoapi/fsspec_data/tests/test_all/index.html#module-fsspec_data.tests.test_all">module</a>
+</li>
+        </ul></li>
+        <li>
+    fsspec_data.tests.test_filesystem
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#module-fsspec_data.tests.test_filesystem">module</a>
 </li>
         </ul></li>
     </ul></td>
@@ -671,6 +744,12 @@
   <h2>I</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.info">info() (fsspec_data.DataFileSystem method)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.info">(fsspec_data.filesystem.DataFileSystem method)</a>
+</li>
+        </ul></li>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangePlan">InterchangePlan (class in fsspec_data)</a>
 
         <ul>
@@ -718,7 +797,13 @@
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.ls">ls() (fsspec_data.backends.base.BaseFileSystem method)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.ls">(fsspec_data.DataFileSystem method)</a>
 </li>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.ls">(fsspec_data.filesystem.DataFileSystem method)</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -735,6 +820,8 @@
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangePlan.mappings">(fsspec_data.InterchangePlan attribute)</a>
 </li>
         </ul></li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.memory_fs">memory_fs() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
         <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.mkdir">mkdir() (fsspec_data.backends.base.BaseFileSystem method)</a>
 </li>
         <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.modified">modified() (fsspec_data.backends.base.BaseFileSystem method)</a>
@@ -755,6 +842,8 @@
 </li>
           <li><a href="autoapi/fsspec_data/backends/sqlalchemy/index.html#module-fsspec_data.backends.sqlalchemy">fsspec_data.backends.sqlalchemy</a>
 </li>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#module-fsspec_data.filesystem">fsspec_data.filesystem</a>
+</li>
           <li><a href="autoapi/fsspec_data/interchange/index.html#module-fsspec_data.interchange">fsspec_data.interchange</a>
 </li>
           <li><a href="autoapi/fsspec_data/tests/index.html#module-fsspec_data.tests">fsspec_data.tests</a>
@@ -762,6 +851,8 @@
           <li><a href="autoapi/fsspec_data/tests/conftest/index.html#module-fsspec_data.tests.conftest">fsspec_data.tests.conftest</a>
 </li>
           <li><a href="autoapi/fsspec_data/tests/test_all/index.html#module-fsspec_data.tests.test_all">fsspec_data.tests.test_all</a>
+</li>
+          <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#module-fsspec_data.tests.test_filesystem">fsspec_data.tests.test_filesystem</a>
 </li>
         </ul></li>
     </ul></td>
@@ -806,17 +897,27 @@
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangeRequest.policy">(fsspec_data.InterchangeRequest attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.SchemaPolicy.PROJECTION">PROJECTION (fsspec_data.interchange.SchemaPolicy attribute)</a>
 
         <ul>
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.SchemaPolicy.PROJECTION">(fsspec_data.SchemaPolicy attribute)</a>
 </li>
         </ul></li>
-        <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangePlan.provided_format">provided_format (fsspec_data.interchange.InterchangePlan attribute)</a>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.protocol">protocol (fsspec_data.DataFileSystem attribute)</a>
 
         <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.protocol">(fsspec_data.filesystem.DataFileSystem attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.provided_format">provided_format (fsspec_data.DataFileSystem attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.provided_format">(fsspec_data.filesystem.DataFileSystem attribute)</a>
+</li>
+          <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangePlan.provided_format">(fsspec_data.interchange.InterchangePlan attribute)</a>
+</li>
           <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangeRequest.provided_format">(fsspec_data.interchange.InterchangeRequest attribute)</a>
 </li>
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangePlan.provided_format">(fsspec_data.InterchangePlan attribute)</a>
@@ -824,9 +925,13 @@
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangeRequest.provided_format">(fsspec_data.InterchangeRequest attribute)</a>
 </li>
         </ul></li>
-        <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangePlan.provided_schema">provided_schema (fsspec_data.interchange.InterchangePlan attribute)</a>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.provided_schema">provided_schema (fsspec_data.DataFileSystem attribute)</a>
 
         <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.provided_schema">(fsspec_data.filesystem.DataFileSystem attribute)</a>
+</li>
+          <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangePlan.provided_schema">(fsspec_data.interchange.InterchangePlan attribute)</a>
+</li>
           <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangeRequest.provided_schema">(fsspec_data.interchange.InterchangeRequest attribute)</a>
 </li>
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangePlan.provided_schema">(fsspec_data.InterchangePlan attribute)</a>
@@ -842,9 +947,13 @@
   <h2>R</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangePlan.requested_format">requested_format (fsspec_data.interchange.InterchangePlan attribute)</a>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.requested_format">requested_format (fsspec_data.DataFileSystem attribute)</a>
 
         <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.requested_format">(fsspec_data.filesystem.DataFileSystem attribute)</a>
+</li>
+          <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangePlan.requested_format">(fsspec_data.interchange.InterchangePlan attribute)</a>
+</li>
           <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangeRequest.requested_format">(fsspec_data.interchange.InterchangeRequest attribute)</a>
 </li>
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangePlan.requested_format">(fsspec_data.InterchangePlan attribute)</a>
@@ -852,11 +961,13 @@
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangeRequest.requested_format">(fsspec_data.InterchangeRequest attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangePlan.requested_schema">requested_schema (fsspec_data.interchange.InterchangePlan attribute)</a>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.requested_schema">requested_schema (fsspec_data.DataFileSystem attribute)</a>
 
         <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.requested_schema">(fsspec_data.filesystem.DataFileSystem attribute)</a>
+</li>
+          <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangePlan.requested_schema">(fsspec_data.interchange.InterchangePlan attribute)</a>
+</li>
           <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangeRequest.requested_schema">(fsspec_data.interchange.InterchangeRequest attribute)</a>
 </li>
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangePlan.requested_schema">(fsspec_data.InterchangePlan attribute)</a>
@@ -864,8 +975,16 @@
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangeRequest.requested_schema">(fsspec_data.InterchangeRequest attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.rmdir">rmdir() (fsspec_data.backends.base.BaseFileSystem method)</a>
 </li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.row_limit">row_limit (fsspec_data.DataFileSystem attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.row_limit">(fsspec_data.filesystem.DataFileSystem attribute)</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -888,6 +1007,16 @@
           <li><a href="autoapi/fsspec_data/index.html#fsspec_data.PlannedBatchStream.schema">(fsspec_data.PlannedBatchStream attribute)</a>
 </li>
         </ul></li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.SCHEMA">SCHEMA (in module fsspec_data.tests.test_filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.SCHEMA_OPTIONS">SCHEMA_OPTIONS (in module fsspec_data.tests.test_filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.schema_policy">schema_policy (fsspec_data.DataFileSystem attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.schema_policy">(fsspec_data.filesystem.DataFileSystem attribute)</a>
+</li>
+        </ul></li>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.SchemaPolicy">SchemaPolicy (class in fsspec_data)</a>
 
         <ul>
@@ -904,6 +1033,12 @@
 
         <ul>
           <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.FieldMapping.source_index">(fsspec_data.interchange.FieldMapping attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.spool_max_size">spool_max_size (fsspec_data.DataFileSystem attribute)</a>
+
+        <ul>
+          <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.spool_max_size">(fsspec_data.filesystem.DataFileSystem attribute)</a>
 </li>
         </ul></li>
         <li><a href="autoapi/fsspec_data/backends/index.html#fsspec_data.backends.SQLAlchemyFilesystem">SQLAlchemyFilesystem (class in fsspec_data.backends)</a>
@@ -942,6 +1077,8 @@
 </li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries">test_arrow_ipc_round_trip_preserves_schema_and_batch_boundaries() (in module fsspec_data.tests.test_all)</a>
 </li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_chained_filesystem_converts_csv_to_seekable_parquet">test_chained_filesystem_converts_csv_to_seekable_parquet() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_coerce_applies_runtime_checked_cast">test_coerce_applies_runtime_checked_cast() (in module fsspec_data.tests.test_all)</a>
 </li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_coerce_checks_nullable_to_required_at_runtime">test_coerce_checks_nullable_to_required_at_runtime() (in module fsspec_data.tests.test_all)</a>
@@ -952,17 +1089,33 @@
 </li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_compatible_widens_type_and_nullability">test_compatible_widens_type_and_nullability() (in module fsspec_data.tests.test_all)</a>
 </li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_converted_output_rolls_over_at_spool_limit">test_converted_output_rolls_over_at_spool_limit() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_embedded_schema_can_be_projected">test_embedded_schema_can_be_projected() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_embedded_schema_is_asserted">test_embedded_schema_is_asserted() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_exact_rejects_nullability_widening">test_exact_rejects_nullability_widening() (in module fsspec_data.tests.test_all)</a>
 </li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_exact_schema_plan">test_exact_schema_plan() (in module fsspec_data.tests.test_all)</a>
 </li>
-        <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast">test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast() (in module fsspec_data.tests.test_all)</a>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_extensionless_path_requires_explicit_format">test_extensionless_path_requires_explicit_format() (in module fsspec_data.tests.test_filesystem)</a>
 </li>
-        <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_interchange_request_plans_arrow_to_arrow">test_interchange_request_plans_arrow_to_arrow() (in module fsspec_data.tests.test_all)</a>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_filesystem_is_read_only">test_filesystem_is_read_only() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_fsspec_url_builds_chained_filesystem">test_fsspec_url_builds_chained_filesystem() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_info_and_listing_describe_converted_path">test_info_and_listing_describe_converted_path() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast">test_interchange_plan_converts_parquet_to_arrow_with_compatible_cast() (in module fsspec_data.tests.test_all)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_interchange_request_plans_arrow_to_arrow">test_interchange_request_plans_arrow_to_arrow() (in module fsspec_data.tests.test_all)</a>
+</li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_interchange_request_plans_registered_format_path">test_interchange_request_plans_registered_format_path() (in module fsspec_data.tests.test_all)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_invalid_schema_options_are_rejected">test_invalid_schema_options_are_rejected() (in module fsspec_data.tests.test_filesystem)</a>
 </li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits">test_lazy_decode_applies_batch_and_row_limits() (in module fsspec_data.tests.test_all)</a>
 </li>
@@ -990,9 +1143,19 @@
 </li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_registry_contains_all_formats">test_registry_contains_all_formats() (in module fsspec_data.tests.test_all)</a>
 </li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_schema_options_accept_a_field_sequence">test_schema_options_accept_a_field_sequence() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_source_url_constructs_target_filesystem">test_source_url_constructs_target_filesystem() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_target_filesystem_arguments_are_mutually_exclusive">test_target_filesystem_arguments_are_mutually_exclusive() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_text_codec_decode_requires_schema">test_text_codec_decode_requires_schema() (in module fsspec_data.tests.test_all)</a>
 </li>
         <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_text_codec_round_trip_preserves_schema_and_rows">test_text_codec_round_trip_preserves_schema_and_rows() (in module fsspec_data.tests.test_all)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_text_input_requires_schema">test_text_input_requires_schema() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_unknown_extension_requires_explicit_format">test_unknown_extension_requires_explicit_format() (in module fsspec_data.tests.test_filesystem)</a>
 </li>
     </ul></td>
   </tr></table>

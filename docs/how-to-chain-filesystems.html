@@ -3,10 +3,10 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="How to connect a batch producer or consumer" href="how-to-integrate.html"><link rel="prev" title="fsspec-data" href="../index.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Interchange design" href="explanation.html"><link rel="prev" title="How to connect a batch producer or consumer" href="how-to-integrate.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Convert tabular data - fsspec-data v0.1.0</title>
+        <title>How to convert a file through an fsspec chain - fsspec-data v0.1.0</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
@@ -197,9 +197,9 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Convert tabular data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Convert tabular data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how-to-integrate.html">How to connect a batch producer or consumer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to-chain-filesystems.html">How to convert a file through an fsspec chain</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">How to convert a file through an fsspec chain</a></li>
 <li class="toctree-l1"><a class="reference internal" href="explanation.html">Interchange design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Interchange API reference</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
@@ -243,7 +243,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/docs/tutorial.md.txt" title="View this page">
+  <a class="muted-link" href="../_sources/docs/how-to-chain-filesystems.md.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -261,104 +261,58 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section class="tex2jax_ignore mathjax_ignore" id="convert-tabular-data">
-<h1>Convert tabular data<a class="headerlink" href="#convert-tabular-data" title="Link to this heading">¶</a></h1>
-<p>This tutorial converts CSV records with string identifiers into Parquet records with
-integer identifiers. Along the way, you will create a conversion plan and consume its
-output in bounded Arrow batches.</p>
-<section id="install-fsspec-data">
-<h2>Install fsspec-data<a class="headerlink" href="#install-fsspec-data" title="Link to this heading">¶</a></h2>
-<p>Install the package and PyArrow:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python -m pip install fsspec-data pyarrow</span>
-</pre></div>
-</div>
-</section>
-<section id="create-csv-input">
-<h2>Create CSV input<a class="headerlink" href="#create-csv-input" title="Link to this heading">¶</a></h2>
-<p>Define the schema supplied by the producer and create one Arrow record batch:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_REGISTRY</span><span class="p">,</span> <span class="n">DataFormat</span>
-
-<span class="n">source_schema</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span>
-    <span class="p">[</span>
-        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">(),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">()),</span>
+          <section class="tex2jax_ignore mathjax_ignore" id="how-to-convert-a-file-through-an-fsspec-chain">
+<h1>How to convert a file through an fsspec chain<a class="headerlink" href="#how-to-convert-a-file-through-an-fsspec-chain" title="Link to this heading">¶</a></h1>
+<p>This guide shows you how to expose a source file in another tabular format and Arrow schema
+without replacing its filesystem.</p>
+<section id="define-schemas-for-text-input">
+<h2>Define schemas for text input<a class="headerlink" href="#define-schemas-for-text-input" title="Link to this heading">¶</a></h2>
+<p>CSV and JSONL sources require an Arrow schema. Use nested dictionaries when the same options
+must cross the <code class="docutils literal notranslate"><span class="pre">fsspec-rs</span></code> Python bridge:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int64&quot;</span><span class="p">,</span> <span class="s2">&quot;nullable&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;nullable&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
     <span class="p">]</span>
-<span class="p">)</span>
-<span class="n">source_batch</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">(</span>
-    <span class="p">[[</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;Ada&quot;</span><span class="p">,</span> <span class="s2">&quot;Grace&quot;</span><span class="p">,</span> <span class="s2">&quot;Margaret&quot;</span><span class="p">]],</span>
-    <span class="n">schema</span><span class="o">=</span><span class="n">source_schema</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">csv_data</span> <span class="o">=</span> <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DataFormat</span><span class="o">.</span><span class="n">CSV</span><span class="p">)</span><span class="o">.</span><span class="n">encode_batches</span><span class="p">([</span><span class="n">source_batch</span><span class="p">])</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">csv_data</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+<span class="p">}</span>
 </pre></div>
 </div>
-<p>The encoded input contains a header and three rows:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>id,name
-1,Ada
-2,Grace
-3,Margaret
-</pre></div>
-</div>
+<p>Pass a <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code> instead when the chain remains in Python. Arrow IPC and Parquet
+sources provide their own schemas, so <code class="docutils literal notranslate"><span class="pre">provided_schema</span></code> is optional for those formats.</p>
 </section>
-<section id="plan-the-conversion">
-<h2>Plan the conversion<a class="headerlink" href="#plan-the-conversion" title="Link to this heading">¶</a></h2>
-<p>Define the schema required by the consumer. Request <code class="docutils literal notranslate"><span class="pre">coerce</span></code> because converting strings to
-integers requires runtime value checks:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">InterchangeRequest</span><span class="p">,</span> <span class="n">SchemaPolicy</span>
+<section id="open-the-converted-representation">
+<h2>Open the converted representation<a class="headerlink" href="#open-the-converted-representation" title="Link to this heading">¶</a></h2>
+<p>Place the requested representation on the left and the source object on the right:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">fsspec</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.parquet</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pq</span>
 
-<span class="n">target_schema</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span>
-    <span class="p">[</span>
-        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">()),</span>
-    <span class="p">]</span>
-<span class="p">)</span>
-<span class="n">plan</span> <span class="o">=</span> <span class="n">InterchangeRequest</span><span class="p">(</span>
-    <span class="n">provided_format</span><span class="o">=</span><span class="n">DataFormat</span><span class="o">.</span><span class="n">CSV</span><span class="p">,</span>
-    <span class="n">requested_format</span><span class="o">=</span><span class="n">DataFormat</span><span class="o">.</span><span class="n">PARQUET</span><span class="p">,</span>
-    <span class="n">provided_schema</span><span class="o">=</span><span class="n">source_schema</span><span class="p">,</span>
-    <span class="n">requested_schema</span><span class="o">=</span><span class="n">target_schema</span><span class="p">,</span>
-    <span class="n">policy</span><span class="o">=</span><span class="n">SchemaPolicy</span><span class="o">.</span><span class="n">COERCE</span><span class="p">,</span>
-<span class="p">)</span><span class="o">.</span><span class="n">plan</span><span class="p">()</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;fsspec-data://orders.parquet::memory://orders.csv&quot;</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">mappings</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">provided_schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">orders</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The first field reports a <code class="docutils literal notranslate"><span class="pre">runtime_checked</span></code> cast; the second passes through unchanged.</p>
-</section>
-<section id="consume-bounded-batches">
-<h2>Consume bounded batches<a class="headerlink" href="#consume-bounded-batches" title="Link to this heading">¶</a></h2>
-<p>Iterate with a two-row batch size:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">plan</span><span class="o">.</span><span class="n">iter_batches</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">to_pylist</span><span class="p">())</span>
+<p>The outer filename selects Parquet output. The inner filename selects CSV input. Use
+<code class="docutils literal notranslate"><span class="pre">provided_format</span></code> or <code class="docutils literal notranslate"><span class="pre">requested_format</span></code> when a filename has no recognized suffix.</p>
+<p>To project, reorder, or cast fields, pass <code class="docutils literal notranslate"><span class="pre">requested_schema</span></code> and the corresponding
+<code class="docutils literal notranslate"><span class="pre">schema_policy</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
+    <span class="n">url</span><span class="p">,</span>
+    <span class="n">provided_schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+    <span class="n">requested_schema</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">}]},</span>
+    <span class="n">schema_policy</span><span class="o">=</span><span class="s2">&quot;projection&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The plan decodes and converts each batch as it is requested:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[{&#39;id&#39;: 1, &#39;name&#39;: &#39;Ada&#39;}, {&#39;id&#39;: 2, &#39;name&#39;: &#39;Grace&#39;}]
-[{&#39;id&#39;: 3, &#39;name&#39;: &#39;Margaret&#39;}]
-</pre></div>
-</div>
-</section>
-<section id="produce-parquet-output">
-<h2>Produce Parquet output<a class="headerlink" href="#produce-parquet-output" title="Link to this heading">¶</a></h2>
-<p>Convert the complete input when the consumer needs encoded bytes:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">parquet_data</span> <span class="o">=</span> <span class="n">plan</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DataFormat</span><span class="o">.</span><span class="n">PARQUET</span><span class="p">)</span><span class="o">.</span><span class="n">decode_batches</span><span class="p">(</span><span class="n">parquet_data</span><span class="p">)</span>
+<p>For a database source, pass connection settings to the inner protocol:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;fsspec-data://orders.parquet::db+duckdb:///main/orders.arrow&quot;</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">([</span><span class="n">row</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">batches</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">to_pylist</span><span class="p">()])</span>
+<span class="k">with</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;db+duckdb&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="s2">&quot;warehouse.duckdb&quot;</span><span class="p">}})</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">orders</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The result uses the requested schema and contains integer identifiers:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>id: int64 not null
-name: string
-[{&#39;id&#39;: 1, &#39;name&#39;: &#39;Ada&#39;}, {&#39;id&#39;: 2, &#39;name&#39;: &#39;Grace&#39;}, {&#39;id&#39;: 3, &#39;name&#39;: &#39;Margaret&#39;}]
-</pre></div>
-</div>
-<p>You have now used one plan for lazy Arrow consumption and encoded Parquet output. See the
-<a class="reference internal" href="how-to-integrate.html"><span class="std std-doc">integration guide</span></a> to connect an existing producer or consumer.</p>
+<p>See the <a class="reference internal" href="api.html#datafilesystem"><span class="std std-ref">API reference</span></a> for constructor options and supported suffixes.</p>
 </section>
 </section>
 
@@ -367,23 +321,23 @@ name: string
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="how-to-integrate.html">
+          <a class="next-page" href="explanation.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">How to connect a batch producer or consumer</div>
+                <div class="title">Interchange design</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../index.html">
+          <a class="prev-page" href="how-to-integrate.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Home</div>
+                <div class="title">How to connect a batch producer or consumer</div>
                 
               </div>
             </a>
@@ -417,12 +371,9 @@ name: string
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Convert tabular data</a><ul>
-<li><a class="reference internal" href="#install-fsspec-data">Install fsspec-data</a></li>
-<li><a class="reference internal" href="#create-csv-input">Create CSV input</a></li>
-<li><a class="reference internal" href="#plan-the-conversion">Plan the conversion</a></li>
-<li><a class="reference internal" href="#consume-bounded-batches">Consume bounded batches</a></li>
-<li><a class="reference internal" href="#produce-parquet-output">Produce Parquet output</a></li>
+<li><a class="reference internal" href="#">How to convert a file through an fsspec chain</a><ul>
+<li><a class="reference internal" href="#define-schemas-for-text-input">Define schemas for text input</a></li>
+<li><a class="reference internal" href="#open-the-converted-representation">Open the converted representation</a></li>
 </ul>
 </li>
 </ul>

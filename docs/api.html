@@ -199,6 +199,7 @@
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Convert tabular data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how-to-integrate.html">How to connect a batch producer or consumer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-chain-filesystems.html">How to convert a file through an fsspec chain</a></li>
 <li class="toctree-l1"><a class="reference internal" href="explanation.html">Interchange design</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Interchange API reference</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
@@ -210,10 +211,12 @@
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/backends/sqlalchemy/index.html">fsspec_data.backends.sqlalchemy</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/filesystem/index.html">fsspec_data.filesystem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/interchange/index.html">fsspec_data.interchange</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/fsspec_data/tests/index.html">fsspec_data.tests</a><input aria-label="Toggle navigation of fsspec_data.tests" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/conftest/index.html">fsspec_data.tests.conftest</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_all/index.html">fsspec_data.tests.test_all</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_filesystem/index.html">fsspec_data.tests.test_filesystem</a></li>
 </ul>
 </li>
 </ul>
@@ -260,6 +263,40 @@
         <article role="main" id="furo-main-content">
           <section class="tex2jax_ignore mathjax_ignore" id="interchange-api-reference">
 <h1>Interchange API reference<a class="headerlink" href="#interchange-api-reference" title="Link to this heading">¶</a></h1>
+<section id="datafilesystem">
+<h2><code class="docutils literal notranslate"><span class="pre">DataFileSystem</span></code><a class="headerlink" href="#datafilesystem" title="Link to this heading">¶</a></h2>
+<p>Read-only chained filesystem registered as the <code class="docutils literal notranslate"><span class="pre">fsspec-data</span></code> protocol. The outer path names
+the requested representation; <code class="docutils literal notranslate"><span class="pre">fo</span></code> names the source object on the target filesystem.</p>
+<p>Constructor parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fo:</span> <span class="pre">str</span></code>: source object path or URL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target_protocol:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: protocol used to construct the target filesystem.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target_options:</span> <span class="pre">dict</span> <span class="pre">|</span> <span class="pre">None</span></code>: options passed to the target filesystem.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fs:</span> <span class="pre">AbstractFileSystem</span> <span class="pre">|</span> <span class="pre">None</span></code>: existing target filesystem. Mutually exclusive with
+<code class="docutils literal notranslate"><span class="pre">target_protocol</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provided_format:</span> <span class="pre">DataFormat</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: source format. Inferred from <code class="docutils literal notranslate"><span class="pre">fo</span></code> when omitted.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">requested_format:</span> <span class="pre">DataFormat</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: output format. Inferred from the opened path
+when omitted.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provided_schema</span></code>: source <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code> or nested schema options. Required for CSV and
+JSONL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">requested_schema</span></code>: output <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code> or nested schema options. Defaults to the source
+schema.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schema_policy:</span> <span class="pre">SchemaPolicy</span> <span class="pre">|</span> <span class="pre">str</span></code>: reconciliation policy. Defaults to <code class="docutils literal notranslate"><span class="pre">exact</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">batch_size:</span> <span class="pre">int</span></code>: maximum rows per decoded batch. Defaults to <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">row_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: maximum decoded rows.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">byte_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: maximum cumulative Arrow array memory in decoded batches.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">spool_max_size:</span> <span class="pre">int</span></code>: converted bytes retained in memory before the seekable output rolls
+over to a temporary file. Defaults to 8 MiB.</p></li>
+</ul>
+<p>Nested schema options have a <code class="docutils literal notranslate"><span class="pre">fields</span></code> list. Each field has <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">type</span></code>, and optional
+<code class="docutils literal notranslate"><span class="pre">nullable</span></code> keys. String types use PyArrow aliases such as <code class="docutils literal notranslate"><span class="pre">int64</span></code>, <code class="docutils literal notranslate"><span class="pre">string</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">timestamp[ms]</span></code>.</p>
+<p>Recognized suffixes are <code class="docutils literal notranslate"><span class="pre">.arrow</span></code> and <code class="docutils literal notranslate"><span class="pre">.ipc</span></code> for Arrow IPC streams, <code class="docutils literal notranslate"><span class="pre">.parquet</span></code> and <code class="docutils literal notranslate"><span class="pre">.pq</span></code> for
+Parquet, <code class="docutils literal notranslate"><span class="pre">.csv</span></code> for CSV, and <code class="docutils literal notranslate"><span class="pre">.jsonl</span></code> and <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code> for line-delimited JSON.</p>
+<p><code class="docutils literal notranslate"><span class="pre">open</span></code> accepts read mode and returns a seekable spooled file. Conversion currently reads the
+complete encoded source and produces a complete encoded output before returning the file.</p>
+<p>See <a class="reference internal" href="how-to-chain-filesystems.html"><span class="std std-doc">How to convert a file through an fsspec chain</span></a> for usage.</p>
+</section>
 <section id="dataformat">
 <h2><code class="docutils literal notranslate"><span class="pre">DataFormat</span></code><a class="headerlink" href="#dataformat" title="Link to this heading">¶</a></h2>
 <p>Identifies an interchange encoding. Values are <code class="docutils literal notranslate"><span class="pre">arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">parquet</span></code>, <code class="docutils literal notranslate"><span class="pre">csv</span></code>, and <code class="docutils literal notranslate"><span class="pre">jsonl</span></code>.
@@ -521,6 +558,7 @@ policy or require an unregistered cast.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Interchange API reference</a><ul>
+<li><a class="reference internal" href="#datafilesystem"><code class="docutils literal notranslate"><span class="pre">DataFileSystem</span></code></a></li>
 <li><a class="reference internal" href="#dataformat"><code class="docutils literal notranslate"><span class="pre">DataFormat</span></code></a></li>
 <li><a class="reference internal" href="#schemapolicy"><code class="docutils literal notranslate"><span class="pre">SchemaPolicy</span></code></a></li>
 <li><a class="reference internal" href="#fieldmapping"><code class="docutils literal notranslate"><span class="pre">FieldMapping</span></code></a></li>

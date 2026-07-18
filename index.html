@@ -199,6 +199,7 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="docs/tutorial.html">Convert tabular data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/how-to-integrate.html">How to connect a batch producer or consumer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/how-to-chain-filesystems.html">How to convert a file through an fsspec chain</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/explanation.html">Interchange design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/api.html">Interchange API reference</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
@@ -210,10 +211,12 @@
 <li class="toctree-l4"><a class="reference internal" href="autoapi/fsspec_data/backends/sqlalchemy/index.html">fsspec_data.backends.sqlalchemy</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/fsspec_data/filesystem/index.html">fsspec_data.filesystem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="autoapi/fsspec_data/interchange/index.html">fsspec_data.interchange</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/fsspec_data/tests/index.html">fsspec_data.tests</a><input aria-label="Toggle navigation of fsspec_data.tests" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="autoapi/fsspec_data/tests/conftest/index.html">fsspec_data.tests.conftest</a></li>
 <li class="toctree-l4"><a class="reference internal" href="autoapi/fsspec_data/tests/test_all/index.html">fsspec_data.tests.test_all</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/fsspec_data/tests/test_filesystem/index.html">fsspec_data.tests.test_filesystem</a></li>
 </ul>
 </li>
 </ul>
@@ -271,8 +274,8 @@
 ownership of database discovery or dataframe query planning. A pure-Rust core and Python
 bindings apply the same decisions to Arrow record batches and PyArrow objects.</p>
 <p>The first release supports format-aware conversion plans, exact/projection/compatible/
-coerce schema policies, registered Arrow IPC/Parquet/CSV/JSONL codecs, and bounded lazy
-batch iteration with cancellation.</p>
+coerce schema policies, registered Arrow IPC/Parquet/CSV/JSONL codecs, bounded lazy batch
+iteration with cancellation, and read-only conversion through chained fsspec URLs.</p>
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h2>
 <ul class="simple">
@@ -280,6 +283,8 @@ batch iteration with cancellation.</p>
 guided first example.</p></li>
 <li><p><a class="reference external" href="https://github.com/1kbgz/fsspec-data/blob/main/docs/how-to-integrate.md">Connect a batch producer or consumer</a>
 to the interchange layer.</p></li>
+<li><p><a class="reference external" href="https://github.com/1kbgz/fsspec-data/blob/main/docs/how-to-chain-filesystems.md">Convert a file through an fsspec chain</a>
+while retaining its source filesystem.</p></li>
 <li><p><a class="reference external" href="https://github.com/1kbgz/fsspec-data/blob/main/docs/explanation.md">Understand the interchange design</a>
 and package boundaries.</p></li>
 <li><p><a class="reference external" href="https://github.com/1kbgz/fsspec-data/blob/main/docs/api.md">Look up the interchange API</a>,
