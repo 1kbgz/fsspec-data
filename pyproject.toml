@@ -56,6 +56,9 @@ develop = [
 
 [project.scripts]
 
+[project.entry-points."fsspec.specs"]
+"fsspec-data" = "fsspec_data.filesystem:DataFileSystem"
+
 [project.urls]
 Repository = "https://github.com/1kbgz/fsspec-data"
 Homepage = "https://github.com/1kbgz/fsspec-data"
@@ -100,6 +103,9 @@ exclude_also = [
 ]
 ignore_errors = true
 fail_under = 10
+
+[tool.codespell]
+ignore-words-list = "fo"
 
 [tool.hatch.build]
 artifacts = [
@@ -173,5 +179,11 @@ section-order = [
 [tool.yardang]
 title = "fsspec-data"
 root = "README.md"
-pages = ["docs/tutorial.md", "docs/how-to-integrate.md", "docs/explanation.md", "docs/api.md"]
+pages = [
+    "docs/tutorial.md",
+    "docs/how-to-integrate.md",
+    "docs/how-to-chain-filesystems.md",
+    "docs/explanation.md",
+    "docs/api.md",
+]
 use-autoapi = true

@@ -12,8 +12,8 @@ ownership of database discovery or dataframe query planning. A pure-Rust core an
 bindings apply the same decisions to Arrow record batches and PyArrow objects.
 
 The first release supports format-aware conversion plans, exact/projection/compatible/
-coerce schema policies, registered Arrow IPC/Parquet/CSV/JSONL codecs, and bounded lazy
-batch iteration with cancellation.
+coerce schema policies, registered Arrow IPC/Parquet/CSV/JSONL codecs, bounded lazy batch
+iteration with cancellation, and read-only conversion through chained fsspec URLs.
 
 ## Documentation
 
@@ -21,6 +21,8 @@ batch iteration with cancellation.
   guided first example.
 - [Connect a batch producer or consumer](https://github.com/1kbgz/fsspec-data/blob/main/docs/how-to-integrate.md)
   to the interchange layer.
+- [Convert a file through an fsspec chain](https://github.com/1kbgz/fsspec-data/blob/main/docs/how-to-chain-filesystems.md)
+  while retaining its source filesystem.
 - [Understand the interchange design](https://github.com/1kbgz/fsspec-data/blob/main/docs/explanation.md)
   and package boundaries.
 - [Look up the interchange API](https://github.com/1kbgz/fsspec-data/blob/main/docs/api.md),

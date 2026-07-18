@@ -1,5 +1,43 @@
 # Interchange API reference
 
+## `DataFileSystem`
+
+Read-only chained filesystem registered as the `fsspec-data` protocol. The outer path names
+the requested representation; `fo` names the source object on the target filesystem.
+
+Constructor parameters:
+
+- `fo: str`: source object path or URL.
+- `target_protocol: str | None`: protocol used to construct the target filesystem.
+- `target_options: dict | None`: options passed to the target filesystem.
+- `fs: AbstractFileSystem | None`: existing target filesystem. Mutually exclusive with
+  `target_protocol`.
+- `provided_format: DataFormat | str | None`: source format. Inferred from `fo` when omitted.
+- `requested_format: DataFormat | str | None`: output format. Inferred from the opened path
+  when omitted.
+- `provided_schema`: source `pyarrow.Schema` or nested schema options. Required for CSV and
+  JSONL.
+- `requested_schema`: output `pyarrow.Schema` or nested schema options. Defaults to the source
+  schema.
+- `schema_policy: SchemaPolicy | str`: reconciliation policy. Defaults to `exact`.
+- `batch_size: int`: maximum rows per decoded batch. Defaults to `1024`.
+- `row_limit: int | None`: maximum decoded rows.
+- `byte_limit: int | None`: maximum cumulative Arrow array memory in decoded batches.
+- `spool_max_size: int`: converted bytes retained in memory before the seekable output rolls
+  over to a temporary file. Defaults to 8 MiB.
+
+Nested schema options have a `fields` list. Each field has `name`, `type`, and optional
+`nullable` keys. String types use PyArrow aliases such as `int64`, `string`, and
+`timestamp[ms]`.
+
+Recognized suffixes are `.arrow` and `.ipc` for Arrow IPC streams, `.parquet` and `.pq` for
+Parquet, `.csv` for CSV, and `.jsonl` and `.ndjson` for line-delimited JSON.
+
+`open` accepts read mode and returns a seekable spooled file. Conversion currently reads the
+complete encoded source and produces a complete encoded output before returning the file.
+
+See [How to convert a file through an fsspec chain](how-to-chain-filesystems.md) for usage.
+
 ## `DataFormat`
 
 Identifies an interchange encoding. Values are `arrow`, `parquet`, `csv`, and `jsonl`.

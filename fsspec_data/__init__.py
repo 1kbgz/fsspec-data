@@ -1,3 +1,4 @@
+from .filesystem import DataFileSystem
 from .interchange import (
     DEFAULT_REGISTRY,
     Codec,
@@ -22,6 +23,7 @@ __all__ = [
     "CodecRegistry",
     "DEFAULT_REGISTRY",
     "DataFormat",
+    "DataFileSystem",
     "DecodedBatchStream",
     "DecodedBatches",
     "FieldMapping",

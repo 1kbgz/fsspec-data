@@ -32,16 +32,16 @@ lint-py:  ## lint python with ruff
 	cargo clippy --workspace --all-targets -- -D warnings
 
 lint-docs:  ## lint docs with mdformat and codespell
-	python -m mdformat --check README.md docs/tutorial.md docs/how-to-integrate.md docs/explanation.md docs/api.md
-	python -m codespell_lib README.md docs/tutorial.md docs/how-to-integrate.md docs/explanation.md docs/api.md
+	python -m mdformat --check README.md docs/tutorial.md docs/how-to-integrate.md docs/how-to-chain-filesystems.md docs/explanation.md docs/api.md
+	python -m codespell_lib README.md docs/tutorial.md docs/how-to-integrate.md docs/how-to-chain-filesystems.md docs/explanation.md docs/api.md
 
 fix-py:  ## autoformat python code with ruff
 	python -m ruff check --fix fsspec_data
 	python -m ruff format fsspec_data
 
 fix-docs:  ## autoformat docs with mdformat and codespell
-	python -m mdformat README.md docs/tutorial.md docs/how-to-integrate.md docs/explanation.md docs/api.md
-	python -m codespell_lib --write README.md docs/tutorial.md docs/how-to-integrate.md docs/explanation.md docs/api.md
+	python -m mdformat README.md docs/tutorial.md docs/how-to-integrate.md docs/how-to-chain-filesystems.md docs/explanation.md docs/api.md
+	python -m codespell_lib --write README.md docs/tutorial.md docs/how-to-integrate.md docs/how-to-chain-filesystems.md docs/explanation.md docs/api.md
 
 lint: lint-py lint-docs  ## run all linters
 lints: lint
