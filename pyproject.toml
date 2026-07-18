@@ -40,6 +40,7 @@ develop = [
     "build",
     "bump-my-version",
     "check-dist",
+    "cibuildwheel",
     "codespell",
     "hatchling",
     "hatch-rs",
@@ -89,6 +90,29 @@ filename = "rust/Cargo.toml"
 search = 'version = "{current_version}"'
 replace = 'version = "{new_version}"'
 
+[tool.cibuildwheel]
+build = "cp311-*"
+test-command = "pytest -vvv {project}/fsspec_data/tests"
+test-extras = "develop"
+
+[tool.cibuildwheel.linux]
+before-all = """
+curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
+rustup target add aarch64-unknown-linux-gnu
+rustup target add x86_64-unknown-linux-gnu
+rustup show
+"""
+environment = {PATH="$HOME/.cargo/bin:$PATH", CARGO_TERM_COLOR="always"}
+skip = "*i686* *musllinux*"
+
+[tool.cibuildwheel.macos]
+environment = {PATH="$HOME/.cargo/bin:$PATH", CARGO_TERM_COLOR="always", MACOS_DEPLOYMENT_TARGET=11.0}
+archs = "arm64"
+
+[tool.cibuildwheel.windows]
+environment = {PATH="$UserProfile\\.cargo\bin;$PATH", CARGO_TERM_COLOR="always"}
+skip = "*win32 *arm_64"
+
 [tool.coverage.run]
 branch = true
 omit = [
@@ -131,6 +155,7 @@ packages = [
     "Cargo.lock",
 ]
 exclude = [
+    "rust/Makefile",
     "target",
 ]
 
@@ -138,8 +163,9 @@ exclude = [
 packages = [
     "fsspec_data",
 ]
-
-[tool.hatch.build.targets.wheel.shared-data]
+exclude = [
+    "rust",
+]
 
 [tool.pytest.ini_options]
 addopts = [

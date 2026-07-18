@@ -1,51 +1,74 @@
 #########
 # BUILD #
 #########
-.PHONY: develop build install
-
-develop:  ## install dependencies and build library
+.PHONY: develop-py develop-rs develop
+develop-py:
 	uv pip install -e .[develop]
 
-rust-test:  ## test the pure Rust interchange core
-	cargo test --workspace
+develop-rs:
+	make -C rust develop
 
-requirements:  ## install prerequisite python build requirements
+develop: develop-rs develop-py  ## setup project for development
+
+.PHONY: requirements-py requirements-rs requirements
+requirements-py:  ## install prerequisite python build requirements
 	python -m pip install --upgrade pip toml
 	python -m pip install `python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join(c["build-system"]["requires"]))'`
 	python -m pip install `python -c 'import toml; c = toml.load("pyproject.toml"); print(" ".join(c["project"]["optional-dependencies"]["develop"]))'`
 
-build:  ## build the python library
-	python -m build -n
+requirements-rs:  ## install prerequisite rust build requirements
+	make -C rust requirements
 
-install:  ## install library
+requirements: requirements-rs requirements-py  ## setup project for development
+
+.PHONY: build-py build-rs build
+build-py:
+	python -m build -w -n
+
+build-rs:
+	make -C rust build
+
+build: build-rs build-py  ## build the project
+
+.PHONY: install
+install:  ## install python library
 	uv pip install .
 
 #########
 # LINTS #
 #########
-.PHONY: lint-py lint-docs fix-py fix-docs lint lints fix format
-
-lint-py:  ## lint python with ruff
+.PHONY: lint-py lint-rs lint-docs lint lints
+lint-py:  ## run python linter with ruff
 	python -m ruff check fsspec_data
 	python -m ruff format --check fsspec_data
-	cargo fmt --all -- --check
-	cargo clippy --workspace --all-targets -- -D warnings
+
+lint-rs:  ## run rust linter
+	make -C rust lint
 
 lint-docs:  ## lint docs with mdformat and codespell
 	python -m mdformat --check README.md docs/tutorial.md docs/how-to-integrate.md docs/how-to-chain-filesystems.md docs/explanation.md docs/api.md
 	python -m codespell_lib README.md docs/tutorial.md docs/how-to-integrate.md docs/how-to-chain-filesystems.md docs/explanation.md docs/api.md
 
-fix-py:  ## autoformat python code with ruff
+lint: lint-rs lint-py lint-docs  ## run project linters
+
+# alias
+lints: lint
+
+.PHONY: fix-py fix-rs fix-docs fix format
+fix-py:  ## fix python formatting with ruff
 	python -m ruff check --fix fsspec_data
 	python -m ruff format fsspec_data
+
+fix-rs:  ## fix code with rustfmt
+	make -C rust fix
 
 fix-docs:  ## autoformat docs with mdformat and codespell
 	python -m mdformat README.md docs/tutorial.md docs/how-to-integrate.md docs/how-to-chain-filesystems.md docs/explanation.md docs/api.md
 	python -m codespell_lib --write README.md docs/tutorial.md docs/how-to-integrate.md docs/how-to-chain-filesystems.md docs/explanation.md docs/api.md
 
-lint: lint-py lint-docs  ## run all linters
-lints: lint
-fix: fix-py fix-docs  ## run all autoformatters
+fix: fix-rs fix-py fix-docs  ## run project autoformatters
+
+# alias
 format: fix
 
 ################
@@ -61,21 +84,37 @@ check-types:  ## check python types with ty
 
 checks: check-dist
 
-# Alias
+# alias
 check: checks
 
 #########
 # TESTS #
 #########
-.PHONY: test coverage tests
-
-test: rust-test  ## run Rust and Python tests
+.PHONY: test-py tests-py coverage-py
+test-py:  ## run python tests
 	python -m pytest -v fsspec_data/tests
 
-coverage: rust-test  ## run tests and collect test coverage
+# alias
+tests-py: test-py
+
+coverage-py:  ## run python tests and collect test coverage
 	python -m pytest -v fsspec_data/tests --cov=fsspec_data --cov-report term-missing --cov-report xml
 
-# Alias
+.PHONY: test-rs tests-rs coverage-rs
+test-rs:  ## run rust tests
+	make -C rust test
+
+# alias
+tests-rs: test-rs
+
+coverage-rs:  ## run Rust tests and collect coverage
+	make -C rust coverage
+
+.PHONY: test coverage tests
+test: test-py test-rs  ## run all tests
+coverage: coverage-py coverage-rs  ## run all tests and collect test coverage
+
+# alias
 tests: test
 
 ###########
@@ -98,15 +137,21 @@ major:  ## bump a major version
 ########
 # DIST #
 ########
-.PHONY: dist dist-build dist-sdist dist-local-wheel publish
+.PHONY: dist-py-wheel dist-py-sdist dist-rs dist-check dist publish
 
-dist-build:  # build python dists
-	python -m build -w -s
+dist-py-wheel:  ## build python wheels
+	python -m cibuildwheel --output-dir dist
 
-dist-check:  ## run python dist checker with twine
+dist-py-sdist:  ## build Python sdist
+	python -m build --sdist -o dist
+
+dist-rs:  ## validate Rust crate distribution
+	make -C rust dist
+
+dist-check:  ## run Python dist checker with twine
 	python -m twine check dist/*
 
-dist: clean dist-build dist-check  ## build all dists
+dist: clean build dist-rs dist-py-wheel dist-py-sdist dist-check  ## build all dists
 
 publish: dist  ## publish python assets
 
@@ -115,10 +160,10 @@ publish: dist  ## publish python assets
 #########
 .PHONY: deep-clean clean
 
-deep-clean: ## clean everything from the repository
+deep-clean: ## clean everything in the repository
 	git clean -fdx
 
-clean: ## clean the repository
+clean: ## clean generated build artifacts
 	rm -rf .coverage coverage cover htmlcov logs build dist *.egg-info
 
 ############################################################################################
