@@ -165,6 +165,17 @@ writer accepts batches incrementally but may buffer its output until `finish`.
 
 `Codec::encode_stream` uses the same writer session for Arrow IPC and Parquet.
 
+### `Codec::start_writer(schema, output)`
+
+Borrows a `Write + Send` sink and returns a writer session with the same lifetime. This form
+supports scoped encoding while preserving direct access to the sink after `finish`.
+
+### `Codec::start_owned_writer(schema, output)`
+
+Takes a boxed `Write + Send` sink and returns a writer session without a borrowed lifetime.
+This form supports storing the writer in a long-lived file or stream object. Shared or
+cloneable sinks allow the caller to observe output while the session owns its sink handle.
+
 ## `CodecRegistry`
 
 ### `get(format)`

@@ -60,6 +60,16 @@ pub trait Codec: Send + Sync {
         ))
     }
 
+    fn start_owned_writer(
+        &self,
+        _schema: SchemaRef,
+        _output: Box<dyn Write + Send>,
+    ) -> Result<Box<dyn CodecWriter>> {
+        Err(InterchangeError::CodecWriterNotSupported(
+            self.format().as_str().to_string(),
+        ))
+    }
+
     fn encode(&self, schema: SchemaRef, batches: &[RecordBatch]) -> Result<Vec<u8>> {
         let mut output = Vec::new();
         let mut batches = batches.iter().cloned().map(Ok);
@@ -113,12 +123,12 @@ pub static DEFAULT_REGISTRY: LazyLock<CodecRegistry> = LazyLock::new(|| {
 
 pub struct ArrowIpcCodec;
 
-struct ArrowIpcWriter<'a> {
+struct ArrowIpcWriter<W: Write + Send> {
     schema: SchemaRef,
-    writer: StreamWriter<&'a mut (dyn Write + Send)>,
+    writer: StreamWriter<W>,
 }
 
-impl CodecWriter for ArrowIpcWriter<'_> {
+impl<W: Write + Send> CodecWriter for ArrowIpcWriter<W> {
     fn write_batch(&mut self, batch: &RecordBatch) -> Result<()> {
         validate_batch(&self.schema, batch)?;
         self.writer.write(batch)?;
@@ -183,16 +193,25 @@ impl Codec for ArrowIpcCodec {
         let writer = StreamWriter::try_new(output, schema.as_ref())?;
         Ok(Box::new(ArrowIpcWriter { schema, writer }))
     }
+
+    fn start_owned_writer(
+        &self,
+        schema: SchemaRef,
+        output: Box<dyn Write + Send>,
+    ) -> Result<Box<dyn CodecWriter>> {
+        let writer = StreamWriter::try_new(output, schema.as_ref())?;
+        Ok(Box::new(ArrowIpcWriter { schema, writer }))
+    }
 }
 
 pub struct ParquetCodec;
 
-struct ParquetWriter<'a> {
+struct ParquetWriter<W: Write + Send> {
     schema: SchemaRef,
-    writer: ArrowWriter<&'a mut (dyn Write + Send)>,
+    writer: ArrowWriter<W>,
 }
 
-impl CodecWriter for ParquetWriter<'_> {
+impl<W: Write + Send> CodecWriter for ParquetWriter<W> {
     fn write_batch(&mut self, batch: &RecordBatch) -> Result<()> {
         validate_batch(&self.schema, batch)?;
         self.writer.write(batch)?;
@@ -256,6 +275,15 @@ impl Codec for ParquetCodec {
         schema: SchemaRef,
         output: &'a mut (dyn Write + Send),
     ) -> Result<Box<dyn CodecWriter + 'a>> {
+        let writer = ArrowWriter::try_new(output, schema.clone(), None)?;
+        Ok(Box::new(ParquetWriter { schema, writer }))
+    }
+
+    fn start_owned_writer(
+        &self,
+        schema: SchemaRef,
+        output: Box<dyn Write + Send>,
+    ) -> Result<Box<dyn CodecWriter>> {
         let writer = ArrowWriter::try_new(output, schema.clone(), None)?;
         Ok(Box::new(ParquetWriter { schema, writer }))
     }
@@ -537,6 +565,29 @@ mod tests {
             let error = writer.write_batch(&mismatched).unwrap_err().to_string();
 
             assert!(error.contains("input schema"));
+        }
+    }
+
+    #[test]
+    fn owned_writers_can_outlive_the_sink_binding() {
+        let (schema, batches) = fixture();
+
+        for format in [DataFormat::Arrow, DataFormat::Parquet] {
+            let codec = DEFAULT_REGISTRY.get(format).unwrap();
+            let sink = SharedSink::default();
+            let observed = sink.clone();
+            let mut writer = codec
+                .start_owned_writer(schema.clone(), Box::new(sink))
+                .unwrap();
+            for batch in &batches {
+                writer.write_batch(batch).unwrap();
+            }
+            writer.finish().unwrap();
+
+            let decoded = codec.decode(&observed.bytes(), None).unwrap();
+            let combined = arrow::compute::concat_batches(&schema, &decoded.batches).unwrap();
+            let expected = arrow::compute::concat_batches(&schema, &batches).unwrap();
+            assert_eq!(combined, expected);
         }
     }
 
