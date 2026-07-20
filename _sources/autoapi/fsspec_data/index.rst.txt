@@ -476,6 +476,6 @@ Package Contents
 .. py:function:: plan_schema(provided_schema: pyarrow.Schema, requested_schema: pyarrow.Schema, policy: SchemaPolicy | str) -> InterchangePlan
 
 .. py:data:: __version__
-   :value: '0.2.1'
+   :value: '0.2.2'
 
 
