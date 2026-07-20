@@ -3,7 +3,9 @@ use std::io::{Cursor, Write};
 use std::sync::{Arc, LazyLock};
 
 use arrow::array::RecordBatch;
-use arrow::csv::{ReaderBuilder as CsvReaderBuilder, WriterBuilder as CsvWriterBuilder};
+use arrow::csv::{
+    ReaderBuilder as CsvReaderBuilder, Writer as CsvWriter, WriterBuilder as CsvWriterBuilder,
+};
 use arrow::datatypes::SchemaRef;
 use arrow::ipc::reader::StreamReader;
 use arrow::ipc::writer::StreamWriter;
@@ -291,6 +293,23 @@ impl Codec for ParquetCodec {
 
 pub struct CsvCodec;
 
+struct CsvCodecWriter<W: Write + Send> {
+    schema: SchemaRef,
+    writer: CsvWriter<W>,
+}
+
+impl<W: Write + Send> CodecWriter for CsvCodecWriter<W> {
+    fn write_batch(&mut self, batch: &RecordBatch) -> Result<()> {
+        validate_batch(&self.schema, batch)?;
+        self.writer.write(batch)?;
+        Ok(())
+    }
+
+    fn finish(self: Box<Self>) -> Result<()> {
+        Ok(())
+    }
+}
+
 impl Codec for CsvCodec {
     fn format(&self) -> DataFormat {
         DataFormat::Csv
@@ -310,17 +329,11 @@ impl Codec for CsvCodec {
         batches: &mut dyn Iterator<Item = Result<RecordBatch>>,
         output: &mut (dyn Write + Send),
     ) -> Result<()> {
-        {
-            let mut writer = CsvWriterBuilder::new().build(output);
-            for batch in batches {
-                let batch = batch?;
-                if batch.schema() != schema {
-                    return Err(InterchangeError::InputSchema);
-                }
-                writer.write(&batch)?;
-            }
+        let mut writer = self.start_writer(schema, output)?;
+        for batch in batches {
+            writer.write_batch(&batch?)?;
         }
-        Ok(())
+        writer.finish()
     }
 
     fn decode_stream(
@@ -342,9 +355,45 @@ impl Codec for CsvCodec {
             cancellation,
         )
     }
+
+    fn start_writer<'a>(
+        &self,
+        schema: SchemaRef,
+        output: &'a mut (dyn Write + Send),
+    ) -> Result<Box<dyn CodecWriter + 'a>> {
+        let writer = CsvWriterBuilder::new().build(output);
+        Ok(Box::new(CsvCodecWriter { schema, writer }))
+    }
+
+    fn start_owned_writer(
+        &self,
+        schema: SchemaRef,
+        output: Box<dyn Write + Send>,
+    ) -> Result<Box<dyn CodecWriter>> {
+        let writer = CsvWriterBuilder::new().build(output);
+        Ok(Box::new(CsvCodecWriter { schema, writer }))
+    }
 }
 
 pub struct JsonLinesCodec;
+
+struct JsonLinesCodecWriter<W: Write + Send> {
+    schema: SchemaRef,
+    writer: LineDelimitedWriter<W>,
+}
+
+impl<W: Write + Send> CodecWriter for JsonLinesCodecWriter<W> {
+    fn write_batch(&mut self, batch: &RecordBatch) -> Result<()> {
+        validate_batch(&self.schema, batch)?;
+        self.writer.write(batch)?;
+        Ok(())
+    }
+
+    fn finish(mut self: Box<Self>) -> Result<()> {
+        self.writer.finish()?;
+        Ok(())
+    }
+}
 
 impl Codec for JsonLinesCodec {
     fn format(&self) -> DataFormat {
@@ -365,18 +414,11 @@ impl Codec for JsonLinesCodec {
         batches: &mut dyn Iterator<Item = Result<RecordBatch>>,
         output: &mut (dyn Write + Send),
     ) -> Result<()> {
-        {
-            let mut writer = LineDelimitedWriter::new(output);
-            for batch in batches {
-                let batch = batch?;
-                if batch.schema() != schema {
-                    return Err(InterchangeError::InputSchema);
-                }
-                writer.write(&batch)?;
-            }
-            writer.finish()?;
+        let mut writer = self.start_writer(schema, output)?;
+        for batch in batches {
+            writer.write_batch(&batch?)?;
         }
-        Ok(())
+        writer.finish()
     }
 
     fn decode_stream(
@@ -396,6 +438,24 @@ impl Codec for JsonLinesCodec {
             options,
             cancellation,
         )
+    }
+
+    fn start_writer<'a>(
+        &self,
+        schema: SchemaRef,
+        output: &'a mut (dyn Write + Send),
+    ) -> Result<Box<dyn CodecWriter + 'a>> {
+        let writer = LineDelimitedWriter::new(output);
+        Ok(Box::new(JsonLinesCodecWriter { schema, writer }))
+    }
+
+    fn start_owned_writer(
+        &self,
+        schema: SchemaRef,
+        output: Box<dyn Write + Send>,
+    ) -> Result<Box<dyn CodecWriter>> {
+        let writer = LineDelimitedWriter::new(output);
+        Ok(Box::new(JsonLinesCodecWriter { schema, writer }))
     }
 }
 
@@ -521,7 +581,12 @@ mod tests {
     fn resumable_writers_encode_batches_incrementally() {
         let (schema, batches) = fixture();
 
-        for format in [DataFormat::Arrow, DataFormat::Parquet] {
+        for format in [
+            DataFormat::Arrow,
+            DataFormat::Parquet,
+            DataFormat::Csv,
+            DataFormat::JsonLines,
+        ] {
             let codec = DEFAULT_REGISTRY.get(format).unwrap();
             let mut sink = SharedSink::default();
             let observed = sink.clone();
@@ -534,7 +599,7 @@ mod tests {
             writer.finish().unwrap();
 
             match format {
-                DataFormat::Arrow => {
+                DataFormat::Arrow | DataFormat::Csv | DataFormat::JsonLines => {
                     assert!(first_len > header_len);
                     assert!(second_len > first_len);
                 }
@@ -542,11 +607,21 @@ mod tests {
                     assert_eq!(first_len, header_len);
                     assert_eq!(second_len, first_len);
                 }
-                _ => unreachable!(),
             }
-            assert!(observed.len() > second_len);
+            match format {
+                DataFormat::Arrow | DataFormat::Parquet => {
+                    assert!(observed.len() > second_len);
+                }
+                DataFormat::Csv | DataFormat::JsonLines => {
+                    assert_eq!(observed.len(), second_len);
+                }
+            }
             let encoded = observed.bytes();
-            let decoded = codec.decode(&encoded, None).unwrap();
+            let decode_schema = match format {
+                DataFormat::Csv | DataFormat::JsonLines => Some(schema.clone()),
+                DataFormat::Arrow | DataFormat::Parquet => None,
+            };
+            let decoded = codec.decode(&encoded, decode_schema).unwrap();
             let combined = arrow::compute::concat_batches(&schema, &decoded.batches).unwrap();
             let expected = arrow::compute::concat_batches(&schema, &batches).unwrap();
             assert_eq!(combined, expected);
@@ -558,7 +633,12 @@ mod tests {
         let (schema, _) = fixture();
         let mismatched = RecordBatch::new_empty(Arc::new(Schema::empty()));
 
-        for format in [DataFormat::Arrow, DataFormat::Parquet] {
+        for format in [
+            DataFormat::Arrow,
+            DataFormat::Parquet,
+            DataFormat::Csv,
+            DataFormat::JsonLines,
+        ] {
             let codec = DEFAULT_REGISTRY.get(format).unwrap();
             let mut encoded = Vec::new();
             let mut writer = codec.start_writer(schema.clone(), &mut encoded).unwrap();
@@ -572,7 +652,12 @@ mod tests {
     fn owned_writers_can_outlive_the_sink_binding() {
         let (schema, batches) = fixture();
 
-        for format in [DataFormat::Arrow, DataFormat::Parquet] {
+        for format in [
+            DataFormat::Arrow,
+            DataFormat::Parquet,
+            DataFormat::Csv,
+            DataFormat::JsonLines,
+        ] {
             let codec = DEFAULT_REGISTRY.get(format).unwrap();
             let sink = SharedSink::default();
             let observed = sink.clone();
@@ -584,27 +669,14 @@ mod tests {
             }
             writer.finish().unwrap();
 
-            let decoded = codec.decode(&observed.bytes(), None).unwrap();
+            let decode_schema = match format {
+                DataFormat::Csv | DataFormat::JsonLines => Some(schema.clone()),
+                DataFormat::Arrow | DataFormat::Parquet => None,
+            };
+            let decoded = codec.decode(&observed.bytes(), decode_schema).unwrap();
             let combined = arrow::compute::concat_batches(&schema, &decoded.batches).unwrap();
             let expected = arrow::compute::concat_batches(&schema, &batches).unwrap();
             assert_eq!(combined, expected);
-        }
-    }
-
-    #[test]
-    fn text_codecs_reject_resumable_writers() {
-        let (schema, _) = fixture();
-
-        for format in [DataFormat::Csv, DataFormat::JsonLines] {
-            let codec = DEFAULT_REGISTRY.get(format).unwrap();
-            let mut encoded = Vec::new();
-            let error = codec
-                .start_writer(schema.clone(), &mut encoded)
-                .err()
-                .unwrap()
-                .to_string();
-
-            assert!(error.contains("does not support resumable encoding"));
         }
     }
 
