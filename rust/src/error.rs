@@ -65,6 +65,8 @@ pub enum InterchangeError {
     #[error("decoded batch memory exceeds byte limit {limit}: attempted {attempted}")]
     ByteLimitExceeded { limit: usize, attempted: usize },
     #[error(transparent)]
+    Io(#[from] std::io::Error),
+    #[error(transparent)]
     Arrow(#[from] arrow::error::ArrowError),
     #[error(transparent)]
     Parquet(#[from] parquet::errors::ParquetError),

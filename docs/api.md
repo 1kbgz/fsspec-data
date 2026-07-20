@@ -133,7 +133,8 @@ Returns `DecodedBatchStream`.
 
 Parameters:
 
-- `data: bytes | bytearray | memoryview`: encoded input.
+- `data: bytes | bytearray | memoryview | BinaryIO`: encoded input. File-like inputs must
+  return `bytes` from `read`; Parquet inputs must also support `seek`.
 - `schema: pyarrow.Schema | None`: required for CSV and JSONL; optional for Arrow IPC and
   Parquet.
 - `batch_size: int`: maximum rows yielded in one batch. Must be greater than zero.
@@ -146,6 +147,18 @@ Parameters:
 Calls `iter_batches(...)`, consumes the stream, and returns `DecodedBatches`. Parameters and
 errors match `iter_batches`.
 
+## Rust `CodecReader`
+
+A marker trait for reader-backed encoded input. Implementations provide `Read + Seek + Send`.
+
+`Codec::decode_reader` accepts a boxed `CodecReader`. The built-in Arrow IPC, Parquet, CSV,
+and JSONL codecs decode directly from the reader. The default implementation for other
+codecs buffers the reader and calls `decode_stream`, preserving compatibility with existing
+`Codec` implementations.
+
+Parquet decoding uses seekable range reads because file metadata and column chunks may be
+located at different offsets.
+
 ## Rust `CodecWriter`
 
 A resumable encoded-output session returned by `Codec::start_writer`.
@@ -157,13 +170,12 @@ Methods:
 - `finish(self: Box<Self>)`: writes the format footer and consumes the session. The borrowed
   sink remains owned by the caller.
 
-Arrow IPC and Parquet codecs support resumable writers. CSV and JSONL return
-`InterchangeError::CodecWriterNotSupported`.
+Arrow IPC, Parquet, CSV, and JSONL codecs support resumable writers.
 
 Arrow IPC makes encoded batch bytes available to the sink during `write_batch`. The Parquet
 writer accepts batches incrementally but may buffer its output until `finish`.
 
-`Codec::encode_stream` uses the same writer session for Arrow IPC and Parquet.
+`Codec::encode_stream` uses the same writer session for all four codecs.
 
 ### `Codec::start_writer(schema, output)`
 

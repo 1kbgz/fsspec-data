@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::io::{Cursor, Write};
-use std::sync::{Arc, LazyLock};
+use std::io::{self, BufReader, Cursor, Read, Seek, SeekFrom, Write};
+use std::sync::{Arc, LazyLock, Mutex};
 
 use arrow::array::RecordBatch;
 use arrow::csv::{
@@ -13,6 +13,8 @@ use arrow::json::{LineDelimitedWriter, ReaderBuilder as JsonReaderBuilder};
 use bytes::Bytes;
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 use parquet::arrow::ArrowWriter;
+use parquet::errors::ParquetError;
+use parquet::file::reader::{ChunkReader, Length};
 
 use crate::{
     CancellationToken, DataFormat, DecodedStream, InterchangeError, Result, StreamOptions,
@@ -35,6 +37,10 @@ pub trait CodecWriter: Send {
     fn finish(self: Box<Self>) -> Result<()>;
 }
 
+pub trait CodecReader: Read + Seek + Send {}
+
+impl<T: Read + Seek + Send> CodecReader for T {}
+
 pub trait Codec: Send + Sync {
     fn format(&self) -> DataFormat;
     fn capabilities(&self) -> CodecCapabilities;
@@ -51,6 +57,18 @@ pub trait Codec: Send + Sync {
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<DecodedStream>;
+
+    fn decode_reader(
+        &self,
+        mut reader: Box<dyn CodecReader>,
+        schema: Option<SchemaRef>,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        let mut data = Vec::new();
+        reader.read_to_end(&mut data)?;
+        self.decode_stream(data, schema, options, cancellation)
+    }
 
     fn start_writer<'a>(
         &self,
@@ -177,7 +195,17 @@ impl Codec for ArrowIpcCodec {
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<DecodedStream> {
-        let reader = StreamReader::try_new(Cursor::new(data), None)?;
+        self.decode_reader(Box::new(Cursor::new(data)), None, options, cancellation)
+    }
+
+    fn decode_reader(
+        &self,
+        reader: Box<dyn CodecReader>,
+        _schema: Option<SchemaRef>,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        let reader = StreamReader::try_new(reader, None)?;
         let schema = reader.schema();
         DecodedStream::new(
             schema,
@@ -207,6 +235,68 @@ impl Codec for ArrowIpcCodec {
 }
 
 pub struct ParquetCodec;
+
+struct SharedReader {
+    reader: Arc<Mutex<Box<dyn CodecReader>>>,
+    position: u64,
+}
+
+impl Read for SharedReader {
+    fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+        let mut reader = self
+            .reader
+            .lock()
+            .map_err(|_| io::Error::other("parquet reader lock is poisoned"))?;
+        reader.seek(SeekFrom::Start(self.position))?;
+        let read = reader.read(buffer)?;
+        self.position += read as u64;
+        Ok(read)
+    }
+}
+
+struct SeekableChunkReader {
+    reader: Arc<Mutex<Box<dyn CodecReader>>>,
+    len: u64,
+}
+
+impl SeekableChunkReader {
+    fn new(mut reader: Box<dyn CodecReader>) -> Result<Self> {
+        let len = reader.seek(SeekFrom::End(0))?;
+        reader.seek(SeekFrom::Start(0))?;
+        Ok(Self {
+            reader: Arc::new(Mutex::new(reader)),
+            len,
+        })
+    }
+}
+
+impl Length for SeekableChunkReader {
+    fn len(&self) -> u64 {
+        self.len
+    }
+}
+
+impl ChunkReader for SeekableChunkReader {
+    type T = SharedReader;
+
+    fn get_read(&self, start: u64) -> parquet::errors::Result<Self::T> {
+        Ok(SharedReader {
+            reader: Arc::clone(&self.reader),
+            position: start,
+        })
+    }
+
+    fn get_bytes(&self, start: u64, length: usize) -> parquet::errors::Result<Bytes> {
+        let mut reader = self
+            .reader
+            .lock()
+            .map_err(|_| ParquetError::General("parquet reader lock is poisoned".to_string()))?;
+        reader.seek(SeekFrom::Start(start))?;
+        let mut buffer = vec![0; length];
+        reader.read_exact(&mut buffer)?;
+        Ok(buffer.into())
+    }
+}
 
 struct ParquetWriter<W: Write + Send> {
     schema: SchemaRef,
@@ -260,8 +350,19 @@ impl Codec for ParquetCodec {
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<DecodedStream> {
-        let builder = ParquetRecordBatchReaderBuilder::try_new(Bytes::from(data))?
-            .with_batch_size(options.batch_size);
+        self.decode_reader(Box::new(Cursor::new(data)), None, options, cancellation)
+    }
+
+    fn decode_reader(
+        &self,
+        reader: Box<dyn CodecReader>,
+        _schema: Option<SchemaRef>,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        let reader = SeekableChunkReader::new(reader)?;
+        let builder =
+            ParquetRecordBatchReaderBuilder::try_new(reader)?.with_batch_size(options.batch_size);
         let schema = builder.schema().clone();
         let reader = builder.build()?;
         DecodedStream::new(
@@ -343,11 +444,21 @@ impl Codec for CsvCodec {
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<DecodedStream> {
+        self.decode_reader(Box::new(Cursor::new(data)), schema, options, cancellation)
+    }
+
+    fn decode_reader(
+        &self,
+        reader: Box<dyn CodecReader>,
+        schema: Option<SchemaRef>,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
         let schema = required_schema(DataFormat::Csv, schema)?;
         let reader = CsvReaderBuilder::new(schema.clone())
             .with_header(true)
             .with_batch_size(options.batch_size)
-            .build(Cursor::new(data))?;
+            .build(reader)?;
         DecodedStream::new(
             schema,
             Box::new(reader.map(|batch| batch.map_err(InterchangeError::from))),
@@ -428,10 +539,20 @@ impl Codec for JsonLinesCodec {
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<DecodedStream> {
+        self.decode_reader(Box::new(Cursor::new(data)), schema, options, cancellation)
+    }
+
+    fn decode_reader(
+        &self,
+        reader: Box<dyn CodecReader>,
+        schema: Option<SchemaRef>,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
         let schema = required_schema(DataFormat::JsonLines, schema)?;
         let reader = JsonReaderBuilder::new(schema.clone())
             .with_batch_size(options.batch_size)
-            .build(Cursor::new(data))?;
+            .build(BufReader::new(reader))?;
         DecodedStream::new(
             schema,
             Box::new(reader.map(|batch| batch.map_err(InterchangeError::from))),
@@ -473,6 +594,7 @@ fn validate_batch(schema: &SchemaRef, batch: &RecordBatch) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use std::io;
+    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Mutex;
 
     use arrow::array::{Int64Array, RecordBatch, StringArray};
@@ -501,6 +623,38 @@ mod tests {
 
         fn flush(&mut self) -> io::Result<()> {
             Ok(())
+        }
+    }
+
+    struct CountingReader {
+        inner: Cursor<Vec<u8>>,
+        bytes_read: Arc<AtomicUsize>,
+    }
+
+    impl CountingReader {
+        fn new(data: Vec<u8>) -> (Self, Arc<AtomicUsize>) {
+            let bytes_read = Arc::new(AtomicUsize::new(0));
+            (
+                Self {
+                    inner: Cursor::new(data),
+                    bytes_read: Arc::clone(&bytes_read),
+                },
+                bytes_read,
+            )
+        }
+    }
+
+    impl Read for CountingReader {
+        fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+            let read = self.inner.read(buffer)?;
+            self.bytes_read.fetch_add(read, Ordering::Relaxed);
+            Ok(read)
+        }
+    }
+
+    impl Seek for CountingReader {
+        fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
+            self.inner.seek(position)
         }
     }
 
@@ -575,6 +729,64 @@ mod tests {
 
         assert_eq!(decoded.schema, schema);
         assert!(decoded.batches.is_empty());
+    }
+
+    #[test]
+    fn reader_backed_decoding_round_trips_all_formats() {
+        let (schema, batches) = fixture();
+
+        for format in [
+            DataFormat::Arrow,
+            DataFormat::Parquet,
+            DataFormat::Csv,
+            DataFormat::JsonLines,
+        ] {
+            let codec = DEFAULT_REGISTRY.get(format).unwrap();
+            let encoded = codec.encode(schema.clone(), &batches).unwrap();
+            let decode_schema = match format {
+                DataFormat::Csv | DataFormat::JsonLines => Some(schema.clone()),
+                DataFormat::Arrow | DataFormat::Parquet => None,
+            };
+            let (reader, _) = CountingReader::new(encoded);
+            let decoded = codec
+                .decode_reader(
+                    Box::new(reader),
+                    decode_schema,
+                    StreamOptions::default(),
+                    CancellationToken::new(),
+                )
+                .unwrap();
+            let decoded_schema = decoded.schema.clone();
+            let decoded_batches = decoded.collect_batches().unwrap();
+
+            assert_eq!(decoded_schema, schema);
+            let combined = arrow::compute::concat_batches(&schema, &decoded_batches).unwrap();
+            let expected = arrow::compute::concat_batches(&schema, &batches).unwrap();
+            assert_eq!(combined, expected);
+        }
+    }
+
+    #[test]
+    fn arrow_reader_does_not_eagerly_consume_complete_input() {
+        let (schema, fixture_batches) = fixture();
+        let batches = (0..128)
+            .flat_map(|_| fixture_batches.iter().cloned())
+            .collect::<Vec<_>>();
+        let codec = DEFAULT_REGISTRY.get(DataFormat::Arrow).unwrap();
+        let encoded = codec.encode(schema, &batches).unwrap();
+        let encoded_len = encoded.len();
+        let (reader, bytes_read) = CountingReader::new(encoded);
+        let mut decoded = codec
+            .decode_reader(
+                Box::new(reader),
+                None,
+                StreamOptions::default(),
+                CancellationToken::new(),
+            )
+            .unwrap();
+
+        assert!(decoded.next().unwrap().is_ok());
+        assert!(bytes_read.load(Ordering::Relaxed) < encoded_len);
     }
 
     #[test]
