@@ -49,7 +49,17 @@ interchange layer reusable by all of them.
 
 ## Current transport boundary
 
-Python codec methods currently accept encoded input as bytes-like objects. This keeps the
-first public contract small while preserving lazy decoding after the input crosses the
-binding. Reader-backed adapters can extend the transport boundary without changing schema
-planning or batch-stream semantics.
+Python codec methods accept encoded input as bytes-like objects or binary file-like readers.
+Reader-backed input lets row limits and cancellation stop upstream reads before EOF instead
+of requiring the complete encoded source to cross the Python/Rust boundary first.
+
+Parquet readers must be seekable because Parquet metadata is stored in the footer and column
+chunks can reside at different offsets. Arrow IPC, CSV, and JSONL consume readers
+sequentially, but use the same seekable reader contract so registry consumers have one input
+boundary.
+
+`DataFileSystem` opens its inner source through fsspec and decodes from that file object. Its
+converted output remains a buffering adapter: schema application collects decoded batches,
+encoding returns complete output bytes, and `_open()` copies those bytes into a seekable
+spooled file. Reader-backed input removes the initial encoded allocation without making the
+complete chained conversion end-to-end streaming.

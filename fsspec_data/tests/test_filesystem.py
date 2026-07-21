@@ -1,3 +1,5 @@
+import io
+
 import fsspec
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -32,6 +34,32 @@ def test_chained_filesystem_converts_csv_to_seekable_parquet(memory_fs):
 
     assert table.schema.equals(SCHEMA, check_metadata=False)
     assert table.to_pylist() == [{"id": 1, "name": "ada"}, {"id": 2, "name": "grace"}]
+
+
+def test_chained_filesystem_reads_source_without_cat_file(memory_fs, monkeypatch):
+    rows = [f"{index},name-{index}\n".encode() for index in range(50_000)]
+    encoded = b"id,name\n" + b"".join(rows)
+    bytes_read = 0
+
+    class CountingReader(io.BytesIO):
+        def read(self, size=-1):
+            nonlocal bytes_read
+            data = super().read(size)
+            bytes_read += len(data)
+            return data
+
+    monkeypatch.setattr(memory_fs, "open", lambda *args, **kwargs: CountingReader(encoded))
+    monkeypatch.setattr(memory_fs, "cat_file", lambda *args, **kwargs: pytest.fail("cat_file should not be called"))
+    fs = DataFileSystem(
+        fo="orders.csv",
+        fs=memory_fs,
+        provided_schema=SCHEMA_OPTIONS,
+        batch_size=1,
+        row_limit=1,
+    )
+
+    assert pq.read_table(fs.open("orders.parquet")).to_pylist() == [{"id": 0, "name": "name-0"}]
+    assert bytes_read < len(encoded)
 
 
 def test_fsspec_url_builds_chained_filesystem(memory_fs):

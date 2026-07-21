@@ -4,8 +4,8 @@ mod plan;
 mod stream;
 
 pub use codec::{
-    ArrowIpcCodec, Codec, CodecCapabilities, CodecRegistry, CodecWriter, CsvCodec, DecodedBatches,
-    JsonLinesCodec, ParquetCodec, DEFAULT_REGISTRY,
+    ArrowIpcCodec, Codec, CodecCapabilities, CodecReader, CodecRegistry, CodecWriter, CsvCodec,
+    DecodedBatches, JsonLinesCodec, ParquetCodec, DEFAULT_REGISTRY,
 };
 pub use error::{InterchangeError, Result};
 pub use plan::{

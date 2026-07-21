@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from enum import Enum
 from importlib import import_module
-from typing import Any
+from typing import Any, BinaryIO
 
 import pyarrow as pa
 import pyarrow.compute as pc
@@ -96,7 +96,7 @@ class Codec:
 
     def decode_batches(
         self,
-        data: bytes | bytearray | memoryview,
+        data: bytes | bytearray | memoryview | BinaryIO,
         *,
         schema: pa.Schema | None = None,
         batch_size: int = 1024,
@@ -113,25 +113,35 @@ class Codec:
 
     def iter_batches(
         self,
-        data: bytes | bytearray | memoryview,
+        data: bytes | bytearray | memoryview | BinaryIO,
         *,
         schema: pa.Schema | None = None,
         batch_size: int = 1024,
         row_limit: int | None = None,
         byte_limit: int | None = None,
     ) -> DecodedBatchStream:
-        if not isinstance(data, (bytes, bytearray, memoryview)):
-            raise TypeError("data must be bytes-like")
         if schema is not None:
             schema = _ensure_pyarrow(schema)
-        decoded_schema, native = _rust.decode_stream(
-            self.format.value,
-            bytes(data),
-            schema,
-            batch_size,
-            row_limit,
-            byte_limit,
-        )
+        if isinstance(data, (bytes, bytearray, memoryview)):
+            decoded_schema, native = _rust.decode_stream(
+                self.format.value,
+                bytes(data),
+                schema,
+                batch_size,
+                row_limit,
+                byte_limit,
+            )
+        elif hasattr(data, "read"):
+            decoded_schema, native = _rust.decode_reader(
+                self.format.value,
+                data,
+                schema,
+                batch_size,
+                row_limit,
+                byte_limit,
+            )
+        else:
+            raise TypeError("data must be bytes-like or a binary file-like object")
         return DecodedBatchStream(decoded_schema, native)
 
 
@@ -204,7 +214,7 @@ class InterchangePlan:
 
     def iter_batches(
         self,
-        data: bytes | bytearray | memoryview,
+        data: bytes | bytearray | memoryview | BinaryIO,
         *,
         batch_size: int = 1024,
         row_limit: int | None = None,
@@ -222,7 +232,7 @@ class InterchangePlan:
 
     def convert(
         self,
-        data: bytes | bytearray | memoryview,
+        data: bytes | bytearray | memoryview | BinaryIO,
         *,
         batch_size: int = 1024,
         row_limit: int | None = None,

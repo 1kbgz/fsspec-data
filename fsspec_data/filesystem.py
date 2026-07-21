@@ -97,14 +97,14 @@ class DataFileSystem(ChainedFileSystem):
     def _convert(self, path: str) -> bytes:
         provided_format = self.provided_format or _format_from_path(self.fo)
         requested_format = self.requested_format or _format_from_path(path)
-        source = self.fs.cat_file(self.fo)
-        decoded = DEFAULT_REGISTRY.get(provided_format).decode_batches(
-            source,
-            schema=self.provided_schema,
-            batch_size=self.batch_size,
-            row_limit=self.row_limit,
-            byte_limit=self.byte_limit,
-        )
+        with self.fs.open(self.fo, "rb") as source:
+            decoded = DEFAULT_REGISTRY.get(provided_format).decode_batches(
+                source,
+                schema=self.provided_schema,
+                batch_size=self.batch_size,
+                row_limit=self.row_limit,
+                byte_limit=self.byte_limit,
+            )
         if self.provided_schema is not None and not decoded.schema.equals(self.provided_schema, check_metadata=False):
             raise ValueError("provided schema does not match the source schema")
 

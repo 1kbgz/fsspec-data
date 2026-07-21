@@ -1,6 +1,8 @@
+use std::io::{self, Read, Seek, SeekFrom};
+
 use ::fsspec_data::{
-    plan_schema as build_plan, CancellationToken, DataFormat, DecodedStream, InterchangeError,
-    SchemaPolicy, StreamOptions, DEFAULT_REGISTRY,
+    plan_schema as build_plan, CancellationToken, CodecReader, DataFormat, DecodedStream,
+    InterchangeError, SchemaPolicy, StreamOptions, DEFAULT_REGISTRY,
 };
 use arrow::array::RecordBatch;
 use arrow::datatypes::Schema;
@@ -9,6 +11,53 @@ use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
 type MappingTuple = (usize, usize, Option<String>, bool);
+
+struct PythonReader {
+    source: Py<PyAny>,
+}
+
+impl Read for PythonReader {
+    fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+        Python::with_gil(|py| {
+            let data = self
+                .source
+                .bind(py)
+                .call_method1("read", (buffer.len(),))
+                .map_err(python_io_error)?;
+            let data = data
+                .downcast::<PyBytes>()
+                .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error.to_string()))?;
+            let data = data.as_bytes();
+            if data.len() > buffer.len() {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "Python reader returned more bytes than requested",
+                ));
+            }
+            buffer[..data.len()].copy_from_slice(data);
+            Ok(data.len())
+        })
+    }
+}
+
+impl Seek for PythonReader {
+    fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
+        Python::with_gil(|py| {
+            let source = self.source.bind(py);
+            let position = match position {
+                SeekFrom::Start(offset) => source.call_method1("seek", (offset, 0)),
+                SeekFrom::Current(offset) => source.call_method1("seek", (offset, 1)),
+                SeekFrom::End(offset) => source.call_method1("seek", (offset, 2)),
+            }
+            .map_err(python_io_error)?;
+            position.extract::<u64>().map_err(python_io_error)
+        })
+    }
+}
+
+fn python_io_error(error: PyErr) -> io::Error {
+    io::Error::other(error.to_string())
+}
 
 #[pyclass(unsendable)]
 struct NativeBatchStream {
@@ -116,6 +165,39 @@ fn decode_stream(
 }
 
 #[pyfunction]
+#[pyo3(signature = (format, reader, schema=None, batch_size=1024, row_limit=None, byte_limit=None))]
+fn decode_reader(
+    py: Python<'_>,
+    format: &str,
+    reader: Py<PyAny>,
+    schema: Option<PyArrowType<Schema>>,
+    batch_size: usize,
+    row_limit: Option<usize>,
+    byte_limit: Option<usize>,
+) -> PyResult<(PyArrowType<Schema>, Py<NativeBatchStream>)> {
+    let format = DataFormat::parse(format).map_err(to_python_error)?;
+    let schema = schema.map(|schema| std::sync::Arc::new(schema.0));
+    let reader: Box<dyn CodecReader> = Box::new(PythonReader { source: reader });
+    let stream = DEFAULT_REGISTRY
+        .get(format)
+        .and_then(|codec| {
+            codec.decode_reader(
+                reader,
+                schema,
+                StreamOptions {
+                    batch_size,
+                    row_limit,
+                    byte_limit,
+                },
+                CancellationToken::new(),
+            )
+        })
+        .map_err(to_python_error)?;
+    let schema = PyArrowType(stream.schema.as_ref().clone());
+    Ok((schema, Py::new(py, NativeBatchStream { stream })?))
+}
+
+#[pyfunction]
 fn plan_schema(
     provided: PyArrowType<Schema>,
     requested: PyArrowType<Schema>,
@@ -153,6 +235,7 @@ fn to_python_error(error: InterchangeError) -> PyErr {
         InterchangeError::StreamCancelled => {
             pyo3::exceptions::PyRuntimeError::new_err(error.to_string())
         }
+        InterchangeError::Io(_) => pyo3::exceptions::PyOSError::new_err(error.to_string()),
         _ => pyo3::exceptions::PyValueError::new_err(error.to_string()),
     }
 }
@@ -161,6 +244,7 @@ fn to_python_error(error: InterchangeError) -> PyErr {
 fn fsspec_data(m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(codec_capabilities, m)?)?;
     m.add_function(wrap_pyfunction!(decode_batches, m)?)?;
+    m.add_function(wrap_pyfunction!(decode_reader, m)?)?;
     m.add_function(wrap_pyfunction!(decode_stream, m)?)?;
     m.add_function(wrap_pyfunction!(encode_batches, m)?)?;
     m.add_function(wrap_pyfunction!(plan_schema, m)?)?;

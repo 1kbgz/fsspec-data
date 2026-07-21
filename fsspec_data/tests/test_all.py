@@ -1,3 +1,5 @@
+import io
+
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
@@ -300,6 +302,28 @@ def test_lazy_decode_applies_batch_and_row_limits():
     assert stream.schema == schema
     assert [batch.num_rows for batch in batches] == [2, 2]
     assert pa.Table.from_batches(batches).column("id").to_pylist() == [1, 2, 3, 4]
+
+
+def test_lazy_decode_reads_binary_file_without_eagerly_consuming_it():
+    class CountingReader(io.BytesIO):
+        def __init__(self, data):
+            super().__init__(data)
+            self.bytes_read = 0
+
+        def read(self, size=-1):
+            data = super().read(size)
+            self.bytes_read += len(data)
+            return data
+
+    schema = pa.schema([("id", pa.int64())])
+    batch = pa.record_batch([pa.array(range(1024))], schema=schema)
+    codec = DEFAULT_REGISTRY.get(DataFormat.ARROW)
+    encoded = codec.encode_batches((batch,) * 128)
+    source = CountingReader(encoded)
+    stream = codec.iter_batches(source)
+
+    assert next(stream).num_rows == 1024
+    assert source.bytes_read < len(encoded)
 
 
 def test_lazy_decode_observes_cancellation():
