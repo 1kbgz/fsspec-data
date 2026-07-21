@@ -1,4 +1,5 @@
 import io
+from typing import Any
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -297,6 +298,26 @@ def test_codec_encodes_batches_to_binary_file(format):
     decode_schema = provided if format in {DataFormat.CSV, DataFormat.JSONL} else None
     decoded = codec.decode_batches(output.getvalue(), schema=decode_schema)
     assert pa.Table.from_batches(decoded.batches).to_pylist() == pa.Table.from_batches(batches).to_pylist()
+
+
+def test_codec_file_writer_requires_schema_for_empty_stream():
+    codec = DEFAULT_REGISTRY.get(DataFormat.ARROW)
+
+    with pytest.raises(ValueError, match="schema is required"):
+        codec.encode_batches_to((), io.BytesIO())
+
+
+def test_codec_file_writer_rejects_non_batches():
+    provided, _ = schemas()
+    codec = DEFAULT_REGISTRY.get(DataFormat.ARROW)
+    invalid: Any = object()
+
+    with pytest.raises(TypeError, match="pyarrow.RecordBatch"):
+        codec.encode_batches_to(iter([invalid]), io.BytesIO())
+
+    batch = pa.record_batch([[1], ["ada"]], schema=provided)
+    with pytest.raises(TypeError, match="pyarrow.RecordBatch"):
+        codec.encode_batches_to(iter([batch, invalid]), io.BytesIO(), schema=provided)
 
 
 @pytest.mark.parametrize("format", [DataFormat.CSV, DataFormat.JSONL])
