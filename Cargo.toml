@@ -1,6 +1,6 @@
 [package]
 name = "fsspec_data_py"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 publish = false
 
@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 [dependencies]
 fsspec_data = { path = "./rust", version = "*" }
 arrow = { version = "54.3.1", features = ["pyarrow"] }
-pyo3 = { version = "0.23", features = ["abi3-py311", "extension-module"] }
+pyo3 = { version = "0.23", features = ["abi3-py310", "extension-module"] }
 
 [profile.release]
 panic = "abort"
