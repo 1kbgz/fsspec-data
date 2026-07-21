@@ -282,6 +282,23 @@ def test_text_codec_round_trip_preserves_schema_and_rows(format, prefix):
     assert pa.Table.from_batches(decoded.batches).to_pylist() == pa.Table.from_batches(batches).to_pylist()
 
 
+@pytest.mark.parametrize("format", list(DataFormat))
+def test_codec_encodes_batches_to_binary_file(format):
+    provided, _ = schemas()
+    batches = (
+        pa.RecordBatch.from_arrays([pa.array([1, 2]), pa.array(["ada", None])], schema=provided),
+        pa.RecordBatch.from_arrays([pa.array([3]), pa.array(["margaret"])], schema=provided),
+    )
+    codec = DEFAULT_REGISTRY.get(format)
+    output = io.BytesIO()
+
+    codec.encode_batches_to(iter(batches), output)
+
+    decode_schema = provided if format in {DataFormat.CSV, DataFormat.JSONL} else None
+    decoded = codec.decode_batches(output.getvalue(), schema=decode_schema)
+    assert pa.Table.from_batches(decoded.batches).to_pylist() == pa.Table.from_batches(batches).to_pylist()
+
+
 @pytest.mark.parametrize("format", [DataFormat.CSV, DataFormat.JSONL])
 def test_text_codec_decode_requires_schema(format):
     codec = DEFAULT_REGISTRY.get(format)

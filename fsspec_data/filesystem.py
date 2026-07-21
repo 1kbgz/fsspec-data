@@ -70,11 +70,14 @@ class DataFileSystem(ChainedFileSystem):
             raise ValueError("fsspec-data is a read-only filesystem")
 
         path = self._strip_protocol(path)
-        output = self._convert(path)
         file = tempfile.SpooledTemporaryFile(max_size=self.spool_max_size, mode="w+b")
-        file.write(output)
-        file.seek(0)
-        self._sizes[path] = len(output)
+        try:
+            self._convert(path, file)
+            self._sizes[path] = file.tell()
+            file.seek(0)
+        except Exception:
+            file.close()
+            raise
         return file
 
     def info(self, path: str, **kwargs: Any) -> dict[str, Any]:
@@ -94,31 +97,31 @@ class DataFileSystem(ChainedFileSystem):
         entry = self.info(path, **kwargs)
         return [entry] if detail else [entry["name"]]
 
-    def _convert(self, path: str) -> bytes:
+    def _convert(self, path: str, output) -> None:
         provided_format = self.provided_format or _format_from_path(self.fo)
         requested_format = self.requested_format or _format_from_path(path)
         with self.fs.open(self.fo, "rb") as source:
-            decoded = DEFAULT_REGISTRY.get(provided_format).decode_batches(
+            decoded = DEFAULT_REGISTRY.get(provided_format).iter_batches(
                 source,
                 schema=self.provided_schema,
                 batch_size=self.batch_size,
                 row_limit=self.row_limit,
                 byte_limit=self.byte_limit,
             )
-        if self.provided_schema is not None and not decoded.schema.equals(self.provided_schema, check_metadata=False):
-            raise ValueError("provided schema does not match the source schema")
+            if self.provided_schema is not None and not decoded.schema.equals(self.provided_schema, check_metadata=False):
+                raise ValueError("provided schema does not match the source schema")
 
-        provided_schema = self.provided_schema or decoded.schema
-        requested_schema = self.requested_schema or provided_schema
-        plan = InterchangeRequest(
-            provided_format,
-            requested_format,
-            provided_schema,
-            requested_schema,
-            self.schema_policy,
-        ).plan()
-        batches = tuple(plan.apply_batch(batch) for batch in decoded.batches)
-        return DEFAULT_REGISTRY.get(requested_format).encode_batches(batches, schema=requested_schema)
+            provided_schema = self.provided_schema or decoded.schema
+            requested_schema = self.requested_schema or provided_schema
+            plan = InterchangeRequest(
+                provided_format,
+                requested_format,
+                provided_schema,
+                requested_schema,
+                self.schema_policy,
+            ).plan()
+            batches = (plan.apply_batch(batch) for batch in decoded)
+            DEFAULT_REGISTRY.get(requested_format).encode_batches_to(batches, output, schema=requested_schema)
 
 
 _SUFFIX_FORMATS = {

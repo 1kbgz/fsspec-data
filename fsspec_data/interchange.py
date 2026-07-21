@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from enum import Enum
 from importlib import import_module
+from itertools import chain
 from typing import Any, BinaryIO
 
 import pyarrow as pa
@@ -93,6 +95,31 @@ class Codec:
             if not isinstance(batch, pa.RecordBatch):
                 raise TypeError("batches must contain pyarrow.RecordBatch objects")
         return _rust.encode_batches(self.format.value, schema, batches)
+
+    def encode_batches_to(
+        self,
+        batches: Iterable[pa.RecordBatch],
+        output: BinaryIO,
+        *,
+        schema: pa.Schema | None = None,
+    ) -> None:
+        batches = iter(batches)
+        if schema is None:
+            try:
+                first = next(batches)
+            except StopIteration as error:
+                raise ValueError("schema is required when encoding no record batches") from error
+            if not isinstance(first, pa.RecordBatch):
+                raise TypeError("batches must contain pyarrow.RecordBatch objects")
+            schema = first.schema
+            batches = chain((first,), batches)
+        schema = _ensure_pyarrow(schema)
+        writer = _rust.start_codec_writer(self.format.value, schema, output)
+        for batch in batches:
+            if not isinstance(batch, pa.RecordBatch):
+                raise TypeError("batches must contain pyarrow.RecordBatch objects")
+            writer.write_batch(batch)
+        writer.finish()
 
     def decode_batches(
         self,
