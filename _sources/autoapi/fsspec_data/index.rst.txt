@@ -229,10 +229,10 @@ Package Contents
    .. py:method:: encode_batches(batches: list[pyarrow.RecordBatch] | tuple[pyarrow.RecordBatch, Ellipsis], *, schema: pyarrow.Schema | None = None) -> bytes
 
 
-   .. py:method:: decode_batches(data: bytes | bytearray | memoryview, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatches
+   .. py:method:: decode_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatches
 
 
-   .. py:method:: iter_batches(data: bytes | bytearray | memoryview, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatchStream
+   .. py:method:: iter_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatchStream
 
 
 .. py:class:: CodecCapabilities
@@ -383,10 +383,10 @@ Package Contents
    .. py:method:: _validate_input_schema(schema: pyarrow.Schema) -> None
 
 
-   .. py:method:: iter_batches(data: bytes | bytearray | memoryview, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> PlannedBatchStream
+   .. py:method:: iter_batches(data: bytes | bytearray | memoryview | BinaryIO, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> PlannedBatchStream
 
 
-   .. py:method:: convert(data: bytes | bytearray | memoryview, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> bytes
+   .. py:method:: convert(data: bytes | bytearray | memoryview | BinaryIO, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> bytes
 
 
 .. py:class:: InterchangeRequest
@@ -476,6 +476,6 @@ Package Contents
 .. py:function:: plan_schema(provided_schema: pyarrow.Schema, requested_schema: pyarrow.Schema, policy: SchemaPolicy | str) -> InterchangePlan
 
 .. py:data:: __version__
-   :value: '0.2.1'
+   :value: '0.2.2'
 
 

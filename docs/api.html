@@ -402,7 +402,8 @@ empty. All batches must match the encoding schema.</p>
 <p>Returns <code class="docutils literal notranslate"><span class="pre">DecodedBatchStream</span></code>.</p>
 <p>Parameters:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">bytes</span> <span class="pre">|</span> <span class="pre">bytearray</span> <span class="pre">|</span> <span class="pre">memoryview</span></code>: encoded input.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">bytes</span> <span class="pre">|</span> <span class="pre">bytearray</span> <span class="pre">|</span> <span class="pre">memoryview</span> <span class="pre">|</span> <span class="pre">BinaryIO</span></code>: encoded input. File-like inputs must
+return <code class="docutils literal notranslate"><span class="pre">bytes</span></code> from <code class="docutils literal notranslate"><span class="pre">read</span></code>; Parquet inputs must also support <code class="docutils literal notranslate"><span class="pre">seek</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">schema:</span> <span class="pre">pyarrow.Schema</span> <span class="pre">|</span> <span class="pre">None</span></code>: required for CSV and JSONL; optional for Arrow IPC and
 Parquet.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">batch_size:</span> <span class="pre">int</span></code>: maximum rows yielded in one batch. Must be greater than zero.</p></li>
@@ -417,6 +418,16 @@ batches. Exceeding it raises <code class="docutils literal notranslate"><span cl
 errors match <code class="docutils literal notranslate"><span class="pre">iter_batches</span></code>.</p>
 </section>
 </section>
+<section id="rust-codecreader">
+<h2>Rust <code class="docutils literal notranslate"><span class="pre">CodecReader</span></code><a class="headerlink" href="#rust-codecreader" title="Link to this heading">¶</a></h2>
+<p>A marker trait for reader-backed encoded input. Implementations provide <code class="docutils literal notranslate"><span class="pre">Read</span> <span class="pre">+</span> <span class="pre">Seek</span> <span class="pre">+</span> <span class="pre">Send</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Codec::decode_reader</span></code> accepts a boxed <code class="docutils literal notranslate"><span class="pre">CodecReader</span></code>. The built-in Arrow IPC, Parquet, CSV,
+and JSONL codecs decode directly from the reader. The default implementation for other
+codecs buffers the reader and calls <code class="docutils literal notranslate"><span class="pre">decode_stream</span></code>, preserving compatibility with existing
+<code class="docutils literal notranslate"><span class="pre">Codec</span></code> implementations.</p>
+<p>Parquet decoding uses seekable range reads because file metadata and column chunks may be
+located at different offsets.</p>
+</section>
 <section id="rust-codecwriter">
 <h2>Rust <code class="docutils literal notranslate"><span class="pre">CodecWriter</span></code><a class="headerlink" href="#rust-codecwriter" title="Link to this heading">¶</a></h2>
 <p>A resumable encoded-output session returned by <code class="docutils literal notranslate"><span class="pre">Codec::start_writer</span></code>.</p>
@@ -427,11 +438,10 @@ schema and submits it to the format writer.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">finish(self:</span> <span class="pre">Box&lt;Self&gt;)</span></code>: writes the format footer and consumes the session. The borrowed
 sink remains owned by the caller.</p></li>
 </ul>
-<p>Arrow IPC and Parquet codecs support resumable writers. CSV and JSONL return
-<code class="docutils literal notranslate"><span class="pre">InterchangeError::CodecWriterNotSupported</span></code>.</p>
+<p>Arrow IPC, Parquet, CSV, and JSONL codecs support resumable writers.</p>
 <p>Arrow IPC makes encoded batch bytes available to the sink during <code class="docutils literal notranslate"><span class="pre">write_batch</span></code>. The Parquet
 writer accepts batches incrementally but may buffer its output until <code class="docutils literal notranslate"><span class="pre">finish</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">Codec::encode_stream</span></code> uses the same writer session for Arrow IPC and Parquet.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Codec::encode_stream</span></code> uses the same writer session for all four codecs.</p>
 <section id="codec-start-writer-schema-output">
 <h3><code class="docutils literal notranslate"><span class="pre">Codec::start_writer(schema,</span> <span class="pre">output)</span></code><a class="headerlink" href="#codec-start-writer-schema-output" title="Link to this heading">¶</a></h3>
 <p>Borrows a <code class="docutils literal notranslate"><span class="pre">Write</span> <span class="pre">+</span> <span class="pre">Send</span></code> sink and returns a writer session with the same lifetime. This form
@@ -602,6 +612,7 @@ policy or require an unregistered cast.</p>
 <li><a class="reference internal" href="#decode-batches"><code class="docutils literal notranslate"><span class="pre">decode_batches(...)</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#rust-codecreader">Rust <code class="docutils literal notranslate"><span class="pre">CodecReader</span></code></a></li>
 <li><a class="reference internal" href="#rust-codecwriter">Rust <code class="docutils literal notranslate"><span class="pre">CodecWriter</span></code></a><ul>
 <li><a class="reference internal" href="#codec-start-writer-schema-output"><code class="docutils literal notranslate"><span class="pre">Codec::start_writer(schema,</span> <span class="pre">output)</span></code></a></li>
 <li><a class="reference internal" href="#codec-start-owned-writer-schema-output"><code class="docutils literal notranslate"><span class="pre">Codec::start_owned_writer(schema,</span> <span class="pre">output)</span></code></a></li>

@@ -36,6 +36,7 @@ Functions
    fsspec_data.tests.test_all.test_text_codec_round_trip_preserves_schema_and_rows
    fsspec_data.tests.test_all.test_text_codec_decode_requires_schema
    fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits
+   fsspec_data.tests.test_all.test_lazy_decode_reads_binary_file_without_eagerly_consuming_it
    fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation
    fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit
    fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size
@@ -97,6 +98,8 @@ Module Contents
 .. py:function:: test_text_codec_decode_requires_schema(format)
 
 .. py:function:: test_lazy_decode_applies_batch_and_row_limits()
+
+.. py:function:: test_lazy_decode_reads_binary_file_without_eagerly_consuming_it()
 
 .. py:function:: test_lazy_decode_observes_cancellation()
 
