@@ -269,7 +269,7 @@ integrating package. Keep discovery, query planning, and rendering in their owni
 <h2>Declare the format and schema contract<a class="headerlink" href="#declare-the-format-and-schema-contract" title="Link to this heading">¶</a></h2>
 <p>Map backend-native values to a <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code>. Describe both sides of the conversion
 before reading data:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFormat</span><span class="p">,</span> <span class="n">InterchangeRequest</span><span class="p">,</span> <span class="n">SchemaPolicy</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_REGISTRY</span><span class="p">,</span> <span class="n">DataFormat</span><span class="p">,</span> <span class="n">InterchangeRequest</span><span class="p">,</span> <span class="n">SchemaPolicy</span>
 
 <span class="n">request</span> <span class="o">=</span> <span class="n">InterchangeRequest</span><span class="p">(</span>
     <span class="n">provided_format</span><span class="o">=</span><span class="n">DataFormat</span><span class="o">.</span><span class="n">PARQUET</span><span class="p">,</span>
@@ -306,6 +306,16 @@ the stream when the consumer stops early.</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">convert</span></code> buffers its encoded result. Use <code class="docutils literal notranslate"><span class="pre">iter_batches</span></code> for incremental scans, previews,
 and database reads.</p>
+<p>Write an encoded stream directly to a binary file when the consumer does not need one byte
+buffer:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;result.arrow&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+    <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DataFormat</span><span class="o">.</span><span class="n">ARROW</span><span class="p">)</span><span class="o">.</span><span class="n">encode_batches_to</span><span class="p">(</span>
+        <span class="n">plan</span><span class="o">.</span><span class="n">iter_batches</span><span class="p">(</span><span class="n">encoded</span><span class="p">),</span>
+        <span class="n">output</span><span class="p">,</span>
+        <span class="n">schema</span><span class="o">=</span><span class="n">plan</span><span class="o">.</span><span class="n">requested_schema</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="integrate-from-rust">
 <h2>Integrate from Rust<a class="headerlink" href="#integrate-from-rust" title="Link to this heading">¶</a></h2>

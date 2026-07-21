@@ -397,6 +397,14 @@ coercion performs a runtime null check. Nested-type coercions are not registered
 empty. All batches must match the encoding schema.</p>
 <p>Raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> for non-Arrow inputs and <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> for missing or mismatched schemas.</p>
 </section>
+<section id="encode-batches-to-batches-output-schema-none">
+<h3><code class="docutils literal notranslate"><span class="pre">encode_batches_to(batches,</span> <span class="pre">output,</span> <span class="pre">*,</span> <span class="pre">schema=None)</span></code><a class="headerlink" href="#encode-batches-to-batches-output-schema-none" title="Link to this heading">¶</a></h3>
+<p>Consumes an iterable of Arrow record batches and writes encoded data to a binary file-like
+<code class="docutils literal notranslate"><span class="pre">output</span></code>. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> and leaves <code class="docutils literal notranslate"><span class="pre">output</span></code> open. <code class="docutils literal notranslate"><span class="pre">schema</span></code> is required when <code class="docutils literal notranslate"><span class="pre">batches</span></code> is
+empty. All batches must match the encoding schema.</p>
+<p>Raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> for non-Arrow batches or a non-schema <code class="docutils literal notranslate"><span class="pre">schema</span></code>, <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> for missing
+or mismatched schemas, and <code class="docutils literal notranslate"><span class="pre">OSError</span></code> when the output writer fails.</p>
+</section>
 <section id="iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none">
 <h3><code class="docutils literal notranslate"><span class="pre">iter_batches(data,</span> <span class="pre">*,</span> <span class="pre">schema=None,</span> <span class="pre">batch_size=1024,</span> <span class="pre">row_limit=None,</span> <span class="pre">byte_limit=None)</span></code><a class="headerlink" href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none" title="Link to this heading">¶</a></h3>
 <p>Returns <code class="docutils literal notranslate"><span class="pre">DecodedBatchStream</span></code>.</p>
@@ -442,6 +450,8 @@ sink remains owned by the caller.</p></li>
 <p>Arrow IPC makes encoded batch bytes available to the sink during <code class="docutils literal notranslate"><span class="pre">write_batch</span></code>. The Parquet
 writer accepts batches incrementally but may buffer its output until <code class="docutils literal notranslate"><span class="pre">finish</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">Codec::encode_stream</span></code> uses the same writer session for all four codecs.</p>
+<p>Python <code class="docutils literal notranslate"><span class="pre">Codec.encode_batches_to</span></code> uses an owned writer session backed by the supplied binary
+file object.</p>
 <section id="codec-start-writer-schema-output">
 <h3><code class="docutils literal notranslate"><span class="pre">Codec::start_writer(schema,</span> <span class="pre">output)</span></code><a class="headerlink" href="#codec-start-writer-schema-output" title="Link to this heading">¶</a></h3>
 <p>Borrows a <code class="docutils literal notranslate"><span class="pre">Write</span> <span class="pre">+</span> <span class="pre">Send</span></code> sink and returns a writer session with the same lifetime. This form
@@ -608,6 +618,7 @@ policy or require an unregistered cast.</p>
 </li>
 <li><a class="reference internal" href="#codec"><code class="docutils literal notranslate"><span class="pre">Codec</span></code></a><ul>
 <li><a class="reference internal" href="#encode-batches-batches-schema-none"><code class="docutils literal notranslate"><span class="pre">encode_batches(batches,</span> <span class="pre">*,</span> <span class="pre">schema=None)</span></code></a></li>
+<li><a class="reference internal" href="#encode-batches-to-batches-output-schema-none"><code class="docutils literal notranslate"><span class="pre">encode_batches_to(batches,</span> <span class="pre">output,</span> <span class="pre">*,</span> <span class="pre">schema=None)</span></code></a></li>
 <li><a class="reference internal" href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none"><code class="docutils literal notranslate"><span class="pre">iter_batches(data,</span> <span class="pre">*,</span> <span class="pre">schema=None,</span> <span class="pre">batch_size=1024,</span> <span class="pre">row_limit=None,</span> <span class="pre">byte_limit=None)</span></code></a></li>
 <li><a class="reference internal" href="#decode-batches"><code class="docutils literal notranslate"><span class="pre">decode_batches(...)</span></code></a></li>
 </ul>

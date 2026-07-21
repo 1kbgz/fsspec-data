@@ -34,6 +34,9 @@ Functions
    fsspec_data.tests.test_all.test_parquet_round_trip_preserves_schema_and_rows
    fsspec_data.tests.test_all.test_parquet_round_trip_preserves_empty_file_schema
    fsspec_data.tests.test_all.test_text_codec_round_trip_preserves_schema_and_rows
+   fsspec_data.tests.test_all.test_codec_encodes_batches_to_binary_file
+   fsspec_data.tests.test_all.test_codec_file_writer_requires_schema_for_empty_stream
+   fsspec_data.tests.test_all.test_codec_file_writer_rejects_non_batches
    fsspec_data.tests.test_all.test_text_codec_decode_requires_schema
    fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits
    fsspec_data.tests.test_all.test_lazy_decode_reads_binary_file_without_eagerly_consuming_it
@@ -94,6 +97,12 @@ Module Contents
 .. py:function:: test_parquet_round_trip_preserves_empty_file_schema()
 
 .. py:function:: test_text_codec_round_trip_preserves_schema_and_rows(format, prefix)
+
+.. py:function:: test_codec_encodes_batches_to_binary_file(format)
+
+.. py:function:: test_codec_file_writer_requires_schema_for_empty_stream()
+
+.. py:function:: test_codec_file_writer_rejects_non_batches()
 
 .. py:function:: test_text_codec_decode_requires_schema(format)
 

@@ -316,11 +316,12 @@ of requiring the complete encoded source to cross the Python/Rust boundary first
 chunks can reside at different offsets. Arrow IPC, CSV, and JSONL consume readers
 sequentially, but use the same seekable reader contract so registry consumers have one input
 boundary.</p>
-<p><code class="docutils literal notranslate"><span class="pre">DataFileSystem</span></code> opens its inner source through fsspec and decodes from that file object. Its
-converted output remains a buffering adapter: schema application collects decoded batches,
-encoding returns complete output bytes, and <code class="docutils literal notranslate"><span class="pre">_open()</span></code> copies those bytes into a seekable
-spooled file. Reader-backed input removes the initial encoded allocation without making the
-complete chained conversion end-to-end streaming.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DataFileSystem</span></code> opens its inner source through fsspec, applies its schema plan batch by
+batch, and writes encoded output directly into a seekable spooled file. This bounds
+intermediate transport memory without changing the filesystem contract: <code class="docutils literal notranslate"><span class="pre">_open()</span></code> still
+completes conversion before returning the spool, and <code class="docutils literal notranslate"><span class="pre">info()</span></code> may perform a complete
+conversion to determine output size. Individual format writers may also buffer internally;
+in particular, Parquet can defer encoded output until <code class="docutils literal notranslate"><span class="pre">finish</span></code>.</p>
 </section>
 </section>
 

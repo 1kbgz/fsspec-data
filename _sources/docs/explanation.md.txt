@@ -58,8 +58,9 @@ chunks can reside at different offsets. Arrow IPC, CSV, and JSONL consume reader
 sequentially, but use the same seekable reader contract so registry consumers have one input
 boundary.
 
-`DataFileSystem` opens its inner source through fsspec and decodes from that file object. Its
-converted output remains a buffering adapter: schema application collects decoded batches,
-encoding returns complete output bytes, and `_open()` copies those bytes into a seekable
-spooled file. Reader-backed input removes the initial encoded allocation without making the
-complete chained conversion end-to-end streaming.
+`DataFileSystem` opens its inner source through fsspec, applies its schema plan batch by
+batch, and writes encoded output directly into a seekable spooled file. This bounds
+intermediate transport memory without changing the filesystem contract: `_open()` still
+completes conversion before returning the spool, and `info()` may perform a complete
+conversion to determine output size. Individual format writers may also buffer internally;
+in particular, Parquet can defer encoded output until `finish`.

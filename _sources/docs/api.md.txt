@@ -127,6 +127,15 @@ empty. All batches must match the encoding schema.
 
 Raises `TypeError` for non-Arrow inputs and `ValueError` for missing or mismatched schemas.
 
+### `encode_batches_to(batches, output, *, schema=None)`
+
+Consumes an iterable of Arrow record batches and writes encoded data to a binary file-like
+`output`. Returns `None` and leaves `output` open. `schema` is required when `batches` is
+empty. All batches must match the encoding schema.
+
+Raises `TypeError` for non-Arrow batches or a non-schema `schema`, `ValueError` for missing
+or mismatched schemas, and `OSError` when the output writer fails.
+
 ### `iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None)`
 
 Returns `DecodedBatchStream`.
@@ -176,6 +185,9 @@ Arrow IPC makes encoded batch bytes available to the sink during `write_batch`. 
 writer accepts batches incrementally but may buffer its output until `finish`.
 
 `Codec::encode_stream` uses the same writer session for all four codecs.
+
+Python `Codec.encode_batches_to` uses an owned writer session backed by the supplied binary
+file object.
 
 ### `Codec::start_writer(schema, output)`
 

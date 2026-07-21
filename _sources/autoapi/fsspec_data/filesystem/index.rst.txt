@@ -188,7 +188,7 @@ Module Contents
 
 
 
-   .. py:method:: _convert(path: str) -> bytes
+   .. py:method:: _convert(path: str, output) -> None
 
 
 .. py:data:: _SUFFIX_FORMATS

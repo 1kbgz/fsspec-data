@@ -331,11 +331,14 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;fsspec-data is a read-only filesystem&quot;</span><span class="p">)</span>
 
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strip_protocol</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">file</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">SpooledTemporaryFile</span><span class="p">(</span><span class="n">max_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spool_max_size</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+b&quot;</span><span class="p">)</span>
-        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-        <span class="n">file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sizes</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convert</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sizes</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">raise</span>
         <span class="k">return</span> <span class="n">file</span></div>
 
 
@@ -364,31 +367,31 @@
 
 <div class="viewcode-block" id="DataFileSystem._convert">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/index.html#fsspec_data.filesystem.DataFileSystem._convert">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">provided_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provided_format</span> <span class="ow">or</span> <span class="n">_format_from_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fo</span><span class="p">)</span>
         <span class="n">requested_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">requested_format</span> <span class="ow">or</span> <span class="n">_format_from_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fo</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">source</span><span class="p">:</span>
-            <span class="n">decoded</span> <span class="o">=</span> <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">provided_format</span><span class="p">)</span><span class="o">.</span><span class="n">decode_batches</span><span class="p">(</span>
+            <span class="n">decoded</span> <span class="o">=</span> <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">provided_format</span><span class="p">)</span><span class="o">.</span><span class="n">iter_batches</span><span class="p">(</span>
                 <span class="n">source</span><span class="p">,</span>
                 <span class="n">schema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">provided_schema</span><span class="p">,</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
                 <span class="n">row_limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">row_limit</span><span class="p">,</span>
                 <span class="n">byte_limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">byte_limit</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">provided_schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">decoded</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provided_schema</span><span class="p">,</span> <span class="n">check_metadata</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;provided schema does not match the source schema&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">provided_schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">decoded</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provided_schema</span><span class="p">,</span> <span class="n">check_metadata</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;provided schema does not match the source schema&quot;</span><span class="p">)</span>
 
-        <span class="n">provided_schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provided_schema</span> <span class="ow">or</span> <span class="n">decoded</span><span class="o">.</span><span class="n">schema</span>
-        <span class="n">requested_schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">requested_schema</span> <span class="ow">or</span> <span class="n">provided_schema</span>
-        <span class="n">plan</span> <span class="o">=</span> <span class="n">InterchangeRequest</span><span class="p">(</span>
-            <span class="n">provided_format</span><span class="p">,</span>
-            <span class="n">requested_format</span><span class="p">,</span>
-            <span class="n">provided_schema</span><span class="p">,</span>
-            <span class="n">requested_schema</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">schema_policy</span><span class="p">,</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">plan</span><span class="p">()</span>
-        <span class="n">batches</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">apply_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">decoded</span><span class="o">.</span><span class="n">batches</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">requested_format</span><span class="p">)</span><span class="o">.</span><span class="n">encode_batches</span><span class="p">(</span><span class="n">batches</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">requested_schema</span><span class="p">)</span></div>
+            <span class="n">provided_schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provided_schema</span> <span class="ow">or</span> <span class="n">decoded</span><span class="o">.</span><span class="n">schema</span>
+            <span class="n">requested_schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">requested_schema</span> <span class="ow">or</span> <span class="n">provided_schema</span>
+            <span class="n">plan</span> <span class="o">=</span> <span class="n">InterchangeRequest</span><span class="p">(</span>
+                <span class="n">provided_format</span><span class="p">,</span>
+                <span class="n">requested_format</span><span class="p">,</span>
+                <span class="n">provided_schema</span><span class="p">,</span>
+                <span class="n">requested_schema</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">schema_policy</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">plan</span><span class="p">()</span>
+            <span class="n">batches</span> <span class="o">=</span> <span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">apply_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">decoded</span><span class="p">)</span>
+            <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">requested_format</span><span class="p">)</span><span class="o">.</span><span class="n">encode_batches_to</span><span class="p">(</span><span class="n">batches</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">requested_schema</span><span class="p">)</span></div>
 </div>
 
 

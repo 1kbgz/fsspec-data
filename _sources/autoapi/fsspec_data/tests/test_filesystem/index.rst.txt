@@ -21,6 +21,7 @@ Functions
    fsspec_data.tests.test_filesystem.memory_fs
    fsspec_data.tests.test_filesystem.test_chained_filesystem_converts_csv_to_seekable_parquet
    fsspec_data.tests.test_filesystem.test_chained_filesystem_reads_source_without_cat_file
+   fsspec_data.tests.test_filesystem.test_chained_filesystem_streams_batches_into_spooled_output
    fsspec_data.tests.test_filesystem.test_fsspec_url_builds_chained_filesystem
    fsspec_data.tests.test_filesystem.test_source_url_constructs_target_filesystem
    fsspec_data.tests.test_filesystem.test_target_filesystem_arguments_are_mutually_exclusive
@@ -48,6 +49,8 @@ Module Contents
 .. py:function:: test_chained_filesystem_converts_csv_to_seekable_parquet(memory_fs)
 
 .. py:function:: test_chained_filesystem_reads_source_without_cat_file(memory_fs, monkeypatch)
+
+.. py:function:: test_chained_filesystem_streams_batches_into_spooled_output(memory_fs, monkeypatch)
 
 .. py:function:: test_fsspec_url_builds_chained_filesystem(memory_fs)
 
