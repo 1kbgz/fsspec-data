@@ -1,8 +1,8 @@
-use std::io::{self, Read, Seek, SeekFrom};
+use std::io::{self, Read, Seek, SeekFrom, Write};
 
 use ::fsspec_data::{
-    plan_schema as build_plan, CancellationToken, CodecReader, DataFormat, DecodedStream,
-    InterchangeError, SchemaPolicy, StreamOptions, DEFAULT_REGISTRY,
+    plan_schema as build_plan, CancellationToken, CodecReader, CodecWriter, DataFormat,
+    DecodedStream, InterchangeError, SchemaPolicy, StreamOptions, DEFAULT_REGISTRY,
 };
 use arrow::array::RecordBatch;
 use arrow::datatypes::Schema;
@@ -59,9 +59,58 @@ fn python_io_error(error: PyErr) -> io::Error {
     io::Error::other(error.to_string())
 }
 
+struct PythonWriter {
+    sink: Py<PyAny>,
+}
+
+impl Write for PythonWriter {
+    fn write(&mut self, buffer: &[u8]) -> io::Result<usize> {
+        Python::with_gil(|py| {
+            self.sink
+                .bind(py)
+                .call_method1("write", (PyBytes::new(py, buffer),))
+                .and_then(|written| written.extract::<usize>())
+                .map_err(python_io_error)
+        })
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Python::with_gil(|py| {
+            self.sink
+                .bind(py)
+                .call_method0("flush")
+                .map(|_| ())
+                .map_err(python_io_error)
+        })
+    }
+}
+
 #[pyclass(unsendable)]
 struct NativeBatchStream {
     stream: DecodedStream,
+}
+
+#[pyclass(unsendable)]
+struct NativeCodecWriter {
+    writer: Option<Box<dyn CodecWriter>>,
+}
+
+#[pymethods]
+impl NativeCodecWriter {
+    fn write_batch(&mut self, batch: PyArrowType<RecordBatch>) -> PyResult<()> {
+        self.writer
+            .as_mut()
+            .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("codec writer is finished"))?
+            .write_batch(&batch.0)
+            .map_err(to_python_error)
+    }
+
+    fn finish(&mut self) -> PyResult<()> {
+        if let Some(writer) = self.writer.take() {
+            writer.finish().map_err(to_python_error)?;
+        }
+        Ok(())
+    }
 }
 
 #[pymethods]
@@ -111,6 +160,31 @@ fn encode_batches<'py>(
         .and_then(|codec| codec.encode(std::sync::Arc::new(schema.0), &batches))
         .map_err(to_python_error)?;
     Ok(PyBytes::new(py, &encoded))
+}
+
+#[pyfunction]
+fn start_codec_writer(
+    py: Python<'_>,
+    format: &str,
+    schema: PyArrowType<Schema>,
+    sink: Py<PyAny>,
+) -> PyResult<Py<NativeCodecWriter>> {
+    let format = DataFormat::parse(format).map_err(to_python_error)?;
+    let writer = DEFAULT_REGISTRY
+        .get(format)
+        .and_then(|codec| {
+            codec.start_owned_writer(
+                std::sync::Arc::new(schema.0),
+                Box::new(PythonWriter { sink }),
+            )
+        })
+        .map_err(to_python_error)?;
+    Py::new(
+        py,
+        NativeCodecWriter {
+            writer: Some(writer),
+        },
+    )
 }
 
 #[pyfunction]
@@ -248,5 +322,6 @@ fn fsspec_data(m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(decode_stream, m)?)?;
     m.add_function(wrap_pyfunction!(encode_batches, m)?)?;
     m.add_function(wrap_pyfunction!(plan_schema, m)?)?;
+    m.add_function(wrap_pyfunction!(start_codec_writer, m)?)?;
     Ok(())
 }

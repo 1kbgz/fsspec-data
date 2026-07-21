@@ -5,7 +5,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
-from fsspec_data import DataFileSystem
+from fsspec_data import Codec, DataFileSystem, DecodedBatchStream
 
 SCHEMA = pa.schema([pa.field("id", pa.int64(), nullable=False), pa.field("name", pa.string())])
 SCHEMA_OPTIONS = {
@@ -60,6 +60,17 @@ def test_chained_filesystem_reads_source_without_cat_file(memory_fs, monkeypatch
 
     assert pq.read_table(fs.open("orders.parquet")).to_pylist() == [{"id": 0, "name": "name-0"}]
     assert bytes_read < len(encoded)
+
+
+def test_chained_filesystem_streams_batches_into_spooled_output(memory_fs, monkeypatch):
+    monkeypatch.setattr(DecodedBatchStream, "collect", lambda self: pytest.fail("decoded batches should not be collected"))
+    monkeypatch.setattr(Codec, "encode_batches", lambda self, *args, **kwargs: pytest.fail("encoded bytes should not be collected"))
+    fs = DataFileSystem(fo="orders.csv", fs=memory_fs, provided_schema=SCHEMA_OPTIONS)
+
+    assert pq.read_table(fs.open("orders.parquet")).to_pylist() == [
+        {"id": 1, "name": "ada"},
+        {"id": 2, "name": "grace"},
+    ]
 
 
 def test_fsspec_url_builds_chained_filesystem(memory_fs):

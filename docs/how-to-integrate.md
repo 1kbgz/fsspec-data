@@ -9,7 +9,7 @@ Map backend-native values to a `pyarrow.Schema`. Describe both sides of the conv
 before reading data:
 
 ```python
-from fsspec_data import DataFormat, InterchangeRequest, SchemaPolicy
+from fsspec_data import DEFAULT_REGISTRY, DataFormat, InterchangeRequest, SchemaPolicy
 
 request = InterchangeRequest(
     provided_format=DataFormat.PARQUET,
@@ -50,6 +50,18 @@ encoded_arrow = plan.convert(encoded, batch_size=1_024)
 
 `convert` buffers its encoded result. Use `iter_batches` for incremental scans, previews,
 and database reads.
+
+Write an encoded stream directly to a binary file when the consumer does not need one byte
+buffer:
+
+```python
+with open("result.arrow", "wb") as output:
+    DEFAULT_REGISTRY.get(DataFormat.ARROW).encode_batches_to(
+        plan.iter_batches(encoded),
+        output,
+        schema=plan.requested_schema,
+    )
+```
 
 ## Integrate from Rust
 
