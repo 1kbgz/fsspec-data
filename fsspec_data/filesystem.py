@@ -70,7 +70,7 @@ class DataFileSystem(ChainedFileSystem):
             raise ValueError("fsspec-data is a read-only filesystem")
 
         path = self._strip_protocol(path)
-        file = tempfile.SpooledTemporaryFile(max_size=self.spool_max_size, mode="w+b")
+        file = tempfile.SpooledTemporaryFile(max_size=self.spool_max_size, mode="w+b")  # noqa: SIM115
         try:
             self._convert(path, file)
             self._sizes[path] = file.tell()
