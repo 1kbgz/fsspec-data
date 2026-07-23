@@ -18,12 +18,12 @@ from .interchange import (
 __version__ = "0.2.3"
 
 __all__ = [
+    "DEFAULT_REGISTRY",
     "Codec",
     "CodecCapabilities",
     "CodecRegistry",
-    "DEFAULT_REGISTRY",
-    "DataFormat",
     "DataFileSystem",
+    "DataFormat",
     "DecodedBatchStream",
     "DecodedBatches",
     "FieldMapping",

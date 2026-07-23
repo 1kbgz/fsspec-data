@@ -27,7 +27,6 @@ class BaseFileSystem(AbstractFileSystem):
         kwargs:
             may be permissions, etc.
         """
-        ...
 
     def makedirs(self, path, exist_ok=False):
         """Recursively make directories
@@ -43,11 +42,9 @@ class BaseFileSystem(AbstractFileSystem):
         exist_ok: bool (False)
             If False, will error if the target already exists
         """
-        ...
 
     def rmdir(self, path):
         """Remove a directory, if empty"""
-        ...
 
     def ls(self, path, detail=True, **kwargs):
         """List objects at path.
@@ -204,7 +201,6 @@ class BaseBufferedFile(AbstractBufferedFile):
 
     def _initiate_upload(self):
         """Create remote file/upload"""
-        pass
 
     def _fetch_range(self, start, end):
         """Get the specified set of bytes from remote"""
