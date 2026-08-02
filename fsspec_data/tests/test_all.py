@@ -1,9 +1,5 @@
-<<<<<<< before updating
 import io
 from typing import Any
-=======
-from fsspec_data import *
->>>>>>> after updating
 
 import pyarrow as pa
 import pyarrow.parquet as pq
