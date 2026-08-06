@@ -4,6 +4,70 @@
 packages that consume it. It reconciles formats and schemas without absorbing database,
 dataframe, or user-interface responsibilities.
 
+## Data, schemas, projection, and conversion
+
+Three independently located inputs define one interchange request: data source A, provided
+schema B, and requested schema C. B describes how to interpret A. C describes the columns and
+types the consumer wants. A projection is the logical mapping from B to C; conversion is the
+physical decoding and encoding around that mapping.
+
+```mermaid
+flowchart LR
+    A["A · Data source<br/>database · S3 · filesystem"]
+    B["B · Provided schema<br/>inline · file · registry"]
+    C["C · Requested schema<br/>inline · file · registry"]
+
+    B --> RB["Resolve with B credentials"]
+    C --> RC["Resolve with C credentials"]
+    RB --> BS["Provided Arrow schema"]
+    RC --> CS["Requested Arrow schema"]
+    BS --> P["Projection plan<br/>select · reorder · rename · add · cast"]
+    CS --> P
+
+    A --> D["Decode source format"]
+    D --> AB["Arrow record batches"]
+    AB --> X["Apply projection"]
+    P --> X
+    X --> E["Encode requested format"]
+    E --> O["Requested representation<br/>Parquet · Arrow · CSV · JSONL"]
+
+    A -.->|native model/store route| R["Converter registry<br/>built-in · entry point"]
+    R --> N["Native conversion<br/>Xarray ↔ Zarr · plugin X ↔ Y"]
+    N --> NO["Native target<br/>object · store · resource"]
+
+    classDef external fill:#eef5ff,stroke:#4c78a8,color:#152238
+    classDef schema fill:#f4eeff,stroke:#7a5195,color:#24152e
+    classDef operation fill:#fff4df,stroke:#d28e2c,color:#38250a
+    classDef arrow fill:#e8f6ef,stroke:#3a8f67,color:#102d21
+    class A,B,C,O,NO external
+    class RB,RC,BS,CS schema
+    class D,P,X,E,R,N operation
+    class AB arrow
+```
+
+Schema resolution may perform I/O, but it completes before source data is opened. Each
+reference carries only its own storage or registry credentials. Once B and C are Arrow
+schemas, planning is pure: it validates the requested projection without reading A. Execution
+then decodes, applies that stable plan batch by batch, and encodes the requested representation.
+
+## Why resource converters sit beside Arrow codecs
+
+Arrow batches are the right boundary for tabular, single-object formats. They are not a
+lossless universal representation for every data model. An Xarray dataset can contain
+N-dimensional variables, named dimensions, coordinates, and attributes, while a Zarr group
+is a hierarchy of metadata and chunk objects rather than one seekable file.
+
+Forcing those resources through the file-codec path would either flatten model semantics or
+pretend a multi-object store is one file. The converter registry therefore provides a sibling
+route. A converter owns the semantics of its source and target types and may return an object,
+write a store, or use Arrow internally when that is appropriate. Entry-point discovery lets
+integration packages add routes without adding their dependencies or release cadence to
+`fsspec-data`.
+
+`DataFileSystem` remains the read-only façade for single-file tabular conversion. Native
+resource conversion uses `ConverterRegistry` directly because its output may not satisfy a
+file-like `open()` contract.
+
 ## Arrow is the internal boundary
 
 Arrow provides one typed, columnar representation for schema comparison, casting, and
@@ -17,7 +81,16 @@ integration enters through Rust or PyArrow.
 
 ## Planning precedes execution
 
-An `InterchangeRequest` separates validation from data access. Planning checks that codecs,
+External schema references are resolved to Arrow schemas before an `InterchangeRequest` is
+created. Resolution may read another filesystem or registry and records schema provenance;
+it is separate from planning.
+
+JSON Schema resolution translates only structural type information. Arrow schemas do not
+encode the complete JSON Schema validation language, so composition, references, ambiguous
+unions, and format-dependent conversions are rejected. Validation-only constraints are not
+enforced during interchange.
+
+An `InterchangeRequest` separates validation from source-data access. Planning checks that codecs,
 field mappings, nullability changes, and casts can satisfy the requested contract without
 reading input. Execution then applies that stable plan to each batch.
 
@@ -42,7 +115,8 @@ for scans and previews.
   database-to-Arrow mapping.
 - Dataframe integrations own expression translation and local fallback execution.
 - Browsers own pagination, rendering, and request lifecycles.
-- `fsspec-data` owns format codecs, schema reconciliation, casts, and interchange limits.
+- `fsspec-data` owns schema resolution, projections, format conversion, casts, and
+  interchange limits.
 
 These boundaries keep backend-specific semantics close to each backend and make the
 interchange layer reusable by all of them.
