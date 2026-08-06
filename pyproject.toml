@@ -36,6 +36,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+xarray = [
+    "xarray",
+    "zarr",
+]
 develop = [
     "build",
     "bump-my-version",
