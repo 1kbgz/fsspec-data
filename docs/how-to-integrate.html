@@ -211,14 +211,21 @@
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/backends/sqlalchemy/index.html">fsspec_data.backends.sqlalchemy</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/confluent/index.html">fsspec_data.confluent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/converters/index.html">fsspec_data.converters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/filesystem/index.html">fsspec_data.filesystem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/interchange/index.html">fsspec_data.interchange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/json_schema/index.html">fsspec_data.json_schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/schema/index.html">fsspec_data.schema</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/fsspec_data/tests/index.html">fsspec_data.tests</a><input aria-label="Toggle navigation of fsspec_data.tests" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/conftest/index.html">fsspec_data.tests.conftest</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_all/index.html">fsspec_data.tests.test_all</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_converters/index.html">fsspec_data.tests.test_converters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_filesystem/index.html">fsspec_data.tests.test_filesystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_schema/index.html">fsspec_data.tests.test_schema</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/xarray_zarr/index.html">fsspec_data.xarray_zarr</a></li>
 </ul>
 </li>
 </ul>
@@ -317,6 +324,70 @@ buffer:</p>
 </pre></div>
 </div>
 </section>
+<section id="convert-between-xarray-and-zarr">
+<h2>Convert between Xarray and Zarr<a class="headerlink" href="#convert-between-xarray-and-zarr" title="Link to this heading">¶</a></h2>
+<p>Install the optional dependencies:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install &quot;fsspec-data[xarray]&quot;</span>
+</pre></div>
+</div>
+<p>Open a Zarr store as an Xarray dataset while keeping storage credentials scoped to the source:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_CONVERTERS</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">DEFAULT_CONVERTERS</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span>
+    <span class="s2">&quot;zarr&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;xarray&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;s3://weather-input/forecast.zarr&quot;</span><span class="p">,</span>
+    <span class="n">source_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="s2">&quot;weather-reader&quot;</span><span class="p">},</span>
+    <span class="n">conversion_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;forecast&quot;</span><span class="p">,</span> <span class="s2">&quot;chunks&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Write a dataset to another Zarr store with independent target credentials:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DEFAULT_CONVERTERS</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span>
+    <span class="s2">&quot;xarray&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;zarr&quot;</span><span class="p">,</span>
+    <span class="n">dataset</span><span class="p">,</span>
+    <span class="s2">&quot;s3://weather-output/forecast.zarr&quot;</span><span class="p">,</span>
+    <span class="n">target_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="s2">&quot;weather-writer&quot;</span><span class="p">},</span>
+    <span class="n">conversion_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;w-&quot;</span><span class="p">,</span> <span class="s2">&quot;zarr_format&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Use the converter API rather than <code class="docutils literal notranslate"><span class="pre">DataFileSystem.open()</span></code> for Zarr because a Zarr hierarchy
+contains multiple metadata and chunk objects.</p>
+</section>
+<section id="register-a-converter-through-an-entry-point">
+<h2>Register a converter through an entry point<a class="headerlink" href="#register-a-converter-through-an-entry-point" title="Link to this heading">¶</a></h2>
+<p>Expose one <code class="docutils literal notranslate"><span class="pre">Converter</span></code> object from the integration package:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Converter</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">geotiff_to_xarray</span><span class="p">(</span>
+    <span class="n">source</span><span class="p">,</span>
+    <span class="n">target</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">source_options</span><span class="p">,</span>
+    <span class="n">target_options</span><span class="p">,</span>
+    <span class="n">conversion_options</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="n">GEOTIFF_TO_XARRAY</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="s2">&quot;geotiff&quot;</span><span class="p">,</span> <span class="s2">&quot;xarray&quot;</span><span class="p">,</span> <span class="n">geotiff_to_xarray</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Register that object in the package’s <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.</span><span class="s2">&quot;fsspec_data.converters&quot;</span><span class="k">]</span>
+<span class="n">geotiff-xarray</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_package.converters:GEOTIFF_TO_XARRAY&quot;</span>
+</pre></div>
+</div>
+<p>Installed entry points are discovered on the registry’s first lookup. Keep optional heavy
+imports inside the converter handler so loading its descriptor remains inexpensive. Route
+names are case-insensitive. Duplicate source-target routes raise an error instead of selecting
+one by installation order.</p>
+<p>Call <code class="docutils literal notranslate"><span class="pre">DEFAULT_CONVERTERS.register(converter)</span></code> instead when registration is local to one
+process and does not need package discovery.</p>
+</section>
 <section id="integrate-from-rust">
 <h2>Integrate from Rust<a class="headerlink" href="#integrate-from-rust" title="Link to this heading">¶</a></h2>
 <p>Compose registered codecs with the plan’s stream adapter:</p>
@@ -414,6 +485,8 @@ sink to <code class="docutils literal notranslate"><span class="pre">start_owned
 <li><a class="reference internal" href="#declare-the-format-and-schema-contract">Declare the format and schema contract</a></li>
 <li><a class="reference internal" href="#pass-encoded-data-to-a-consumer-lazily">Pass encoded data to a consumer lazily</a></li>
 <li><a class="reference internal" href="#produce-encoded-output">Produce encoded output</a></li>
+<li><a class="reference internal" href="#convert-between-xarray-and-zarr">Convert between Xarray and Zarr</a></li>
+<li><a class="reference internal" href="#register-a-converter-through-an-entry-point">Register a converter through an entry point</a></li>
 <li><a class="reference internal" href="#integrate-from-rust">Integrate from Rust</a></li>
 </ul>
 </li>

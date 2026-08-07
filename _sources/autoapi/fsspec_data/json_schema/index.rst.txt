@@ -1,0 +1,46 @@
+fsspec_data.json_schema
+=======================
+
+.. py:module:: fsspec_data.json_schema
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.json_schema._UNSUPPORTED_KEYWORDS
+   fsspec_data.json_schema._PRIMITIVE_TYPES
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.json_schema.json_schema_to_arrow
+   fsspec_data.json_schema._data_type
+   fsspec_data.json_schema._object_fields
+   fsspec_data.json_schema._schema_kind
+   fsspec_data.json_schema._reject_unsupported
+
+
+Module Contents
+---------------
+
+.. py:data:: _UNSUPPORTED_KEYWORDS
+   :value: ('$dynamicRef', '$ref', 'allOf', 'anyOf', 'contains', 'contentEncoding', 'contentMediaType',...
+
+
+.. py:data:: _PRIMITIVE_TYPES
+
+.. py:function:: json_schema_to_arrow(value: collections.abc.Mapping[str, Any]) -> pyarrow.Schema
+
+.. py:function:: _data_type(value: collections.abc.Mapping[str, Any], path: str) -> tuple[pyarrow.DataType, bool]
+
+.. py:function:: _object_fields(value: collections.abc.Mapping[str, Any], path: str) -> list[pyarrow.Field]
+
+.. py:function:: _schema_kind(value: collections.abc.Mapping[str, Any], path: str) -> tuple[str, bool]
+
+.. py:function:: _reject_unsupported(value: collections.abc.Mapping[str, Any], path: str) -> None
+

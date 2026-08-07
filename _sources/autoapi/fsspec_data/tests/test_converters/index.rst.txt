@@ -1,0 +1,40 @@
+fsspec_data.tests.test_converters
+=================================
+
+.. py:module:: fsspec_data.tests.test_converters
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_converters.test_converter_registry_preserves_scoped_options
+   fsspec_data.tests.test_converters.test_converter_registry_rejects_duplicate_route
+   fsspec_data.tests.test_converters.test_converter_registry_loads_entry_points_lazily
+   fsspec_data.tests.test_converters.test_converter_registry_rejects_invalid_entry_point
+   fsspec_data.tests.test_converters.test_zarr_to_xarray_passes_source_credentials_and_conversion_options
+   fsspec_data.tests.test_converters.test_xarray_to_zarr_passes_target_credentials_and_conversion_options
+   fsspec_data.tests.test_converters.test_xarray_converter_reports_optional_dependency
+   fsspec_data.tests.test_converters.test_xarray_zarr_round_trip
+
+
+Module Contents
+---------------
+
+.. py:function:: test_converter_registry_preserves_scoped_options()
+
+.. py:function:: test_converter_registry_rejects_duplicate_route()
+
+.. py:function:: test_converter_registry_loads_entry_points_lazily(monkeypatch)
+
+.. py:function:: test_converter_registry_rejects_invalid_entry_point(monkeypatch)
+
+.. py:function:: test_zarr_to_xarray_passes_source_credentials_and_conversion_options(monkeypatch)
+
+.. py:function:: test_xarray_to_zarr_passes_target_credentials_and_conversion_options(monkeypatch)
+
+.. py:function:: test_xarray_converter_reports_optional_dependency(monkeypatch)
+
+.. py:function:: test_xarray_zarr_round_trip()
+

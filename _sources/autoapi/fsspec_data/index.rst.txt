@@ -12,9 +12,14 @@ Submodules
 
    /autoapi/fsspec_data/_version/index
    /autoapi/fsspec_data/backends/index
+   /autoapi/fsspec_data/confluent/index
+   /autoapi/fsspec_data/converters/index
    /autoapi/fsspec_data/filesystem/index
    /autoapi/fsspec_data/interchange/index
+   /autoapi/fsspec_data/json_schema/index
+   /autoapi/fsspec_data/schema/index
    /autoapi/fsspec_data/tests/index
+   /autoapi/fsspec_data/xarray_zarr/index
 
 
 Attributes
@@ -22,7 +27,10 @@ Attributes
 
 .. autoapisummary::
 
+   fsspec_data.CONVERTER_ENTRY_POINT_GROUP
+   fsspec_data.DEFAULT_CONVERTERS
    fsspec_data.DEFAULT_REGISTRY
+   fsspec_data.DEFAULT_SCHEMA_RESOLVERS
    fsspec_data.__version__
 
 
@@ -31,6 +39,8 @@ Classes
 
 .. autoapisummary::
 
+   fsspec_data.Converter
+   fsspec_data.ConverterRegistry
    fsspec_data.DataFileSystem
    fsspec_data.Codec
    fsspec_data.CodecCapabilities
@@ -43,6 +53,12 @@ Classes
    fsspec_data.InterchangeRequest
    fsspec_data.PlannedBatchStream
    fsspec_data.SchemaPolicy
+   fsspec_data.ResolvedSchema
+   fsspec_data.SchemaDocument
+   fsspec_data.SchemaFormat
+   fsspec_data.SchemaProvenance
+   fsspec_data.SchemaRef
+   fsspec_data.SchemaResolverRegistry
 
 
 Functions
@@ -51,12 +67,73 @@ Functions
 .. autoapisummary::
 
    fsspec_data.plan_schema
+   fsspec_data.json_schema_to_arrow
+   fsspec_data.resolve_schema
 
 
 Package Contents
 ----------------
 
-.. py:class:: DataFileSystem(fo: str, target_protocol: str | None = None, target_options: dict[str, Any] | None = None, fs: fsspec.AbstractFileSystem | None = None, provided_format: fsspec_data.interchange.DataFormat | str | None = None, requested_format: fsspec_data.interchange.DataFormat | str | None = None, provided_schema: pyarrow.Schema | collections.abc.Mapping[str, Any] | collections.abc.Sequence[collections.abc.Mapping[str, Any]] | None = None, requested_schema: pyarrow.Schema | collections.abc.Mapping[str, Any] | collections.abc.Sequence[collections.abc.Mapping[str, Any]] | None = None, schema_policy: fsspec_data.interchange.SchemaPolicy | str = SchemaPolicy.EXACT, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, spool_max_size: int = 8 * 1024 * 1024, **kwargs: Any)
+.. py:data:: CONVERTER_ENTRY_POINT_GROUP
+   :value: 'fsspec_data.converters'
+
+
+.. py:data:: DEFAULT_CONVERTERS
+
+.. py:class:: Converter
+
+   .. py:attribute:: source_type
+      :type:  str
+
+
+   .. py:attribute:: target_type
+      :type:  str
+
+
+   .. py:attribute:: handler
+      :type:  ConverterHandler
+
+
+   .. py:method:: __post_init__() -> None
+
+
+   .. py:method:: convert(source: Any, target: Any | None = None, *, source_options: collections.abc.Mapping[str, Any] | None = None, target_options: collections.abc.Mapping[str, Any] | None = None, conversion_options: collections.abc.Mapping[str, Any] | None = None) -> Any
+
+
+.. py:class:: ConverterRegistry(*, entry_point_group: str = CONVERTER_ENTRY_POINT_GROUP, discover_entry_points: bool = True)
+
+   .. py:attribute:: entry_point_group
+      :value: 'fsspec_data.converters'
+
+
+
+   .. py:attribute:: discover_entry_points
+      :value: True
+
+
+
+   .. py:attribute:: _converters
+      :type:  dict[tuple[str, str], Converter]
+
+
+   .. py:attribute:: _entry_points_loaded
+      :value: False
+
+
+
+   .. py:method:: register(converter: Converter, *, replace: bool = False) -> None
+
+
+   .. py:method:: load_entry_points() -> None
+
+
+   .. py:method:: get(source_type: str, target_type: str) -> Converter
+
+
+   .. py:method:: convert(source_type: str, target_type: str, source: Any, target: Any | None = None, *, source_options: collections.abc.Mapping[str, Any] | None = None, target_options: collections.abc.Mapping[str, Any] | None = None, conversion_options: collections.abc.Mapping[str, Any] | None = None) -> Any
+
+
+.. py:class:: DataFileSystem(fo: str, target_protocol: str | None = None, target_options: dict[str, Any] | None = None, fs: fsspec.AbstractFileSystem | None = None, provided_format: fsspec_data.interchange.DataFormat | str | None = None, requested_format: fsspec_data.interchange.DataFormat | str | None = None, provided_schema: fsspec_data.schema.SchemaInput = None, requested_schema: fsspec_data.schema.SchemaInput = None, schema_policy: fsspec_data.interchange.SchemaPolicy | str = SchemaPolicy.EXACT, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, spool_max_size: int = 8 * 1024 * 1024, **kwargs: Any)
 
    Bases: :py:obj:`fsspec.implementations.chained.ChainedFileSystem`
 
@@ -117,6 +194,18 @@ Package Contents
 
 
    .. py:attribute:: requested_schema
+      :value: None
+
+
+
+   .. py:attribute:: provided_schema_provenance
+      :type:  fsspec_data.schema.SchemaProvenance | None
+      :value: None
+
+
+
+   .. py:attribute:: requested_schema_provenance
+      :type:  fsspec_data.schema.SchemaProvenance | None
       :value: None
 
 
@@ -477,6 +566,134 @@ Package Contents
 
 
 .. py:function:: plan_schema(provided_schema: pyarrow.Schema, requested_schema: pyarrow.Schema, policy: SchemaPolicy | str) -> InterchangePlan
+
+.. py:function:: json_schema_to_arrow(value: collections.abc.Mapping[str, Any]) -> pyarrow.Schema
+
+.. py:data:: DEFAULT_SCHEMA_RESOLVERS
+
+.. py:class:: ResolvedSchema
+
+   .. py:attribute:: schema
+      :type:  pyarrow.Schema
+
+
+   .. py:attribute:: provenance
+      :type:  SchemaProvenance
+
+
+.. py:class:: SchemaDocument
+
+   .. py:attribute:: data
+      :type:  bytes
+
+
+   .. py:attribute:: format
+      :type:  SchemaFormat
+
+
+   .. py:attribute:: provenance
+      :type:  SchemaProvenance
+
+
+.. py:class:: SchemaFormat
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   str(object='') -> str
+   str(bytes_or_buffer[, encoding[, errors]]) -> str
+
+   Create a new string object from the given object. If encoding or
+   errors is specified, then the object must expose a data buffer
+   that will be decoded using the given encoding and error handler.
+   Otherwise, returns the result of object.__str__() (if defined)
+   or repr(object).
+   encoding defaults to sys.getdefaultencoding().
+   errors defaults to 'strict'.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: ARROW_IPC
+      :value: 'arrow-ipc-schema'
+
+
+
+   .. py:attribute:: ARROW_JSON
+      :value: 'arrow-json'
+
+
+
+   .. py:attribute:: JSON_SCHEMA
+      :value: 'json-schema'
+
+
+
+.. py:class:: SchemaProvenance
+
+   .. py:attribute:: source
+      :type:  str
+
+
+   .. py:attribute:: format
+      :type:  str
+
+
+   .. py:attribute:: provider
+      :type:  str
+
+
+   .. py:attribute:: identifier
+      :type:  str | None
+      :value: None
+
+
+
+   .. py:attribute:: version
+      :type:  str | None
+      :value: None
+
+
+
+.. py:class:: SchemaRef
+
+   .. py:attribute:: url
+      :type:  str
+
+
+   .. py:attribute:: format
+      :type:  SchemaFormat | str | None
+      :value: None
+
+
+
+   .. py:attribute:: storage_options
+      :type:  collections.abc.Mapping[str, Any]
+
+
+   .. py:method:: __post_init__() -> None
+
+
+.. py:class:: SchemaResolverRegistry
+
+   .. py:attribute:: _decoders
+      :type:  dict[SchemaFormat, SchemaDecoder]
+
+
+   .. py:attribute:: _providers
+      :type:  dict[str, SchemaProvider]
+
+
+   .. py:method:: register(format: SchemaFormat | str, decoder: SchemaDecoder) -> None
+
+
+   .. py:method:: register_provider(protocol: str, provider: SchemaProvider) -> None
+
+
+   .. py:method:: resolve(reference: SchemaRef) -> ResolvedSchema
+
+
+.. py:function:: resolve_schema(value: pyarrow.Schema | SchemaRef | None, registry: SchemaResolverRegistry | None = None) -> ResolvedSchema | None
 
 .. py:data:: __version__
    :value: '0.2.3'

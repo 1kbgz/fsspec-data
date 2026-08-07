@@ -1,0 +1,110 @@
+fsspec_data.converters
+======================
+
+.. py:module:: fsspec_data.converters
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.converters.CONVERTER_ENTRY_POINT_GROUP
+   fsspec_data.converters.ConverterHandler
+   fsspec_data.converters.XARRAY_TO_ZARR
+   fsspec_data.converters.ZARR_TO_XARRAY
+   fsspec_data.converters.DEFAULT_CONVERTERS
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.converters.Converter
+   fsspec_data.converters.ConverterRegistry
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.converters._normalize_type
+   fsspec_data.converters._copy_options
+
+
+Module Contents
+---------------
+
+.. py:data:: CONVERTER_ENTRY_POINT_GROUP
+   :value: 'fsspec_data.converters'
+
+
+.. py:type:: ConverterHandler
+   :canonical: Callable[..., Any]
+
+
+.. py:class:: Converter
+
+   .. py:attribute:: source_type
+      :type:  str
+
+
+   .. py:attribute:: target_type
+      :type:  str
+
+
+   .. py:attribute:: handler
+      :type:  ConverterHandler
+
+
+   .. py:method:: __post_init__() -> None
+
+
+   .. py:method:: convert(source: Any, target: Any | None = None, *, source_options: collections.abc.Mapping[str, Any] | None = None, target_options: collections.abc.Mapping[str, Any] | None = None, conversion_options: collections.abc.Mapping[str, Any] | None = None) -> Any
+
+
+.. py:class:: ConverterRegistry(*, entry_point_group: str = CONVERTER_ENTRY_POINT_GROUP, discover_entry_points: bool = True)
+
+   .. py:attribute:: entry_point_group
+      :value: 'fsspec_data.converters'
+
+
+
+   .. py:attribute:: discover_entry_points
+      :value: True
+
+
+
+   .. py:attribute:: _converters
+      :type:  dict[tuple[str, str], Converter]
+
+
+   .. py:attribute:: _entry_points_loaded
+      :value: False
+
+
+
+   .. py:method:: register(converter: Converter, *, replace: bool = False) -> None
+
+
+   .. py:method:: load_entry_points() -> None
+
+
+   .. py:method:: get(source_type: str, target_type: str) -> Converter
+
+
+   .. py:method:: convert(source_type: str, target_type: str, source: Any, target: Any | None = None, *, source_options: collections.abc.Mapping[str, Any] | None = None, target_options: collections.abc.Mapping[str, Any] | None = None, conversion_options: collections.abc.Mapping[str, Any] | None = None) -> Any
+
+
+.. py:function:: _normalize_type(value: str) -> str
+
+.. py:function:: _copy_options(value: collections.abc.Mapping[str, Any] | None, name: str) -> dict[str, Any]
+
+.. py:data:: XARRAY_TO_ZARR
+
+.. py:data:: ZARR_TO_XARRAY
+
+.. py:data:: DEFAULT_CONVERTERS
+

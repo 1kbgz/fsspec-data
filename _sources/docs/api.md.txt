@@ -15,10 +15,10 @@ Constructor parameters:
 - `provided_format: DataFormat | str | None`: source format. Inferred from `fo` when omitted.
 - `requested_format: DataFormat | str | None`: output format. Inferred from the opened path
   when omitted.
-- `provided_schema`: source `pyarrow.Schema` or nested schema options. Required for CSV and
-  JSONL.
-- `requested_schema`: output `pyarrow.Schema` or nested schema options. Defaults to the source
-  schema.
+- `provided_schema`: source `pyarrow.Schema`, nested schema options, or schema reference.
+  Required for CSV and JSONL.
+- `requested_schema`: output `pyarrow.Schema`, nested schema options, or schema reference.
+  Defaults to the source schema.
 - `schema_policy: SchemaPolicy | str`: reconciliation policy. Defaults to `exact`.
 - `batch_size: int`: maximum rows per decoded batch. Defaults to `1024`.
 - `row_limit: int | None`: maximum decoded rows.
@@ -30,6 +30,27 @@ Nested schema options have a `fields` list. Each field has `name`, `type`, and o
 `nullable` keys. String types use PyArrow aliases such as `int64`, `string`, and
 `timestamp[ms]`.
 
+A schema reference is a `SchemaRef`, URL string, or mapping with `url`, optional `format`, and
+optional `storage_options`. Reference storage options apply only to that schema source.
+Built-in formats are `arrow-json` for nested field descriptors, `arrow-ipc-schema` for a
+serialized Arrow schema or IPC stream, and `json-schema` for the supported structural JSON
+Schema subset. `.arrow`, `.ipc`, and `.arrowschema` infer `arrow-ipc-schema`; ambiguous
+extensions require an explicit format.
+
+The `confluent://SUBJECT/versions/VERSION` provider accepts `latest`, `-1`, or a positive
+32-bit integer as `VERSION`, and these `storage_options`:
+
+- `registry_url: str`: required HTTP or HTTPS Schema Registry base URL.
+- `username: str` and `password: str`: optional Basic authentication pair.
+- `headers: Mapping[str, str]`: optional additional request headers.
+- `timeout: int | float`: optional request timeout in seconds.
+
+The provider supports registry documents with `schemaType` `JSON` and no external schema
+references. Avro, Protobuf, and referenced documents raise `ValueError`.
+
+After conversion starts, `provided_schema_provenance` and `requested_schema_provenance`
+describe resolved schema sources without exposing storage options.
+
 Recognized suffixes are `.arrow` and `.ipc` for Arrow IPC streams, `.parquet` and `.pq` for
 Parquet, `.csv` for CSV, and `.jsonl` and `.ndjson` for line-delimited JSON.
 
@@ -37,6 +58,138 @@ Parquet, `.csv` for CSV, and `.jsonl` and `.ndjson` for line-delimited JSON.
 complete encoded source and produces a complete encoded output before returning the file.
 
 See [How to convert a file through an fsspec chain](how-to-chain-filesystems.md) for usage.
+
+## `SchemaRef`
+
+Identifies an independently resolvable schema.
+
+Attributes:
+
+- `url: str`: schema location.
+- `format: SchemaFormat | str | None`: schema representation. Inferred for recognized Arrow
+  schema suffixes.
+- `storage_options: Mapping[str, Any]`: options passed only to the schema filesystem. Omitted
+  from `repr`.
+
+## `ResolvedSchema`
+
+Contains the resolved `pyarrow.Schema` and `SchemaProvenance`. Resolution performs I/O before
+interchange planning; the planner continues to receive only Arrow schemas.
+
+## `SchemaProvenance`
+
+Describes a resolved schema without credentials.
+
+Attributes:
+
+- `source: str`: original schema reference URL or `inline`.
+- `format: str`: decoded schema representation.
+- `provider: str`: `inline`, `fsspec`, `confluent`, or a registered provider name.
+- `identifier: str | None`: provider-specific schema identifier.
+- `version: str | None`: provider-specific schema version.
+
+## `SchemaDocument`
+
+Contains provider-returned schema bytes, their `SchemaFormat`, and `SchemaProvenance`.
+
+## `SchemaResolverRegistry`
+
+Separates schema transport providers from schema-language decoders.
+
+### `register(format, decoder)`
+
+Registers a decoder accepting schema `bytes` and returning `pyarrow.Schema`.
+
+### `register_provider(protocol, provider)`
+
+Registers a provider accepting `SchemaRef` and returning `SchemaDocument`.
+
+`DEFAULT_SCHEMA_RESOLVERS` includes decoders for `arrow-json`, `arrow-ipc-schema`, and
+`json-schema`; a `confluent` provider; and an fsspec provider fallback for other protocols.
+
+Use `resolve_schema` to resolve an inline schema or normalized `SchemaRef` directly.
+
+## `json_schema_to_arrow`
+
+Converts the supported JSON Schema subset directly to `pyarrow.Schema`. The root must have
+type `object`. Supported value types are object, array with one `items` schema, string,
+boolean, integer as Arrow `int64`, number as Arrow `float64`, and null. A type array may contain
+null and one non-null type.
+
+Object `required` entries and null unions determine Arrow field nullability. References,
+composition, multiple non-null union members, tuple arrays, schema-valued additional
+properties, and `format` annotations raise `ValueError` with a schema path. JSON Schema
+validation constraints are not represented or enforced by Arrow.
+
+## `Converter`
+
+Describes one native conversion route.
+
+Attributes:
+
+- `source_type: str`: normalized, case-insensitive source type.
+- `target_type: str`: normalized, case-insensitive target type.
+- `handler: Callable`: conversion function, omitted from `repr`.
+
+The handler signature is:
+
+```python
+handler(
+    source,
+    target,
+    *,
+    source_options,
+    target_options,
+    conversion_options,
+)
+```
+
+All option arguments are dictionaries. The handler return value is the converter result.
+
+### `convert(source, target=None, *, source_options=None, target_options=None, conversion_options=None)`
+
+Copies the three option mappings and calls the handler. Raises `TypeError` when an option
+value is not a mapping.
+
+## `ConverterRegistry`
+
+Maps normalized `(source_type, target_type)` pairs to `Converter` objects. Installed converter
+entry points are loaded at most once, on first lookup.
+
+Constructor parameters:
+
+- `entry_point_group: str`: discovery group. Defaults to `fsspec_data.converters`.
+- `discover_entry_points: bool`: enables installed entry-point discovery. Defaults to `True`.
+
+### `register(converter, *, replace=False)`
+
+Registers a `Converter`. Raises `ValueError` for a duplicate route unless `replace=True`.
+
+### `load_entry_points()`
+
+Loads entry points from the configured group. Each entry point must load one `Converter`.
+Duplicate routes and invalid objects raise errors before discovered converters are added.
+
+### `get(source_type, target_type)`
+
+Returns the converter for a route. Raises `ValueError` when no converter is registered.
+
+### `convert(source_type, target_type, source, target=None, **options)`
+
+Gets the route and calls `Converter.convert`.
+
+## `DEFAULT_CONVERTERS`
+
+Default `ConverterRegistry`. Built-in routes are `zarr` to `xarray` and `xarray` to `zarr`.
+They import Xarray only when invoked and require the `fsspec-data[xarray]` optional dependency.
+
+The Zarr-to-Xarray route calls `xarray.open_zarr`. `source_options` become its
+`storage_options`; `conversion_options` supply options such as `group` and `chunks`. It returns
+an Xarray `Dataset` and rejects a target or target options.
+
+The Xarray-to-Zarr route accepts an Xarray `Dataset` or `DataArray` and calls `to_zarr`.
+`target_options` become its `storage_options`; `conversion_options` supply options such as
+`mode`, `group`, and `zarr_format`.
 
 ## `DataFormat`
 

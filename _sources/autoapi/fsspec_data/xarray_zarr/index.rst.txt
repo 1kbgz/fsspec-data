@@ -1,0 +1,28 @@
+fsspec_data.xarray_zarr
+=======================
+
+.. py:module:: fsspec_data.xarray_zarr
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.xarray_zarr.zarr_to_xarray
+   fsspec_data.xarray_zarr.xarray_to_zarr
+   fsspec_data.xarray_zarr._add_storage_options
+   fsspec_data.xarray_zarr._import_xarray
+
+
+Module Contents
+---------------
+
+.. py:function:: zarr_to_xarray(source: Any, target: Any | None, *, source_options: collections.abc.Mapping[str, Any], target_options: collections.abc.Mapping[str, Any], conversion_options: collections.abc.Mapping[str, Any]) -> Any
+
+.. py:function:: xarray_to_zarr(source: Any, target: Any | None, *, source_options: collections.abc.Mapping[str, Any], target_options: collections.abc.Mapping[str, Any], conversion_options: collections.abc.Mapping[str, Any]) -> Any
+
+.. py:function:: _add_storage_options(options: dict[str, Any], storage_options: collections.abc.Mapping[str, Any]) -> None
+
+.. py:function:: _import_xarray()
+

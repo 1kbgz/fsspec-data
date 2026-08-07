@@ -1,0 +1,83 @@
+fsspec_data.tests.test_schema
+=============================
+
+.. py:module:: fsspec_data.tests.test_schema
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_schema.SOURCE_SCHEMA
+   fsspec_data.tests.test_schema.TARGET_SCHEMA
+   fsspec_data.tests.test_schema.SOURCE_SCHEMA_JSON
+   fsspec_data.tests.test_schema.SOURCE_JSON_SCHEMA
+   fsspec_data.tests.test_schema.TARGET_JSON_SCHEMA
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_schema.test_schema_reference_hides_storage_options_from_repr
+   fsspec_data.tests.test_schema.test_arrow_ipc_schema_format_is_inferred
+   fsspec_data.tests.test_schema.test_schema_reference_requires_format_for_ambiguous_extension
+   fsspec_data.tests.test_schema.test_json_schema_maps_structural_types_and_nullability
+   fsspec_data.tests.test_schema.test_data_filesystem_resolves_independent_schema_sources
+   fsspec_data.tests.test_schema.test_fsspec_open_resolves_referenced_schemas
+   fsspec_data.tests.test_schema.test_fsspec_open_resolves_json_schemas
+   fsspec_data.tests.test_schema.test_confluent_resolver_fetches_json_schema_with_scoped_credentials
+   fsspec_data.tests.test_schema.test_fsspec_open_composes_confluent_schema_with_file_schema
+   fsspec_data.tests.test_schema.test_confluent_resolver_rejects_unsupported_documents
+   fsspec_data.tests.test_schema.test_confluent_resolver_requires_registry_url
+   fsspec_data.tests.test_schema.test_confluent_resolver_rejects_invalid_version
+   fsspec_data.tests.test_schema.test_json_schema_rejects_ambiguous_constructs
+   fsspec_data.tests.test_schema.test_schema_resolution_precedes_source_read
+   fsspec_data.tests.test_schema.test_schema_reference_rejects_unknown_options
+
+
+Module Contents
+---------------
+
+.. py:data:: SOURCE_SCHEMA
+
+.. py:data:: TARGET_SCHEMA
+
+.. py:data:: SOURCE_SCHEMA_JSON
+
+.. py:data:: SOURCE_JSON_SCHEMA
+
+.. py:data:: TARGET_JSON_SCHEMA
+
+.. py:function:: test_schema_reference_hides_storage_options_from_repr()
+
+.. py:function:: test_arrow_ipc_schema_format_is_inferred(monkeypatch)
+
+.. py:function:: test_schema_reference_requires_format_for_ambiguous_extension()
+
+.. py:function:: test_json_schema_maps_structural_types_and_nullability()
+
+.. py:function:: test_data_filesystem_resolves_independent_schema_sources(monkeypatch)
+
+.. py:function:: test_fsspec_open_resolves_referenced_schemas()
+
+.. py:function:: test_fsspec_open_resolves_json_schemas()
+
+.. py:function:: test_confluent_resolver_fetches_json_schema_with_scoped_credentials(monkeypatch)
+
+.. py:function:: test_fsspec_open_composes_confluent_schema_with_file_schema(monkeypatch)
+
+.. py:function:: test_confluent_resolver_rejects_unsupported_documents(monkeypatch, payload, message)
+
+.. py:function:: test_confluent_resolver_requires_registry_url()
+
+.. py:function:: test_confluent_resolver_rejects_invalid_version()
+
+.. py:function:: test_json_schema_rejects_ambiguous_constructs(schema, message)
+
+.. py:function:: test_schema_resolution_precedes_source_read(monkeypatch)
+
+.. py:function:: test_schema_reference_rejects_unknown_options()
+

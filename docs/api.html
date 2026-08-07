@@ -211,14 +211,21 @@
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/backends/sqlalchemy/index.html">fsspec_data.backends.sqlalchemy</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/confluent/index.html">fsspec_data.confluent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/converters/index.html">fsspec_data.converters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/filesystem/index.html">fsspec_data.filesystem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/interchange/index.html">fsspec_data.interchange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/json_schema/index.html">fsspec_data.json_schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/schema/index.html">fsspec_data.schema</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/fsspec_data/tests/index.html">fsspec_data.tests</a><input aria-label="Toggle navigation of fsspec_data.tests" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/conftest/index.html">fsspec_data.tests.conftest</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_all/index.html">fsspec_data.tests.test_all</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_converters/index.html">fsspec_data.tests.test_converters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_filesystem/index.html">fsspec_data.tests.test_filesystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_schema/index.html">fsspec_data.tests.test_schema</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/xarray_zarr/index.html">fsspec_data.xarray_zarr</a></li>
 </ul>
 </li>
 </ul>
@@ -277,10 +284,10 @@ the requested representation; <code class="docutils literal notranslate"><span c
 <li><p><code class="docutils literal notranslate"><span class="pre">provided_format:</span> <span class="pre">DataFormat</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: source format. Inferred from <code class="docutils literal notranslate"><span class="pre">fo</span></code> when omitted.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">requested_format:</span> <span class="pre">DataFormat</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: output format. Inferred from the opened path
 when omitted.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">provided_schema</span></code>: source <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code> or nested schema options. Required for CSV and
-JSONL.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">requested_schema</span></code>: output <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code> or nested schema options. Defaults to the source
-schema.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provided_schema</span></code>: source <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code>, nested schema options, or schema reference.
+Required for CSV and JSONL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">requested_schema</span></code>: output <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code>, nested schema options, or schema reference.
+Defaults to the source schema.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">schema_policy:</span> <span class="pre">SchemaPolicy</span> <span class="pre">|</span> <span class="pre">str</span></code>: reconciliation policy. Defaults to <code class="docutils literal notranslate"><span class="pre">exact</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">batch_size:</span> <span class="pre">int</span></code>: maximum rows per decoded batch. Defaults to <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">row_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: maximum decoded rows.</p></li>
@@ -291,11 +298,153 @@ over to a temporary file. Defaults to 8 MiB.</p></li>
 <p>Nested schema options have a <code class="docutils literal notranslate"><span class="pre">fields</span></code> list. Each field has <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">type</span></code>, and optional
 <code class="docutils literal notranslate"><span class="pre">nullable</span></code> keys. String types use PyArrow aliases such as <code class="docutils literal notranslate"><span class="pre">int64</span></code>, <code class="docutils literal notranslate"><span class="pre">string</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">timestamp[ms]</span></code>.</p>
+<p>A schema reference is a <code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code>, URL string, or mapping with <code class="docutils literal notranslate"><span class="pre">url</span></code>, optional <code class="docutils literal notranslate"><span class="pre">format</span></code>, and
+optional <code class="docutils literal notranslate"><span class="pre">storage_options</span></code>. Reference storage options apply only to that schema source.
+Built-in formats are <code class="docutils literal notranslate"><span class="pre">arrow-json</span></code> for nested field descriptors, <code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code> for a
+serialized Arrow schema or IPC stream, and <code class="docutils literal notranslate"><span class="pre">json-schema</span></code> for the supported structural JSON
+Schema subset. <code class="docutils literal notranslate"><span class="pre">.arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">.ipc</span></code>, and <code class="docutils literal notranslate"><span class="pre">.arrowschema</span></code> infer <code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code>; ambiguous
+extensions require an explicit format.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">confluent://SUBJECT/versions/VERSION</span></code> provider accepts <code class="docutils literal notranslate"><span class="pre">latest</span></code>, <code class="docutils literal notranslate"><span class="pre">-1</span></code>, or a positive
+32-bit integer as <code class="docutils literal notranslate"><span class="pre">VERSION</span></code>, and these <code class="docutils literal notranslate"><span class="pre">storage_options</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">registry_url:</span> <span class="pre">str</span></code>: required HTTP or HTTPS Schema Registry base URL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">username:</span> <span class="pre">str</span></code> and <code class="docutils literal notranslate"><span class="pre">password:</span> <span class="pre">str</span></code>: optional Basic authentication pair.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">headers:</span> <span class="pre">Mapping[str,</span> <span class="pre">str]</span></code>: optional additional request headers.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">float</span></code>: optional request timeout in seconds.</p></li>
+</ul>
+<p>The provider supports registry documents with <code class="docutils literal notranslate"><span class="pre">schemaType</span></code> <code class="docutils literal notranslate"><span class="pre">JSON</span></code> and no external schema
+references. Avro, Protobuf, and referenced documents raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
+<p>After conversion starts, <code class="docutils literal notranslate"><span class="pre">provided_schema_provenance</span></code> and <code class="docutils literal notranslate"><span class="pre">requested_schema_provenance</span></code>
+describe resolved schema sources without exposing storage options.</p>
 <p>Recognized suffixes are <code class="docutils literal notranslate"><span class="pre">.arrow</span></code> and <code class="docutils literal notranslate"><span class="pre">.ipc</span></code> for Arrow IPC streams, <code class="docutils literal notranslate"><span class="pre">.parquet</span></code> and <code class="docutils literal notranslate"><span class="pre">.pq</span></code> for
 Parquet, <code class="docutils literal notranslate"><span class="pre">.csv</span></code> for CSV, and <code class="docutils literal notranslate"><span class="pre">.jsonl</span></code> and <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code> for line-delimited JSON.</p>
 <p><code class="docutils literal notranslate"><span class="pre">open</span></code> accepts read mode and returns a seekable spooled file. Conversion currently reads the
 complete encoded source and produces a complete encoded output before returning the file.</p>
 <p>See <a class="reference internal" href="how-to-chain-filesystems.html"><span class="std std-doc">How to convert a file through an fsspec chain</span></a> for usage.</p>
+</section>
+<section id="schemaref">
+<h2><code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code><a class="headerlink" href="#schemaref" title="Link to this heading">¶</a></h2>
+<p>Identifies an independently resolvable schema.</p>
+<p>Attributes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">url:</span> <span class="pre">str</span></code>: schema location.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">format:</span> <span class="pre">SchemaFormat</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: schema representation. Inferred for recognized Arrow
+schema suffixes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">storage_options:</span> <span class="pre">Mapping[str,</span> <span class="pre">Any]</span></code>: options passed only to the schema filesystem. Omitted
+from <code class="docutils literal notranslate"><span class="pre">repr</span></code>.</p></li>
+</ul>
+</section>
+<section id="resolvedschema">
+<h2><code class="docutils literal notranslate"><span class="pre">ResolvedSchema</span></code><a class="headerlink" href="#resolvedschema" title="Link to this heading">¶</a></h2>
+<p>Contains the resolved <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code> and <code class="docutils literal notranslate"><span class="pre">SchemaProvenance</span></code>. Resolution performs I/O before
+interchange planning; the planner continues to receive only Arrow schemas.</p>
+</section>
+<section id="schemaprovenance">
+<h2><code class="docutils literal notranslate"><span class="pre">SchemaProvenance</span></code><a class="headerlink" href="#schemaprovenance" title="Link to this heading">¶</a></h2>
+<p>Describes a resolved schema without credentials.</p>
+<p>Attributes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">source:</span> <span class="pre">str</span></code>: original schema reference URL or <code class="docutils literal notranslate"><span class="pre">inline</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">format:</span> <span class="pre">str</span></code>: decoded schema representation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provider:</span> <span class="pre">str</span></code>: <code class="docutils literal notranslate"><span class="pre">inline</span></code>, <code class="docutils literal notranslate"><span class="pre">fsspec</span></code>, <code class="docutils literal notranslate"><span class="pre">confluent</span></code>, or a registered provider name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">identifier:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: provider-specific schema identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: provider-specific schema version.</p></li>
+</ul>
+</section>
+<section id="schemadocument">
+<h2><code class="docutils literal notranslate"><span class="pre">SchemaDocument</span></code><a class="headerlink" href="#schemadocument" title="Link to this heading">¶</a></h2>
+<p>Contains provider-returned schema bytes, their <code class="docutils literal notranslate"><span class="pre">SchemaFormat</span></code>, and <code class="docutils literal notranslate"><span class="pre">SchemaProvenance</span></code>.</p>
+</section>
+<section id="schemaresolverregistry">
+<h2><code class="docutils literal notranslate"><span class="pre">SchemaResolverRegistry</span></code><a class="headerlink" href="#schemaresolverregistry" title="Link to this heading">¶</a></h2>
+<p>Separates schema transport providers from schema-language decoders.</p>
+<section id="register-format-decoder">
+<h3><code class="docutils literal notranslate"><span class="pre">register(format,</span> <span class="pre">decoder)</span></code><a class="headerlink" href="#register-format-decoder" title="Link to this heading">¶</a></h3>
+<p>Registers a decoder accepting schema <code class="docutils literal notranslate"><span class="pre">bytes</span></code> and returning <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code>.</p>
+</section>
+<section id="register-provider-protocol-provider">
+<h3><code class="docutils literal notranslate"><span class="pre">register_provider(protocol,</span> <span class="pre">provider)</span></code><a class="headerlink" href="#register-provider-protocol-provider" title="Link to this heading">¶</a></h3>
+<p>Registers a provider accepting <code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code> and returning <code class="docutils literal notranslate"><span class="pre">SchemaDocument</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DEFAULT_SCHEMA_RESOLVERS</span></code> includes decoders for <code class="docutils literal notranslate"><span class="pre">arrow-json</span></code>, <code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">json-schema</span></code>; a <code class="docutils literal notranslate"><span class="pre">confluent</span></code> provider; and an fsspec provider fallback for other protocols.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">resolve_schema</span></code> to resolve an inline schema or normalized <code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code> directly.</p>
+</section>
+</section>
+<section id="json-schema-to-arrow">
+<h2><code class="docutils literal notranslate"><span class="pre">json_schema_to_arrow</span></code><a class="headerlink" href="#json-schema-to-arrow" title="Link to this heading">¶</a></h2>
+<p>Converts the supported JSON Schema subset directly to <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code>. The root must have
+type <code class="docutils literal notranslate"><span class="pre">object</span></code>. Supported value types are object, array with one <code class="docutils literal notranslate"><span class="pre">items</span></code> schema, string,
+boolean, integer as Arrow <code class="docutils literal notranslate"><span class="pre">int64</span></code>, number as Arrow <code class="docutils literal notranslate"><span class="pre">float64</span></code>, and null. A type array may contain
+null and one non-null type.</p>
+<p>Object <code class="docutils literal notranslate"><span class="pre">required</span></code> entries and null unions determine Arrow field nullability. References,
+composition, multiple non-null union members, tuple arrays, schema-valued additional
+properties, and <code class="docutils literal notranslate"><span class="pre">format</span></code> annotations raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> with a schema path. JSON Schema
+validation constraints are not represented or enforced by Arrow.</p>
+</section>
+<section id="converter">
+<h2><code class="docutils literal notranslate"><span class="pre">Converter</span></code><a class="headerlink" href="#converter" title="Link to this heading">¶</a></h2>
+<p>Describes one native conversion route.</p>
+<p>Attributes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">source_type:</span> <span class="pre">str</span></code>: normalized, case-insensitive source type.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target_type:</span> <span class="pre">str</span></code>: normalized, case-insensitive target type.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">handler:</span> <span class="pre">Callable</span></code>: conversion function, omitted from <code class="docutils literal notranslate"><span class="pre">repr</span></code>.</p></li>
+</ul>
+<p>The handler signature is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">handler</span><span class="p">(</span>
+    <span class="n">source</span><span class="p">,</span>
+    <span class="n">target</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">source_options</span><span class="p">,</span>
+    <span class="n">target_options</span><span class="p">,</span>
+    <span class="n">conversion_options</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>All option arguments are dictionaries. The handler return value is the converter result.</p>
+<section id="convert-source-target-none-source-options-none-target-options-none-conversion-options-none">
+<h3><code class="docutils literal notranslate"><span class="pre">convert(source,</span> <span class="pre">target=None,</span> <span class="pre">*,</span> <span class="pre">source_options=None,</span> <span class="pre">target_options=None,</span> <span class="pre">conversion_options=None)</span></code><a class="headerlink" href="#convert-source-target-none-source-options-none-target-options-none-conversion-options-none" title="Link to this heading">¶</a></h3>
+<p>Copies the three option mappings and calls the handler. Raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> when an option
+value is not a mapping.</p>
+</section>
+</section>
+<section id="converterregistry">
+<h2><code class="docutils literal notranslate"><span class="pre">ConverterRegistry</span></code><a class="headerlink" href="#converterregistry" title="Link to this heading">¶</a></h2>
+<p>Maps normalized <code class="docutils literal notranslate"><span class="pre">(source_type,</span> <span class="pre">target_type)</span></code> pairs to <code class="docutils literal notranslate"><span class="pre">Converter</span></code> objects. Installed converter
+entry points are loaded at most once, on first lookup.</p>
+<p>Constructor parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">entry_point_group:</span> <span class="pre">str</span></code>: discovery group. Defaults to <code class="docutils literal notranslate"><span class="pre">fsspec_data.converters</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">discover_entry_points:</span> <span class="pre">bool</span></code>: enables installed entry-point discovery. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+<section id="register-converter-replace-false">
+<h3><code class="docutils literal notranslate"><span class="pre">register(converter,</span> <span class="pre">*,</span> <span class="pre">replace=False)</span></code><a class="headerlink" href="#register-converter-replace-false" title="Link to this heading">¶</a></h3>
+<p>Registers a <code class="docutils literal notranslate"><span class="pre">Converter</span></code>. Raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> for a duplicate route unless <code class="docutils literal notranslate"><span class="pre">replace=True</span></code>.</p>
+</section>
+<section id="load-entry-points">
+<h3><code class="docutils literal notranslate"><span class="pre">load_entry_points()</span></code><a class="headerlink" href="#load-entry-points" title="Link to this heading">¶</a></h3>
+<p>Loads entry points from the configured group. Each entry point must load one <code class="docutils literal notranslate"><span class="pre">Converter</span></code>.
+Duplicate routes and invalid objects raise errors before discovered converters are added.</p>
+</section>
+<section id="get-source-type-target-type">
+<h3><code class="docutils literal notranslate"><span class="pre">get(source_type,</span> <span class="pre">target_type)</span></code><a class="headerlink" href="#get-source-type-target-type" title="Link to this heading">¶</a></h3>
+<p>Returns the converter for a route. Raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when no converter is registered.</p>
+</section>
+<section id="convert-source-type-target-type-source-target-none-options">
+<h3><code class="docutils literal notranslate"><span class="pre">convert(source_type,</span> <span class="pre">target_type,</span> <span class="pre">source,</span> <span class="pre">target=None,</span> <span class="pre">**options)</span></code><a class="headerlink" href="#convert-source-type-target-type-source-target-none-options" title="Link to this heading">¶</a></h3>
+<p>Gets the route and calls <code class="docutils literal notranslate"><span class="pre">Converter.convert</span></code>.</p>
+</section>
+</section>
+<section id="default-converters">
+<h2><code class="docutils literal notranslate"><span class="pre">DEFAULT_CONVERTERS</span></code><a class="headerlink" href="#default-converters" title="Link to this heading">¶</a></h2>
+<p>Default <code class="docutils literal notranslate"><span class="pre">ConverterRegistry</span></code>. Built-in routes are <code class="docutils literal notranslate"><span class="pre">zarr</span></code> to <code class="docutils literal notranslate"><span class="pre">xarray</span></code> and <code class="docutils literal notranslate"><span class="pre">xarray</span></code> to <code class="docutils literal notranslate"><span class="pre">zarr</span></code>.
+They import Xarray only when invoked and require the <code class="docutils literal notranslate"><span class="pre">fsspec-data[xarray]</span></code> optional dependency.</p>
+<p>The Zarr-to-Xarray route calls <code class="docutils literal notranslate"><span class="pre">xarray.open_zarr</span></code>. <code class="docutils literal notranslate"><span class="pre">source_options</span></code> become its
+<code class="docutils literal notranslate"><span class="pre">storage_options</span></code>; <code class="docutils literal notranslate"><span class="pre">conversion_options</span></code> supply options such as <code class="docutils literal notranslate"><span class="pre">group</span></code> and <code class="docutils literal notranslate"><span class="pre">chunks</span></code>. It returns
+an Xarray <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> and rejects a target or target options.</p>
+<p>The Xarray-to-Zarr route accepts an Xarray <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> or <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> and calls <code class="docutils literal notranslate"><span class="pre">to_zarr</span></code>.
+<code class="docutils literal notranslate"><span class="pre">target_options</span></code> become its <code class="docutils literal notranslate"><span class="pre">storage_options</span></code>; <code class="docutils literal notranslate"><span class="pre">conversion_options</span></code> supply options such as
+<code class="docutils literal notranslate"><span class="pre">mode</span></code>, <code class="docutils literal notranslate"><span class="pre">group</span></code>, and <code class="docutils literal notranslate"><span class="pre">zarr_format</span></code>.</p>
 </section>
 <section id="dataformat">
 <h2><code class="docutils literal notranslate"><span class="pre">DataFormat</span></code><a class="headerlink" href="#dataformat" title="Link to this heading">¶</a></h2>
@@ -606,6 +755,28 @@ policy or require an unregistered cast.</p>
             <ul>
 <li><a class="reference internal" href="#">Interchange API reference</a><ul>
 <li><a class="reference internal" href="#datafilesystem"><code class="docutils literal notranslate"><span class="pre">DataFileSystem</span></code></a></li>
+<li><a class="reference internal" href="#schemaref"><code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code></a></li>
+<li><a class="reference internal" href="#resolvedschema"><code class="docutils literal notranslate"><span class="pre">ResolvedSchema</span></code></a></li>
+<li><a class="reference internal" href="#schemaprovenance"><code class="docutils literal notranslate"><span class="pre">SchemaProvenance</span></code></a></li>
+<li><a class="reference internal" href="#schemadocument"><code class="docutils literal notranslate"><span class="pre">SchemaDocument</span></code></a></li>
+<li><a class="reference internal" href="#schemaresolverregistry"><code class="docutils literal notranslate"><span class="pre">SchemaResolverRegistry</span></code></a><ul>
+<li><a class="reference internal" href="#register-format-decoder"><code class="docutils literal notranslate"><span class="pre">register(format,</span> <span class="pre">decoder)</span></code></a></li>
+<li><a class="reference internal" href="#register-provider-protocol-provider"><code class="docutils literal notranslate"><span class="pre">register_provider(protocol,</span> <span class="pre">provider)</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#json-schema-to-arrow"><code class="docutils literal notranslate"><span class="pre">json_schema_to_arrow</span></code></a></li>
+<li><a class="reference internal" href="#converter"><code class="docutils literal notranslate"><span class="pre">Converter</span></code></a><ul>
+<li><a class="reference internal" href="#convert-source-target-none-source-options-none-target-options-none-conversion-options-none"><code class="docutils literal notranslate"><span class="pre">convert(source,</span> <span class="pre">target=None,</span> <span class="pre">*,</span> <span class="pre">source_options=None,</span> <span class="pre">target_options=None,</span> <span class="pre">conversion_options=None)</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#converterregistry"><code class="docutils literal notranslate"><span class="pre">ConverterRegistry</span></code></a><ul>
+<li><a class="reference internal" href="#register-converter-replace-false"><code class="docutils literal notranslate"><span class="pre">register(converter,</span> <span class="pre">*,</span> <span class="pre">replace=False)</span></code></a></li>
+<li><a class="reference internal" href="#load-entry-points"><code class="docutils literal notranslate"><span class="pre">load_entry_points()</span></code></a></li>
+<li><a class="reference internal" href="#get-source-type-target-type"><code class="docutils literal notranslate"><span class="pre">get(source_type,</span> <span class="pre">target_type)</span></code></a></li>
+<li><a class="reference internal" href="#convert-source-type-target-type-source-target-none-options"><code class="docutils literal notranslate"><span class="pre">convert(source_type,</span> <span class="pre">target_type,</span> <span class="pre">source,</span> <span class="pre">target=None,</span> <span class="pre">**options)</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#default-converters"><code class="docutils literal notranslate"><span class="pre">DEFAULT_CONVERTERS</span></code></a></li>
 <li><a class="reference internal" href="#dataformat"><code class="docutils literal notranslate"><span class="pre">DataFormat</span></code></a></li>
 <li><a class="reference internal" href="#schemapolicy"><code class="docutils literal notranslate"><span class="pre">SchemaPolicy</span></code></a></li>
 <li><a class="reference internal" href="#fieldmapping"><code class="docutils literal notranslate"><span class="pre">FieldMapping</span></code></a></li>

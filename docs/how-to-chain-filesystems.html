@@ -211,14 +211,21 @@
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/backends/sqlalchemy/index.html">fsspec_data.backends.sqlalchemy</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/confluent/index.html">fsspec_data.confluent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/converters/index.html">fsspec_data.converters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/filesystem/index.html">fsspec_data.filesystem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/interchange/index.html">fsspec_data.interchange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/json_schema/index.html">fsspec_data.json_schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/schema/index.html">fsspec_data.schema</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/fsspec_data/tests/index.html">fsspec_data.tests</a><input aria-label="Toggle navigation of fsspec_data.tests" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/conftest/index.html">fsspec_data.tests.conftest</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_all/index.html">fsspec_data.tests.test_all</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_converters/index.html">fsspec_data.tests.test_converters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_filesystem/index.html">fsspec_data.tests.test_filesystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/fsspec_data/tests/test_schema/index.html">fsspec_data.tests.test_schema</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/xarray_zarr/index.html">fsspec_data.xarray_zarr</a></li>
 </ul>
 </li>
 </ul>
@@ -280,6 +287,58 @@ must cross the <code class="docutils literal notranslate"><span class="pre">fssp
 <p>Pass a <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code> instead when the chain remains in Python. Arrow IPC and Parquet
 sources provide their own schemas, so <code class="docutils literal notranslate"><span class="pre">provided_schema</span></code> is optional for those formats.</p>
 </section>
+<section id="resolve-schemas-from-independent-filesystems">
+<h2>Resolve schemas from independent filesystems<a class="headerlink" href="#resolve-schemas-from-independent-filesystems" title="Link to this heading">¶</a></h2>
+<p>Use a schema reference when a schema is stored separately from the data. Each reference owns
+its storage options, so provided and requested schemas can use different backends or
+credentials:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">provided_schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;s3://input-schemas/orders.json&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;arrow-json&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;storage_options&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="s2">&quot;input-schema-reader&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+<span class="n">requested_schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;s3://output-schemas/orders.schema.json&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;json-schema&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;storage_options&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="s2">&quot;output-schema-reader&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">arrow-json</span></code> uses the <code class="docutils literal notranslate"><span class="pre">fields</span></code> descriptor shown above. <code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code> accepts bytes from
+<code class="docutils literal notranslate"><span class="pre">pyarrow.Schema.serialize()</span></code> or an Arrow IPC stream. A string URL is shorthand for a reference
+when its suffix identifies an Arrow IPC schema:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">requested_schema</span> <span class="o">=</span> <span class="s2">&quot;s3://output-schemas/orders.arrow&quot;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">json-schema</span></code> accepts a structural JSON Schema whose root is an object. It maps JSON Schema
+objects, arrays with one <code class="docutils literal notranslate"><span class="pre">items</span></code> schema, strings, booleans, integers, numbers, and nulls to
+Arrow. A union may contain null and one other type. Object <code class="docutils literal notranslate"><span class="pre">required</span></code> entries determine Arrow
+field nullability; optional properties and explicit null unions are nullable.</p>
+<p>References, composition keywords, multiple non-null union members, schema-valued
+<code class="docutils literal notranslate"><span class="pre">additionalProperties</span></code>, tuple arrays, and <code class="docutils literal notranslate"><span class="pre">format</span></code> annotations are rejected with a path to the
+unsupported field. Validation-only keywords such as numeric bounds and string lengths are not
+represented or enforced by the Arrow schema.</p>
+</section>
+<section id="resolve-json-schema-from-confluent-schema-registry">
+<h2>Resolve JSON Schema from Confluent Schema Registry<a class="headerlink" href="#resolve-json-schema-from-confluent-schema-registry" title="Link to this heading">¶</a></h2>
+<p>Use a <code class="docutils literal notranslate"><span class="pre">confluent://SUBJECT/versions/VERSION</span></code> reference for a JSON Schema registered with
+Confluent. Put registry connection options on that reference:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">provided_schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;confluent://orders-value/versions/latest&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;json-schema&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;storage_options&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;registry_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://schema-registry.example.com&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;schema-api-key&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;schema-api-secret&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">headers</span></code> in <code class="docutils literal notranslate"><span class="pre">storage_options</span></code> for additional string-valued HTTP headers. The resolver
+supports JSON Schema records without external schema references. It rejects Avro, Protobuf,
+and registry records that contain references.</p>
+</section>
 <section id="open-the-converted-representation">
 <h2>Open the converted representation<a class="headerlink" href="#open-the-converted-representation" title="Link to this heading">¶</a></h2>
 <p>Place the requested representation on the left and the source object on the right:</p>
@@ -298,13 +357,16 @@ sources provide their own schemas, so <code class="docutils literal notranslate"
 <code class="docutils literal notranslate"><span class="pre">schema_policy</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
     <span class="n">url</span><span class="p">,</span>
-    <span class="n">provided_schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
-    <span class="n">requested_schema</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">}]},</span>
+    <span class="n">provided_schema</span><span class="o">=</span><span class="n">provided_schema</span><span class="p">,</span>
+    <span class="n">requested_schema</span><span class="o">=</span><span class="n">requested_schema</span><span class="p">,</span>
     <span class="n">schema_policy</span><span class="o">=</span><span class="s2">&quot;projection&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">names</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The data filesystem and each schema reference keep separate options. For example, the inner
+S3 URL can use fsspec’s <code class="docutils literal notranslate"><span class="pre">s3</span></code> options while the provided and requested schema references use
+different registry credentials.</p>
 <p>For a database source, pass connection settings to the inner protocol:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;fsspec-data://orders.parquet::db+duckdb:///main/orders.arrow&quot;</span>
 
@@ -373,6 +435,8 @@ sources provide their own schemas, so <code class="docutils literal notranslate"
             <ul>
 <li><a class="reference internal" href="#">How to convert a file through an fsspec chain</a><ul>
 <li><a class="reference internal" href="#define-schemas-for-text-input">Define schemas for text input</a></li>
+<li><a class="reference internal" href="#resolve-schemas-from-independent-filesystems">Resolve schemas from independent filesystems</a></li>
+<li><a class="reference internal" href="#resolve-json-schema-from-confluent-schema-registry">Resolve JSON Schema from Confluent Schema Registry</a></li>
 <li><a class="reference internal" href="#open-the-converted-representation">Open the converted representation</a></li>
 </ul>
 </li>

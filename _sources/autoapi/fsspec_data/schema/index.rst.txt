@@ -1,0 +1,206 @@
+fsspec_data.schema
+==================
+
+.. py:module:: fsspec_data.schema
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.schema.SchemaInput
+   fsspec_data.schema.SchemaDecoder
+   fsspec_data.schema.SchemaProvider
+   fsspec_data.schema.DEFAULT_SCHEMA_RESOLVERS
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.schema.SchemaFormat
+   fsspec_data.schema.SchemaRef
+   fsspec_data.schema.SchemaProvenance
+   fsspec_data.schema.ResolvedSchema
+   fsspec_data.schema.SchemaDocument
+   fsspec_data.schema.SchemaResolverRegistry
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.schema.normalize_schema
+   fsspec_data.schema.resolve_schema
+   fsspec_data.schema.schema_from_options
+   fsspec_data.schema._field_from_options
+   fsspec_data.schema._format_from_url
+   fsspec_data.schema._decode_arrow_json
+   fsspec_data.schema._decode_arrow_ipc
+   fsspec_data.schema._decode_json_schema
+   fsspec_data.schema._resolve_fsspec_document
+   fsspec_data.schema._resolve_confluent_document
+
+
+Module Contents
+---------------
+
+.. py:class:: SchemaFormat
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   str(object='') -> str
+   str(bytes_or_buffer[, encoding[, errors]]) -> str
+
+   Create a new string object from the given object. If encoding or
+   errors is specified, then the object must expose a data buffer
+   that will be decoded using the given encoding and error handler.
+   Otherwise, returns the result of object.__str__() (if defined)
+   or repr(object).
+   encoding defaults to sys.getdefaultencoding().
+   errors defaults to 'strict'.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: ARROW_IPC
+      :value: 'arrow-ipc-schema'
+
+
+
+   .. py:attribute:: ARROW_JSON
+      :value: 'arrow-json'
+
+
+
+   .. py:attribute:: JSON_SCHEMA
+      :value: 'json-schema'
+
+
+
+.. py:class:: SchemaRef
+
+   .. py:attribute:: url
+      :type:  str
+
+
+   .. py:attribute:: format
+      :type:  SchemaFormat | str | None
+      :value: None
+
+
+
+   .. py:attribute:: storage_options
+      :type:  collections.abc.Mapping[str, Any]
+
+
+   .. py:method:: __post_init__() -> None
+
+
+.. py:class:: SchemaProvenance
+
+   .. py:attribute:: source
+      :type:  str
+
+
+   .. py:attribute:: format
+      :type:  str
+
+
+   .. py:attribute:: provider
+      :type:  str
+
+
+   .. py:attribute:: identifier
+      :type:  str | None
+      :value: None
+
+
+
+   .. py:attribute:: version
+      :type:  str | None
+      :value: None
+
+
+
+.. py:class:: ResolvedSchema
+
+   .. py:attribute:: schema
+      :type:  pyarrow.Schema
+
+
+   .. py:attribute:: provenance
+      :type:  SchemaProvenance
+
+
+.. py:class:: SchemaDocument
+
+   .. py:attribute:: data
+      :type:  bytes
+
+
+   .. py:attribute:: format
+      :type:  SchemaFormat
+
+
+   .. py:attribute:: provenance
+      :type:  SchemaProvenance
+
+
+.. py:type:: SchemaInput
+   :canonical: pa.Schema | SchemaRef | str | Mapping[str, Any] | Sequence[Mapping[str, Any]] | None
+
+
+.. py:type:: SchemaDecoder
+   :canonical: Callable[[bytes], pa.Schema]
+
+
+.. py:type:: SchemaProvider
+   :canonical: Callable[[SchemaRef], SchemaDocument]
+
+
+.. py:class:: SchemaResolverRegistry
+
+   .. py:attribute:: _decoders
+      :type:  dict[SchemaFormat, SchemaDecoder]
+
+
+   .. py:attribute:: _providers
+      :type:  dict[str, SchemaProvider]
+
+
+   .. py:method:: register(format: SchemaFormat | str, decoder: SchemaDecoder) -> None
+
+
+   .. py:method:: register_provider(protocol: str, provider: SchemaProvider) -> None
+
+
+   .. py:method:: resolve(reference: SchemaRef) -> ResolvedSchema
+
+
+.. py:function:: normalize_schema(value: SchemaInput) -> pyarrow.Schema | SchemaRef | None
+
+.. py:function:: resolve_schema(value: pyarrow.Schema | SchemaRef | None, registry: SchemaResolverRegistry | None = None) -> ResolvedSchema | None
+
+.. py:function:: schema_from_options(value: collections.abc.Mapping[str, Any] | collections.abc.Sequence[collections.abc.Mapping[str, Any]]) -> pyarrow.Schema
+
+.. py:function:: _field_from_options(value: collections.abc.Mapping[str, Any]) -> pyarrow.Field
+
+.. py:function:: _format_from_url(url: str) -> SchemaFormat
+
+.. py:function:: _decode_arrow_json(data: bytes) -> pyarrow.Schema
+
+.. py:function:: _decode_arrow_ipc(data: bytes) -> pyarrow.Schema
+
+.. py:function:: _decode_json_schema(data: bytes) -> pyarrow.Schema
+
+.. py:function:: _resolve_fsspec_document(reference: SchemaRef) -> SchemaDocument
+
+.. py:function:: _resolve_confluent_document(reference: SchemaRef) -> SchemaDocument
+
+.. py:data:: DEFAULT_SCHEMA_RESOLVERS
+

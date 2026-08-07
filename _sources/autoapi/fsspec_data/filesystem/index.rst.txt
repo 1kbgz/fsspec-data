@@ -26,14 +26,12 @@ Functions
 .. autoapisummary::
 
    fsspec_data.filesystem._format_from_path
-   fsspec_data.filesystem._schema_from_options
-   fsspec_data.filesystem._field_from_options
 
 
 Module Contents
 ---------------
 
-.. py:class:: DataFileSystem(fo: str, target_protocol: str | None = None, target_options: dict[str, Any] | None = None, fs: fsspec.AbstractFileSystem | None = None, provided_format: fsspec_data.interchange.DataFormat | str | None = None, requested_format: fsspec_data.interchange.DataFormat | str | None = None, provided_schema: pyarrow.Schema | collections.abc.Mapping[str, Any] | collections.abc.Sequence[collections.abc.Mapping[str, Any]] | None = None, requested_schema: pyarrow.Schema | collections.abc.Mapping[str, Any] | collections.abc.Sequence[collections.abc.Mapping[str, Any]] | None = None, schema_policy: fsspec_data.interchange.SchemaPolicy | str = SchemaPolicy.EXACT, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, spool_max_size: int = 8 * 1024 * 1024, **kwargs: Any)
+.. py:class:: DataFileSystem(fo: str, target_protocol: str | None = None, target_options: dict[str, Any] | None = None, fs: fsspec.AbstractFileSystem | None = None, provided_format: fsspec_data.interchange.DataFormat | str | None = None, requested_format: fsspec_data.interchange.DataFormat | str | None = None, provided_schema: fsspec_data.schema.SchemaInput = None, requested_schema: fsspec_data.schema.SchemaInput = None, schema_policy: fsspec_data.interchange.SchemaPolicy | str = SchemaPolicy.EXACT, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, spool_max_size: int = 8 * 1024 * 1024, **kwargs: Any)
 
    Bases: :py:obj:`fsspec.implementations.chained.ChainedFileSystem`
 
@@ -94,6 +92,18 @@ Module Contents
 
 
    .. py:attribute:: requested_schema
+      :value: None
+
+
+
+   .. py:attribute:: provided_schema_provenance
+      :type:  fsspec_data.schema.SchemaProvenance | None
+      :value: None
+
+
+
+   .. py:attribute:: requested_schema_provenance
+      :type:  fsspec_data.schema.SchemaProvenance | None
       :value: None
 
 
@@ -194,8 +204,4 @@ Module Contents
 .. py:data:: _SUFFIX_FORMATS
 
 .. py:function:: _format_from_path(path: str) -> fsspec_data.interchange.DataFormat
-
-.. py:function:: _schema_from_options(value: pyarrow.Schema | collections.abc.Mapping[str, Any] | collections.abc.Sequence[collections.abc.Mapping[str, Any]] | None) -> pyarrow.Schema | None
-
-.. py:function:: _field_from_options(value: collections.abc.Mapping[str, Any]) -> pyarrow.Field
 

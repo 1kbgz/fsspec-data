@@ -12,6 +12,8 @@ Submodules
 
    /autoapi/fsspec_data/tests/conftest/index
    /autoapi/fsspec_data/tests/test_all/index
+   /autoapi/fsspec_data/tests/test_converters/index
    /autoapi/fsspec_data/tests/test_filesystem/index
+   /autoapi/fsspec_data/tests/test_schema/index
 
 
