@@ -38,13 +38,13 @@ iteration with cancellation, and read-only conversion through chained fsspec URL
 
 ## Documentation
 
-- [Convert tabular data](https://github.com/1kbgz/fsspec-data/blob/main/docs/tutorial.md) in a
+- [Convert tabular data](docs/tutorial.md) in a
   guided first example.
-- [Connect a batch producer or consumer](https://github.com/1kbgz/fsspec-data/blob/main/docs/how-to-integrate.md)
+- [Connect a batch producer or consumer](docs/how-to-integrate.md)
   to the interchange layer.
-- [Convert a file through an fsspec chain](https://github.com/1kbgz/fsspec-data/blob/main/docs/how-to-chain-filesystems.md)
+- [Convert a file through an fsspec chain](docs/how-to-chain-filesystems.md)
   while retaining its source filesystem.
-- [Understand the interchange design](https://github.com/1kbgz/fsspec-data/blob/main/docs/explanation.md)
+- [Understand the interchange design](docs/explanation.md)
   and package boundaries.
-- [Look up the interchange API](https://github.com/1kbgz/fsspec-data/blob/main/docs/api.md),
+- [Look up the interchange API](docs/api.md),
   including policies, codecs, and errors.
