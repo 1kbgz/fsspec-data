@@ -274,26 +274,26 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.compute</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pc</span>
 
-<span class="n">_rust</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;.fsspec_data&quot;</span><span class="p">,</span> <span class="n">__package__</span><span class="p">)</span>
+<span class="n">_rust</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">".fsspec_data"</span><span class="p">,</span> <span class="n">__package__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="DataFormat">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data.DataFormat">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataFormat</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-    <span class="n">ARROW</span> <span class="o">=</span> <span class="s2">&quot;arrow&quot;</span>
-    <span class="n">PARQUET</span> <span class="o">=</span> <span class="s2">&quot;parquet&quot;</span>
-    <span class="n">CSV</span> <span class="o">=</span> <span class="s2">&quot;csv&quot;</span>
-    <span class="n">JSONL</span> <span class="o">=</span> <span class="s2">&quot;jsonl&quot;</span></div>
+    <span class="n">ARROW</span> <span class="o">=</span> <span class="s2">"arrow"</span>
+    <span class="n">PARQUET</span> <span class="o">=</span> <span class="s2">"parquet"</span>
+    <span class="n">CSV</span> <span class="o">=</span> <span class="s2">"csv"</span>
+    <span class="n">JSONL</span> <span class="o">=</span> <span class="s2">"jsonl"</span></div>
 
 
 
 <div class="viewcode-block" id="SchemaPolicy">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data.SchemaPolicy">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SchemaPolicy</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-    <span class="n">EXACT</span> <span class="o">=</span> <span class="s2">&quot;exact&quot;</span>
-    <span class="n">PROJECTION</span> <span class="o">=</span> <span class="s2">&quot;projection&quot;</span>
-    <span class="n">COMPATIBLE</span> <span class="o">=</span> <span class="s2">&quot;compatible&quot;</span>
-    <span class="n">COERCE</span> <span class="o">=</span> <span class="s2">&quot;coerce&quot;</span></div>
+    <span class="n">EXACT</span> <span class="o">=</span> <span class="s2">"exact"</span>
+    <span class="n">PROJECTION</span> <span class="o">=</span> <span class="s2">"projection"</span>
+    <span class="n">COMPATIBLE</span> <span class="o">=</span> <span class="s2">"compatible"</span>
+    <span class="n">COERCE</span> <span class="o">=</span> <span class="s2">"coerce"</span></div>
 
 
 
@@ -395,12 +395,12 @@
         <span class="n">batches</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">batches</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">schema</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">batches</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;schema is required when encoding no record batches&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"schema is required when encoding no record batches"</span><span class="p">)</span>
             <span class="n">schema</span> <span class="o">=</span> <span class="n">batches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">schema</span>
         <span class="n">schema</span> <span class="o">=</span> <span class="n">_ensure_pyarrow</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;batches must contain pyarrow.RecordBatch objects&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"batches must contain pyarrow.RecordBatch objects"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">_rust</span><span class="o">.</span><span class="n">encode_batches</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">batches</span><span class="p">)</span></div>
 
 
@@ -418,16 +418,16 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">first</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">batches</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">StopIteration</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;schema is required when encoding no record batches&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"schema is required when encoding no record batches"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;batches must contain pyarrow.RecordBatch objects&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"batches must contain pyarrow.RecordBatch objects"</span><span class="p">)</span>
             <span class="n">schema</span> <span class="o">=</span> <span class="n">first</span><span class="o">.</span><span class="n">schema</span>
             <span class="n">batches</span> <span class="o">=</span> <span class="n">chain</span><span class="p">((</span><span class="n">first</span><span class="p">,),</span> <span class="n">batches</span><span class="p">)</span>
         <span class="n">schema</span> <span class="o">=</span> <span class="n">_ensure_pyarrow</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
         <span class="n">writer</span> <span class="o">=</span> <span class="n">_rust</span><span class="o">.</span><span class="n">start_codec_writer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;batches must contain pyarrow.RecordBatch objects&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"batches must contain pyarrow.RecordBatch objects"</span><span class="p">)</span>
             <span class="n">writer</span><span class="o">.</span><span class="n">write_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
         <span class="n">writer</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span></div>
 
@@ -474,7 +474,7 @@
                 <span class="n">row_limit</span><span class="p">,</span>
                 <span class="n">byte_limit</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;read&quot;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"read"</span><span class="p">):</span>
             <span class="n">decoded_schema</span><span class="p">,</span> <span class="n">native</span> <span class="o">=</span> <span class="n">_rust</span><span class="o">.</span><span class="n">decode_reader</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                 <span class="n">data</span><span class="p">,</span>
@@ -484,7 +484,7 @@
                 <span class="n">byte_limit</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;data must be bytes-like or a binary file-like object&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"data must be bytes-like or a binary file-like object"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">DecodedBatchStream</span><span class="p">(</span><span class="n">decoded_schema</span><span class="p">,</span> <span class="n">native</span><span class="p">)</span></div>
 </div>
 
@@ -573,9 +573,9 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_apply_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span> <span class="o">|</span> <span class="n">pa</span><span class="o">.</span><span class="n">ChunkedArray</span><span class="p">,</span> <span class="n">mapping</span><span class="p">:</span> <span class="n">FieldMapping</span><span class="p">):</span>
         <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">requested_schema</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">mapping</span><span class="o">.</span><span class="n">target_index</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mapping</span><span class="o">.</span><span class="n">check_nulls</span> <span class="ow">and</span> <span class="n">array</span><span class="o">.</span><span class="n">null_count</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;field </span><span class="si">{</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> contains nulls required by the requested schema&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"field </span><span class="si">{</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> contains nulls required by the requested schema"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mapping</span><span class="o">.</span><span class="n">cast</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">pc</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="n">mapping</span><span class="o">.</span><span class="n">cast</span> <span class="o">!=</span> <span class="s2">&quot;lossy&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pc</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="n">mapping</span><span class="o">.</span><span class="n">cast</span> <span class="o">!=</span> <span class="s2">"lossy"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">array</span></div>
 
 
@@ -583,7 +583,7 @@
 <a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data.InterchangePlan._validate_input_schema">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_input_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">schema</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provided_schema</span><span class="p">,</span> <span class="n">check_metadata</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input schema does not match the schema used to create the plan&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"input schema does not match the schema used to create the plan"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="InterchangePlan.iter_batches">
@@ -661,7 +661,7 @@
 <a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data._ensure_pyarrow">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_pyarrow</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;schema must be a pyarrow.Schema&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"schema must be a pyarrow.Schema"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">value</span></div>
 
 </pre></div>

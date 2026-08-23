@@ -269,10 +269,10 @@
 <div class="viewcode-block" id="BaseFileSystem">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseFileSystem</span><span class="p">(</span><span class="n">AbstractFileSystem</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Docs: https://filesystem-spec.readthedocs.io/en/latest/developer.html#implementing-a-backend</span>
 <span class="sd">    Minimal: https://github.com/fsspec/filesystem_spec/blob/45dcfa99e2dc320bf072c28bef767b71f8299a4a/fsspec/implementations/github.py#L10</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># def start_transaction(self):</span>
     <span class="c1"># def end_transaction(self):</span>
@@ -281,9 +281,9 @@
 <div class="viewcode-block" id="BaseFileSystem.mkdir">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.mkdir">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">create_parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create directory entry at path</span>
+<span class="w">        </span><span class="sd">"""Create directory entry at path</span>
 
-<span class="sd">        For systems that don&#39;t have true directories, may create an for</span>
+<span class="sd">        For systems that don't have true directories, may create an for</span>
 <span class="sd">        this instance only and not touch the real filesystem</span>
 
 <span class="sd">        Parameters</span>
@@ -294,13 +294,13 @@
 <span class="sd">            if True, this is equivalent to ``makedirs``</span>
 <span class="sd">        kwargs:</span>
 <span class="sd">            may be permissions, etc.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        """</span></div>
 
 
 <div class="viewcode-block" id="BaseFileSystem.makedirs">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.makedirs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively make directories</span>
+<span class="w">        </span><span class="sd">"""Recursively make directories</span>
 
 <span class="sd">        Creates directory at path and any intervening required directories.</span>
 <span class="sd">        Raises exception if, for instance, the path already exists but is a</span>
@@ -312,19 +312,19 @@
 <span class="sd">            leaf directory name</span>
 <span class="sd">        exist_ok: bool (False)</span>
 <span class="sd">            If False, will error if the target already exists</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        """</span></div>
 
 
 <div class="viewcode-block" id="BaseFileSystem.rmdir">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.rmdir">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rmdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a directory, if empty&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">"""Remove a directory, if empty"""</span></div>
 
 
 <div class="viewcode-block" id="BaseFileSystem.ls">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.ls">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;List objects at path.</span>
+<span class="w">        </span><span class="sd">"""List objects at path.</span>
 
 <span class="sd">        This should include subdirectories and files at that location. The</span>
 <span class="sd">        difference between a file and a directory must be clear when details</span>
@@ -337,7 +337,7 @@
 <span class="sd">        - full path to the entry (without protocol)</span>
 <span class="sd">        - size of the entry, in bytes. If the value cannot be determined, will</span>
 <span class="sd">          be ``None``.</span>
-<span class="sd">        - type of entry, &quot;file&quot;, &quot;directory&quot; or other</span>
+<span class="sd">        - type of entry, "file", "directory" or other</span>
 
 <span class="sd">        Additional information</span>
 <span class="sd">        may be present, aproriate to the file-system, e.g., generation,</span>
@@ -361,7 +361,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        List of strings if detail is False, or list of directory information</span>
 <span class="sd">        dicts if detail is True.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -374,7 +374,7 @@
 <div class="viewcode-block" id="BaseFileSystem._rm">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem._rm">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_rm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete one file&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Delete one file"""</span>
         <span class="c1"># this is the old name for the method, prefer rm_file</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
@@ -382,14 +382,14 @@
 <div class="viewcode-block" id="BaseFileSystem.created">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.created">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">created</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the created timestamp of a file as a datetime.datetime&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return the created timestamp of a file as a datetime.datetime"""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="BaseFileSystem.modified">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.modified">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">modified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the modified timestamp of a file as a datetime.datetime&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return the modified timestamp of a file as a datetime.datetime"""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -409,7 +409,7 @@
     <span class="c1"># def pipe_file(self, path, value, **kwargs):</span>
     <span class="c1"># def pipe(self, path, value=None, **kwargs):</span>
     <span class="c1"># def cat_ranges(self, paths, starts, ends, max_gap=None, **kwargs):</span>
-    <span class="c1"># def cat(self, path, recursive=False, on_error=&quot;raise&quot;, **kwargs):</span>
+    <span class="c1"># def cat(self, path, recursive=False, on_error="raise", **kwargs):</span>
     <span class="c1"># def get_file(self, rpath, lpath, callback=_DEFAULT_CALLBACK, **kwargs):</span>
     <span class="c1"># def get(self, rpath, lpath, recursive=False, callback=_DEFAULT_CALLBACK, **kwargs):</span>
     <span class="c1"># def put_file(self, lpath, rpath, callback=_DEFAULT_CALLBACK, **kwargs):</span>
@@ -429,7 +429,7 @@
     <span class="c1"># def read_block(self, fn, offset, length, delimiter=None):</span>
     <span class="c1"># def to_json(self):</span>
     <span class="c1"># def from_json(blob):</span>
-    <span class="c1"># def get_mapper(self, root=&quot;&quot;, check=False, create=False, missing_exceptions=None):</span>
+    <span class="c1"># def get_mapper(self, root="", check=False, create=False, missing_exceptions=None):</span>
     <span class="c1"># ------------------------------------------------------------------------</span>
     <span class="c1"># Aliases</span>
     <span class="c1"># def makedir(self, path, create_parents=True, **kwargs):</span>
@@ -447,7 +447,7 @@
 <div class="viewcode-block" id="BaseFileSystem.sign">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.sign">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">expiration</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a signed URL representing the given path</span>
+<span class="w">        </span><span class="sd">"""Create a signed URL representing the given path</span>
 
 <span class="sd">        Some implementations allow temporary URLs to be generated, as a</span>
 <span class="sd">        way of delegating credentials.</span>
@@ -467,8 +467,8 @@
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        NotImplementedError : if method is not implemented for a filesystem</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Sign is not implemented for this filesystem&quot;</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Sign is not implemented for this filesystem"</span><span class="p">)</span></div>
 </div>
 
 
@@ -485,13 +485,13 @@
 <div class="viewcode-block" id="BaseBufferedFile.commit">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseBufferedFile.commit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move from temp to final destination&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">"""Move from temp to final destination"""</span></div>
 
 
 <div class="viewcode-block" id="BaseBufferedFile.discard">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseBufferedFile.discard">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">discard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Throw away temporary file&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">"""Throw away temporary file"""</span></div>
 
 
     <span class="c1"># def info(self):</span>
@@ -504,20 +504,20 @@
 <div class="viewcode-block" id="BaseBufferedFile._initiate_upload">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseBufferedFile._initiate_upload">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_initiate_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create remote file/upload&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">"""Create remote file/upload"""</span></div>
 
 
 <div class="viewcode-block" id="BaseBufferedFile._fetch_range">
 <a class="viewcode-back" href="../../../autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseBufferedFile._fetch_range">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_fetch_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the specified set of bytes from remote&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the specified set of bytes from remote"""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 </div>
 
 
     <span class="c1"># def read(self, length=-1):</span>
     <span class="c1"># def readinto(self, b):</span>
-    <span class="c1"># def readuntil(self, char=b&quot;\n&quot;, blocks=None):</span>
+    <span class="c1"># def readuntil(self, char=b"\n", blocks=None):</span>
     <span class="c1"># def readline(self):</span>
     <span class="c1"># def readlines(self):</span>
     <span class="c1"># def readinto1(self, b):</span>

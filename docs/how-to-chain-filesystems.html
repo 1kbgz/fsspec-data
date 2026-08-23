@@ -277,9 +277,9 @@ without replacing its filesystem.</p>
 <p>CSV and JSONL sources require an Arrow schema. Use nested dictionaries when the same options
 must cross the <code class="docutils literal notranslate"><span class="pre">fsspec-rs</span></code> Python bridge:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">schema</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int64&quot;</span><span class="p">,</span> <span class="s2">&quot;nullable&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
-        <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;nullable&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s2">"fields"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"id"</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"int64"</span><span class="p">,</span> <span class="s2">"nullable"</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"nullable"</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -293,21 +293,21 @@ sources provide their own schemas, so <code class="docutils literal notranslate"
 its storage options, so provided and requested schemas can use different backends or
 credentials:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">provided_schema</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;s3://input-schemas/orders.json&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;arrow-json&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;storage_options&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="s2">&quot;input-schema-reader&quot;</span><span class="p">},</span>
+    <span class="s2">"url"</span><span class="p">:</span> <span class="s2">"s3://input-schemas/orders.json"</span><span class="p">,</span>
+    <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"arrow-json"</span><span class="p">,</span>
+    <span class="s2">"storage_options"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"profile"</span><span class="p">:</span> <span class="s2">"input-schema-reader"</span><span class="p">},</span>
 <span class="p">}</span>
 <span class="n">requested_schema</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;s3://output-schemas/orders.schema.json&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;json-schema&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;storage_options&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="s2">&quot;output-schema-reader&quot;</span><span class="p">},</span>
+    <span class="s2">"url"</span><span class="p">:</span> <span class="s2">"s3://output-schemas/orders.schema.json"</span><span class="p">,</span>
+    <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"json-schema"</span><span class="p">,</span>
+    <span class="s2">"storage_options"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"profile"</span><span class="p">:</span> <span class="s2">"output-schema-reader"</span><span class="p">},</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">arrow-json</span></code> uses the <code class="docutils literal notranslate"><span class="pre">fields</span></code> descriptor shown above. <code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code> accepts bytes from
 <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema.serialize()</span></code> or an Arrow IPC stream. A string URL is shorthand for a reference
 when its suffix identifies an Arrow IPC schema:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">requested_schema</span> <span class="o">=</span> <span class="s2">&quot;s3://output-schemas/orders.arrow&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">requested_schema</span> <span class="o">=</span> <span class="s2">"s3://output-schemas/orders.arrow"</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">json-schema</span></code> accepts a structural JSON Schema whose root is an object. It maps JSON Schema
@@ -324,13 +324,13 @@ represented or enforced by the Arrow schema.</p>
 <p>Use a <code class="docutils literal notranslate"><span class="pre">confluent://SUBJECT/versions/VERSION</span></code> reference for a JSON Schema registered with
 Confluent. Put registry connection options on that reference:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">provided_schema</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;confluent://orders-value/versions/latest&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;json-schema&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;storage_options&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;registry_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://schema-registry.example.com&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;schema-api-key&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;schema-api-secret&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">"url"</span><span class="p">:</span> <span class="s2">"confluent://orders-value/versions/latest"</span><span class="p">,</span>
+    <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"json-schema"</span><span class="p">,</span>
+    <span class="s2">"storage_options"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"registry_url"</span><span class="p">:</span> <span class="s2">"https://schema-registry.example.com"</span><span class="p">,</span>
+        <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"schema-api-key"</span><span class="p">,</span>
+        <span class="s2">"password"</span><span class="p">:</span> <span class="s2">"schema-api-secret"</span><span class="p">,</span>
+        <span class="s2">"timeout"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">}</span>
 </pre></div>
@@ -345,7 +345,7 @@ and registry records that contain references.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">fsspec</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.parquet</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pq</span>
 
-<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;fsspec-data://orders.parquet::memory://orders.csv&quot;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">"fsspec-data://orders.parquet::memory://orders.csv"</span>
 
 <span class="k">with</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">provided_schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">orders</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
@@ -359,7 +359,7 @@ and registry records that contain references.</p>
     <span class="n">url</span><span class="p">,</span>
     <span class="n">provided_schema</span><span class="o">=</span><span class="n">provided_schema</span><span class="p">,</span>
     <span class="n">requested_schema</span><span class="o">=</span><span class="n">requested_schema</span><span class="p">,</span>
-    <span class="n">schema_policy</span><span class="o">=</span><span class="s2">&quot;projection&quot;</span><span class="p">,</span>
+    <span class="n">schema_policy</span><span class="o">=</span><span class="s2">"projection"</span><span class="p">,</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">names</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 </pre></div>
@@ -368,9 +368,9 @@ and registry records that contain references.</p>
 S3 URL can use fsspec’s <code class="docutils literal notranslate"><span class="pre">s3</span></code> options while the provided and requested schema references use
 different registry credentials.</p>
 <p>For a database source, pass connection settings to the inner protocol:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;fsspec-data://orders.parquet::db+duckdb:///main/orders.arrow&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">"fsspec-data://orders.parquet::db+duckdb:///main/orders.arrow"</span>
 
-<span class="k">with</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;db+duckdb&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="s2">&quot;warehouse.duckdb&quot;</span><span class="p">}})</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">"db+duckdb"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"database"</span><span class="p">:</span> <span class="s2">"warehouse.duckdb"</span><span class="p">}})</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">orders</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 </pre></div>
 </div>

@@ -280,9 +280,9 @@
     <span class="n">conversion_options</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;zarr-to-xarray conversion returns an object and does not accept a target&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zarr-to-xarray conversion returns an object and does not accept a target"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">target_options</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;zarr-to-xarray conversion does not accept target_options&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zarr-to-xarray conversion does not accept target_options"</span><span class="p">)</span>
     <span class="n">options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">conversion_options</span><span class="p">)</span>
     <span class="n">_add_storage_options</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">source_options</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_import_xarray</span><span class="p">()</span><span class="o">.</span><span class="n">open_zarr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span></div>
@@ -301,9 +301,9 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
     <span class="n">xarray</span> <span class="o">=</span> <span class="n">_import_xarray</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="p">(</span><span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">xarray</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;xarray-to-zarr conversion requires an xarray Dataset or DataArray&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"xarray-to-zarr conversion requires an xarray Dataset or DataArray"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">source_options</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;xarray-to-zarr conversion does not accept source_options&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"xarray-to-zarr conversion does not accept source_options"</span><span class="p">)</span>
     <span class="n">options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">conversion_options</span><span class="p">)</span>
     <span class="n">_add_storage_options</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">target_options</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">source</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span></div>
@@ -313,10 +313,10 @@
 <div class="viewcode-block" id="_add_storage_options">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/xarray_zarr/index.html#fsspec_data.xarray_zarr._add_storage_options">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_add_storage_options</span><span class="p">(</span><span class="n">options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">storage_options</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">storage_options</span> <span class="ow">and</span> <span class="s2">&quot;storage_options&quot;</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;provide storage options through source_options or target_options, not conversion_options&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">storage_options</span> <span class="ow">and</span> <span class="s2">"storage_options"</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"provide storage options through source_options or target_options, not conversion_options"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">storage_options</span><span class="p">:</span>
-        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;storage_options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">storage_options</span><span class="p">)</span></div>
+        <span class="n">options</span><span class="p">[</span><span class="s2">"storage_options"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">storage_options</span><span class="p">)</span></div>
 
 
 
@@ -324,9 +324,9 @@
 <a class="viewcode-back" href="../../autoapi/fsspec_data/xarray_zarr/index.html#fsspec_data.xarray_zarr._import_xarray">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_import_xarray</span><span class="p">():</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;xarray&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">"xarray"</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Xarray/Zarr conversion requires &#39;fsspec-data[xarray]&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span></div>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">"Xarray/Zarr conversion requires 'fsspec-data[xarray]'"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span></div>
 
 </pre></div>
         </article>

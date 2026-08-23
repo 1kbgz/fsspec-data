@@ -289,12 +289,12 @@ output in bounded Arrow batches.</p>
 
 <span class="n">source_schema</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span>
     <span class="p">[</span>
-        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">(),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">()),</span>
+        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">(),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">()),</span>
     <span class="p">]</span>
 <span class="p">)</span>
 <span class="n">source_batch</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">(</span>
-    <span class="p">[[</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;Ada&quot;</span><span class="p">,</span> <span class="s2">&quot;Grace&quot;</span><span class="p">,</span> <span class="s2">&quot;Margaret&quot;</span><span class="p">]],</span>
+    <span class="p">[[</span><span class="s2">"1"</span><span class="p">,</span> <span class="s2">"2"</span><span class="p">,</span> <span class="s2">"3"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"Ada"</span><span class="p">,</span> <span class="s2">"Grace"</span><span class="p">,</span> <span class="s2">"Margaret"</span><span class="p">]],</span>
     <span class="n">schema</span><span class="o">=</span><span class="n">source_schema</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">csv_data</span> <span class="o">=</span> <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DataFormat</span><span class="o">.</span><span class="n">CSV</span><span class="p">)</span><span class="o">.</span><span class="n">encode_batches</span><span class="p">([</span><span class="n">source_batch</span><span class="p">])</span>
@@ -318,8 +318,8 @@ integers requires runtime value checks:</p>
 
 <span class="n">target_schema</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span>
     <span class="p">[</span>
-        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">()),</span>
+        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">()),</span>
     <span class="p">]</span>
 <span class="p">)</span>
 <span class="n">plan</span> <span class="o">=</span> <span class="n">InterchangeRequest</span><span class="p">(</span>
@@ -343,8 +343,8 @@ integers requires runtime value checks:</p>
 </pre></div>
 </div>
 <p>The plan decodes and converts each batch as it is requested:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[{&#39;id&#39;: 1, &#39;name&#39;: &#39;Ada&#39;}, {&#39;id&#39;: 2, &#39;name&#39;: &#39;Grace&#39;}]
-[{&#39;id&#39;: 3, &#39;name&#39;: &#39;Margaret&#39;}]
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[{'id': 1, 'name': 'Ada'}, {'id': 2, 'name': 'Grace'}]
+[{'id': 3, 'name': 'Margaret'}]
 </pre></div>
 </div>
 </section>
@@ -361,7 +361,7 @@ integers requires runtime value checks:</p>
 <p>The result uses the requested schema and contains integer identifiers:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>id: int64 not null
 name: string
-[{&#39;id&#39;: 1, &#39;name&#39;: &#39;Ada&#39;}, {&#39;id&#39;: 2, &#39;name&#39;: &#39;Grace&#39;}, {&#39;id&#39;: 3, &#39;name&#39;: &#39;Margaret&#39;}]
+[{'id': 1, 'name': 'Ada'}, {'id': 2, 'name': 'Grace'}, {'id': 3, 'name': 'Margaret'}]
 </pre></div>
 </div>
 <p>You have now used one plan for lazy Arrow consumption and encoded Parquet output. See the

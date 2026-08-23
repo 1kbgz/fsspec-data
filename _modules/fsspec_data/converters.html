@@ -271,7 +271,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.xarray_zarr</span><span class="w"> </span><span class="kn">import</span> <span class="n">xarray_to_zarr</span><span class="p">,</span> <span class="n">zarr_to_xarray</span>
 
-<span class="n">CONVERTER_ENTRY_POINT_GROUP</span> <span class="o">=</span> <span class="s2">&quot;fsspec_data.converters&quot;</span>
+<span class="n">CONVERTER_ENTRY_POINT_GROUP</span> <span class="o">=</span> <span class="s2">"fsspec_data.converters"</span>
 <span class="n">ConverterHandler</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
 
 
@@ -286,10 +286,10 @@
 <div class="viewcode-block" id="Converter.__post_init__">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/index.html#fsspec_data.converters.Converter.__post_init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;source_type&quot;</span><span class="p">,</span> <span class="n">_normalize_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="p">))</span>
-        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;target_type&quot;</span><span class="p">,</span> <span class="n">_normalize_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_type</span><span class="p">))</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"source_type"</span><span class="p">,</span> <span class="n">_normalize_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="p">))</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"target_type"</span><span class="p">,</span> <span class="n">_normalize_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_type</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handler</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;converter handler must be callable&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"converter handler must be callable"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Converter.convert">
@@ -306,9 +306,9 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span>
             <span class="n">source</span><span class="p">,</span>
             <span class="n">target</span><span class="p">,</span>
-            <span class="n">source_options</span><span class="o">=</span><span class="n">_copy_options</span><span class="p">(</span><span class="n">source_options</span><span class="p">,</span> <span class="s2">&quot;source_options&quot;</span><span class="p">),</span>
-            <span class="n">target_options</span><span class="o">=</span><span class="n">_copy_options</span><span class="p">(</span><span class="n">target_options</span><span class="p">,</span> <span class="s2">&quot;target_options&quot;</span><span class="p">),</span>
-            <span class="n">conversion_options</span><span class="o">=</span><span class="n">_copy_options</span><span class="p">(</span><span class="n">conversion_options</span><span class="p">,</span> <span class="s2">&quot;conversion_options&quot;</span><span class="p">),</span>
+            <span class="n">source_options</span><span class="o">=</span><span class="n">_copy_options</span><span class="p">(</span><span class="n">source_options</span><span class="p">,</span> <span class="s2">"source_options"</span><span class="p">),</span>
+            <span class="n">target_options</span><span class="o">=</span><span class="n">_copy_options</span><span class="p">(</span><span class="n">target_options</span><span class="p">,</span> <span class="s2">"target_options"</span><span class="p">),</span>
+            <span class="n">conversion_options</span><span class="o">=</span><span class="n">_copy_options</span><span class="p">(</span><span class="n">conversion_options</span><span class="p">,</span> <span class="s2">"conversion_options"</span><span class="p">),</span>
         <span class="p">)</span></div>
 </div>
 
@@ -332,10 +332,10 @@
 <a class="viewcode-back" href="../../autoapi/fsspec_data/index.html#fsspec_data.converters.ConverterRegistry.register">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">converter</span><span class="p">:</span> <span class="n">Converter</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">replace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">converter</span><span class="p">,</span> <span class="n">Converter</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;converter must be a Converter&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"converter must be a Converter"</span><span class="p">)</span>
         <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">converter</span><span class="o">.</span><span class="n">source_type</span><span class="p">,</span> <span class="n">converter</span><span class="o">.</span><span class="n">target_type</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converters</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">replace</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;converter from </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> to </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> is already registered&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"converter from </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> to </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> is already registered"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_converters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">converter</span></div>
 
 
@@ -351,14 +351,14 @@
         <span class="p">):</span>
             <span class="n">converter</span> <span class="o">=</span> <span class="n">entry_point</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">converter</span><span class="p">,</span> <span class="n">Converter</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;converter entry point </span><span class="si">{</span><span class="n">entry_point</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> must load a Converter&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"converter entry point </span><span class="si">{</span><span class="n">entry_point</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> must load a Converter"</span><span class="p">)</span>
             <span class="n">discovered</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">entry_point</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">converter</span><span class="p">))</span>
 
         <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_converters</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">converter</span> <span class="ow">in</span> <span class="n">discovered</span><span class="p">:</span>
             <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">converter</span><span class="o">.</span><span class="n">source_type</span><span class="p">,</span> <span class="n">converter</span><span class="o">.</span><span class="n">target_type</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;converter entry point </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> duplicates the route from </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> to </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"converter entry point </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> duplicates the route from </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> to </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">keys</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_converters</span><span class="o">.</span><span class="n">update</span><span class="p">(((</span><span class="n">converter</span><span class="o">.</span><span class="n">source_type</span><span class="p">,</span> <span class="n">converter</span><span class="o">.</span><span class="n">target_type</span><span class="p">),</span> <span class="n">converter</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">converter</span> <span class="ow">in</span> <span class="n">discovered</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_entry_points_loaded</span> <span class="o">=</span> <span class="kc">True</span></div>
@@ -372,7 +372,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no converter registered from </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> to </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no converter registered from </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> to </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span></div>
 
 
 <div class="viewcode-block" id="ConverterRegistry.convert">
@@ -403,7 +403,7 @@
 <a class="viewcode-back" href="../../autoapi/fsspec_data/converters/index.html#fsspec_data.converters._normalize_type">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_type</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;converter types must be non-empty strings&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"converter types must be non-empty strings"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
 
 
@@ -414,13 +414,13 @@
     <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be a mapping&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be a mapping"</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
 
 
 
-<span class="n">XARRAY_TO_ZARR</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="s2">&quot;xarray&quot;</span><span class="p">,</span> <span class="s2">&quot;zarr&quot;</span><span class="p">,</span> <span class="n">xarray_to_zarr</span><span class="p">)</span>
-<span class="n">ZARR_TO_XARRAY</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="s2">&quot;zarr&quot;</span><span class="p">,</span> <span class="s2">&quot;xarray&quot;</span><span class="p">,</span> <span class="n">zarr_to_xarray</span><span class="p">)</span>
+<span class="n">XARRAY_TO_ZARR</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="s2">"xarray"</span><span class="p">,</span> <span class="s2">"zarr"</span><span class="p">,</span> <span class="n">xarray_to_zarr</span><span class="p">)</span>
+<span class="n">ZARR_TO_XARRAY</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="s2">"zarr"</span><span class="p">,</span> <span class="s2">"xarray"</span><span class="p">,</span> <span class="n">zarr_to_xarray</span><span class="p">)</span>
 
 <span class="n">DEFAULT_CONVERTERS</span> <span class="o">=</span> <span class="n">ConverterRegistry</span><span class="p">()</span>
 <span class="n">DEFAULT_CONVERTERS</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">XARRAY_TO_ZARR</span><span class="p">)</span>

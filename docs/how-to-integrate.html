@@ -315,7 +315,7 @@ the stream when the consumer stops early.</p>
 and database reads.</p>
 <p>Write an encoded stream directly to a binary file when the consumer does not need one byte
 buffer:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;result.arrow&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"result.arrow"</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
     <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DataFormat</span><span class="o">.</span><span class="n">ARROW</span><span class="p">)</span><span class="o">.</span><span class="n">encode_batches_to</span><span class="p">(</span>
         <span class="n">plan</span><span class="o">.</span><span class="n">iter_batches</span><span class="p">(</span><span class="n">encoded</span><span class="p">),</span>
         <span class="n">output</span><span class="p">,</span>
@@ -327,29 +327,29 @@ buffer:</p>
 <section id="convert-between-xarray-and-zarr">
 <h2>Convert between Xarray and Zarr<a class="headerlink" href="#convert-between-xarray-and-zarr" title="Link to this heading">¶</a></h2>
 <p>Install the optional dependencies:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install &quot;fsspec-data[xarray]&quot;</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install "fsspec-data[xarray]"</span>
 </pre></div>
 </div>
 <p>Open a Zarr store as an Xarray dataset while keeping storage credentials scoped to the source:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_CONVERTERS</span>
 
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">DEFAULT_CONVERTERS</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span>
-    <span class="s2">&quot;zarr&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;xarray&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;s3://weather-input/forecast.zarr&quot;</span><span class="p">,</span>
-    <span class="n">source_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="s2">&quot;weather-reader&quot;</span><span class="p">},</span>
-    <span class="n">conversion_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;forecast&quot;</span><span class="p">,</span> <span class="s2">&quot;chunks&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">},</span>
+    <span class="s2">"zarr"</span><span class="p">,</span>
+    <span class="s2">"xarray"</span><span class="p">,</span>
+    <span class="s2">"s3://weather-input/forecast.zarr"</span><span class="p">,</span>
+    <span class="n">source_options</span><span class="o">=</span><span class="p">{</span><span class="s2">"profile"</span><span class="p">:</span> <span class="s2">"weather-reader"</span><span class="p">},</span>
+    <span class="n">conversion_options</span><span class="o">=</span><span class="p">{</span><span class="s2">"group"</span><span class="p">:</span> <span class="s2">"forecast"</span><span class="p">,</span> <span class="s2">"chunks"</span><span class="p">:</span> <span class="s2">"auto"</span><span class="p">},</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Write a dataset to another Zarr store with independent target credentials:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DEFAULT_CONVERTERS</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span>
-    <span class="s2">&quot;xarray&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;zarr&quot;</span><span class="p">,</span>
+    <span class="s2">"xarray"</span><span class="p">,</span>
+    <span class="s2">"zarr"</span><span class="p">,</span>
     <span class="n">dataset</span><span class="p">,</span>
-    <span class="s2">&quot;s3://weather-output/forecast.zarr&quot;</span><span class="p">,</span>
-    <span class="n">target_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="s2">&quot;weather-writer&quot;</span><span class="p">},</span>
-    <span class="n">conversion_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;w-&quot;</span><span class="p">,</span> <span class="s2">&quot;zarr_format&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+    <span class="s2">"s3://weather-output/forecast.zarr"</span><span class="p">,</span>
+    <span class="n">target_options</span><span class="o">=</span><span class="p">{</span><span class="s2">"profile"</span><span class="p">:</span> <span class="s2">"weather-writer"</span><span class="p">},</span>
+    <span class="n">conversion_options</span><span class="o">=</span><span class="p">{</span><span class="s2">"mode"</span><span class="p">:</span> <span class="s2">"w-"</span><span class="p">,</span> <span class="s2">"zarr_format"</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -373,12 +373,12 @@ contains multiple metadata and chunk objects.</p>
     <span class="o">...</span>
 
 
-<span class="n">GEOTIFF_TO_XARRAY</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="s2">&quot;geotiff&quot;</span><span class="p">,</span> <span class="s2">&quot;xarray&quot;</span><span class="p">,</span> <span class="n">geotiff_to_xarray</span><span class="p">)</span>
+<span class="n">GEOTIFF_TO_XARRAY</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="s2">"geotiff"</span><span class="p">,</span> <span class="s2">"xarray"</span><span class="p">,</span> <span class="n">geotiff_to_xarray</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Register that object in the package’s <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.</span><span class="s2">&quot;fsspec_data.converters&quot;</span><span class="k">]</span>
-<span class="n">geotiff-xarray</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_package.converters:GEOTIFF_TO_XARRAY&quot;</span>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.</span><span class="s2">"fsspec_data.converters"</span><span class="k">]</span>
+<span class="n">geotiff-xarray</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"my_package.converters:GEOTIFF_TO_XARRAY"</span>
 </pre></div>
 </div>
 <p>Installed entry points are discovered on the registry’s first lookup. Keep optional heavy
