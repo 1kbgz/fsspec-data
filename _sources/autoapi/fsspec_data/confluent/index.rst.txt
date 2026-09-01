@@ -47,7 +47,7 @@ Module Contents
 
 
    .. py:attribute:: references
-      :type:  tuple[collections.abc.Mapping[str, Any], Ellipsis]
+      :type:  tuple[collections.abc.Mapping[str, Any], ...]
 
 
 .. py:function:: fetch_confluent_schema(url: str, storage_options: collections.abc.Mapping[str, Any]) -> ConfluentSchemaDocument

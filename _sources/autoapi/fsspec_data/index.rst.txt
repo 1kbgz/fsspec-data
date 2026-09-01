@@ -315,7 +315,7 @@ Package Contents
       :type:  CodecCapabilities
 
 
-   .. py:method:: encode_batches(batches: list[pyarrow.RecordBatch] | tuple[pyarrow.RecordBatch, Ellipsis], *, schema: pyarrow.Schema | None = None) -> bytes
+   .. py:method:: encode_batches(batches: list[pyarrow.RecordBatch] | tuple[pyarrow.RecordBatch, ...], *, schema: pyarrow.Schema | None = None) -> bytes
 
 
    .. py:method:: encode_batches_to(batches: collections.abc.Iterable[pyarrow.RecordBatch], output: BinaryIO, *, schema: pyarrow.Schema | None = None) -> None
@@ -392,7 +392,7 @@ Package Contents
 
 
    .. py:attribute:: batches
-      :type:  tuple[pyarrow.RecordBatch, Ellipsis]
+      :type:  tuple[pyarrow.RecordBatch, ...]
 
 
 .. py:class:: DecodedBatchStream(schema: pyarrow.Schema, native: Any)
@@ -452,7 +452,7 @@ Package Contents
 
 
    .. py:attribute:: mappings
-      :type:  tuple[FieldMapping, Ellipsis]
+      :type:  tuple[FieldMapping, ...]
 
 
    .. py:attribute:: provided_format
