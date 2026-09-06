@@ -24,8 +24,6 @@ updates:
     labels:
       - "lang: python"
       - "part: dependencies"
-<<<<<<< before updating
-=======
 
   - package-ecosystem: "cargo"
     directory: "/"
@@ -40,4 +38,3 @@ updates:
     labels:
       - "lang: rust"
       - "part: dependencies"
->>>>>>> after updating
