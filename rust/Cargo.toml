@@ -16,5 +16,5 @@ crate-type = ["rlib"]
 [dependencies]
 arrow = "54.3.1"
 bytes = "1"
-parquet = { version = "54.3.1", features = ["arrow"] }
+parquet = { version = "59.2.0", features = ["arrow"] }
 thiserror = "2"
