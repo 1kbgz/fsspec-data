@@ -49,6 +49,7 @@ develop = [
     "hatchling",
     "hatch-rs",
     "mdformat",
+    "mdformat-frontmatter",
     "mdformat-tables>=1",
     "pytest",
     "pytest-cov",
@@ -75,7 +76,8 @@ tag = false
 commit_args = "-s"
 pre_commit_hooks = [
     "cargo update --workspace",
-    "git add Cargo.lock",
+    "cargo update --manifest-path rust/Cargo.toml --workspace",
+    "git add Cargo.lock rust/Cargo.lock",
 ]
 
 [[tool.bumpversion.files]]
@@ -126,7 +128,7 @@ skip = "*win32 *arm64"
 [tool.coverage.run]
 branch = true
 omit = [
-    "fsspec_data/tests/integration/",
+    "fsspec_data/tests/integration/*",
 ]
 
 [tool.coverage.report]
@@ -140,13 +142,6 @@ fail_under = 10
 
 [tool.codespell]
 ignore-words-list = "fo"
-
-[tool.hatch.build]
-artifacts = [
-    "fsspec_data/*.dll",
-    "fsspec_data/*.dylib",
-    "fsspec_data/*.so",
-]
 
 [tool.hatch.build.sources]
 src = "/"
@@ -165,11 +160,20 @@ packages = [
     "Cargo.lock",
 ]
 exclude = [
+    "*.dll",
+    "*.dylib",
+    "*.so",
+    "*.pyd",
     "rust/Makefile",
     "target",
 ]
 
 [tool.hatch.build.targets.wheel]
+artifacts = [
+    "fsspec_data/*.dll",
+    "fsspec_data/*.dylib",
+    "fsspec_data/*.so",
+]
 packages = [
     "fsspec_data",
 ]
