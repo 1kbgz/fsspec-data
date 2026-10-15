@@ -201,8 +201,12 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Convert tabular data</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">How to connect a batch producer or consumer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how-to-chain-filesystems.html">How to convert a file through an fsspec chain</a></li>
-<li class="toctree-l1"><a class="reference internal" href="explanation.html">Interchange design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-resolve-schemas.html">How to resolve schemas from files and registries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-convert-resources.html">How to convert Xarray and Zarr resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-rust.html">How to integrate Rust batch streams</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Interchange API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Schema and converter reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanation.html">Interchange design</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../autoapi/fsspec_data/index.html">fsspec_data</a><input aria-label="Toggle navigation of fsspec_data" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/_version/index.html">fsspec_data._version</a></li>
@@ -324,106 +328,9 @@ buffer:</p>
     <span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="convert-between-xarray-and-zarr">
-<h2>Convert between Xarray and Zarr<a class="headerlink" href="#convert-between-xarray-and-zarr" title="Link to this heading">¶</a></h2>
-<p>Install the optional dependencies:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install "fsspec-data[xarray]"</span>
-</pre></div>
-</div>
-<p>Open a Zarr store as an Xarray dataset while keeping storage credentials scoped to the source:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_CONVERTERS</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">DEFAULT_CONVERTERS</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span>
-    <span class="s2">"zarr"</span><span class="p">,</span>
-    <span class="s2">"xarray"</span><span class="p">,</span>
-    <span class="s2">"s3://weather-input/forecast.zarr"</span><span class="p">,</span>
-    <span class="n">source_options</span><span class="o">=</span><span class="p">{</span><span class="s2">"profile"</span><span class="p">:</span> <span class="s2">"weather-reader"</span><span class="p">},</span>
-    <span class="n">conversion_options</span><span class="o">=</span><span class="p">{</span><span class="s2">"group"</span><span class="p">:</span> <span class="s2">"forecast"</span><span class="p">,</span> <span class="s2">"chunks"</span><span class="p">:</span> <span class="s2">"auto"</span><span class="p">},</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p>Write a dataset to another Zarr store with independent target credentials:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DEFAULT_CONVERTERS</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span>
-    <span class="s2">"xarray"</span><span class="p">,</span>
-    <span class="s2">"zarr"</span><span class="p">,</span>
-    <span class="n">dataset</span><span class="p">,</span>
-    <span class="s2">"s3://weather-output/forecast.zarr"</span><span class="p">,</span>
-    <span class="n">target_options</span><span class="o">=</span><span class="p">{</span><span class="s2">"profile"</span><span class="p">:</span> <span class="s2">"weather-writer"</span><span class="p">},</span>
-    <span class="n">conversion_options</span><span class="o">=</span><span class="p">{</span><span class="s2">"mode"</span><span class="p">:</span> <span class="s2">"w-"</span><span class="p">,</span> <span class="s2">"zarr_format"</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p>Use the converter API rather than <code class="docutils literal notranslate"><span class="pre">DataFileSystem.open()</span></code> for Zarr because a Zarr hierarchy
-contains multiple metadata and chunk objects.</p>
-</section>
-<section id="register-a-converter-through-an-entry-point">
-<h2>Register a converter through an entry point<a class="headerlink" href="#register-a-converter-through-an-entry-point" title="Link to this heading">¶</a></h2>
-<p>Expose one <code class="docutils literal notranslate"><span class="pre">Converter</span></code> object from the integration package:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Converter</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">geotiff_to_xarray</span><span class="p">(</span>
-    <span class="n">source</span><span class="p">,</span>
-    <span class="n">target</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">source_options</span><span class="p">,</span>
-    <span class="n">target_options</span><span class="p">,</span>
-    <span class="n">conversion_options</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="o">...</span>
-
-
-<span class="n">GEOTIFF_TO_XARRAY</span> <span class="o">=</span> <span class="n">Converter</span><span class="p">(</span><span class="s2">"geotiff"</span><span class="p">,</span> <span class="s2">"xarray"</span><span class="p">,</span> <span class="n">geotiff_to_xarray</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Register that object in the package’s <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.</span><span class="s2">"fsspec_data.converters"</span><span class="k">]</span>
-<span class="n">geotiff-xarray</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"my_package.converters:GEOTIFF_TO_XARRAY"</span>
-</pre></div>
-</div>
-<p>Installed entry points are discovered on the registry’s first lookup. Keep optional heavy
-imports inside the converter handler so loading its descriptor remains inexpensive. Route
-names are case-insensitive. Duplicate source-target routes raise an error instead of selecting
-one by installation order.</p>
-<p>Call <code class="docutils literal notranslate"><span class="pre">DEFAULT_CONVERTERS.register(converter)</span></code> instead when registration is local to one
-process and does not need package discovery.</p>
-</section>
-<section id="integrate-from-rust">
-<h2>Integrate from Rust<a class="headerlink" href="#integrate-from-rust" title="Link to this heading">¶</a></h2>
-<p>Compose registered codecs with the plan’s stream adapter:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DEFAULT_REGISTRY</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="n">provided_format</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="kd">let</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DEFAULT_REGISTRY</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="n">requested_format</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="kd">let</span><span class="w"> </span><span class="n">plan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">plan</span><span class="p">(</span><span class="o">&amp;</span><span class="n">request</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="kd">let</span><span class="w"> </span><span class="n">target_schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">plan</span><span class="p">.</span><span class="n">requested_schema</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span>
-<span class="kd">let</span><span class="w"> </span><span class="n">decoded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">source</span><span class="p">.</span><span class="n">decode_stream</span><span class="p">(</span>
-<span class="w">    </span><span class="n">encoded</span><span class="p">,</span>
-<span class="w">    </span><span class="nb">None</span><span class="p">,</span>
-<span class="w">    </span><span class="n">StreamOptions</span><span class="p">::</span><span class="n">default</span><span class="p">(),</span>
-<span class="w">    </span><span class="n">CancellationToken</span><span class="p">::</span><span class="n">new</span><span class="p">(),</span>
-<span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">batches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">plan</span><span class="p">.</span><span class="n">apply_stream</span><span class="p">(</span><span class="n">decoded</span><span class="p">);</span>
-<span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Vec</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
-<span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">writer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">target</span><span class="p">.</span><span class="n">start_writer</span><span class="p">(</span><span class="n">target_schema</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">output</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="k">for</span><span class="w"> </span><span class="n">batch</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">batches</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">writer</span><span class="p">.</span><span class="n">write_batch</span><span class="p">(</span><span class="o">&amp;</span><span class="n">batch</span><span class="o">?</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="n">writer</span><span class="p">.</span><span class="n">finish</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
-</pre></div>
-</div>
-<p>Use <code class="docutils literal notranslate"><span class="pre">start_writer</span></code> for Arrow IPC or Parquet when the producer supplies batches over time.
-Arrow IPC emits bytes during batch writes. Parquet accepts batches incrementally but may
-buffer encoded bytes until <code class="docutils literal notranslate"><span class="pre">finish</span></code>. Use <code class="docutils literal notranslate"><span class="pre">encode_stream</span></code> when the complete iterator can be
-consumed by one call.</p>
-<p>If the writer session must be stored beyond the scope that creates it, pass a boxed shared
-sink to <code class="docutils literal notranslate"><span class="pre">start_owned_writer</span></code>:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">sink</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SharedSink</span><span class="p">::</span><span class="n">default</span><span class="p">();</span>
-<span class="kd">let</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sink</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span>
-<span class="kd">let</span><span class="w"> </span><span class="n">writer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">target</span><span class="p">.</span><span class="n">start_owned_writer</span><span class="p">(</span><span class="n">target_schema</span><span class="p">,</span><span class="w"> </span><span class="nb">Box</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">sink</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
-<span class="kd">let</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EncodedFile</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">);</span>
-</pre></div>
-</div>
-<p>See the <a class="reference internal" href="api.html"><span class="std std-doc">API reference</span></a> for supported formats, limits, casts, and errors.</p>
+<p>For native resource conversions and entry-point registration, see
+<a class="reference internal" href="how-to-convert-resources.html"><span class="std std-doc">How to convert Xarray and Zarr resources</span></a>.
+For the Rust codec boundary, see <a class="reference internal" href="how-to-rust.html"><span class="std std-doc">How to integrate Rust batch streams</span></a>.</p>
 </section>
 </section>
 
@@ -486,9 +393,6 @@ sink to <code class="docutils literal notranslate"><span class="pre">start_owned
 <li><a class="reference internal" href="#declare-the-format-and-schema-contract">Declare the format and schema contract</a></li>
 <li><a class="reference internal" href="#pass-encoded-data-to-a-consumer-lazily">Pass encoded data to a consumer lazily</a></li>
 <li><a class="reference internal" href="#produce-encoded-output">Produce encoded output</a></li>
-<li><a class="reference internal" href="#convert-between-xarray-and-zarr">Convert between Xarray and Zarr</a></li>
-<li><a class="reference internal" href="#register-a-converter-through-an-entry-point">Register a converter through an entry point</a></li>
-<li><a class="reference internal" href="#integrate-from-rust">Integrate from Rust</a></li>
 </ul>
 </li>
 </ul>

@@ -201,8 +201,12 @@
 <li class="toctree-l1"><a class="reference internal" href="docs/tutorial.html">Convert tabular data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/how-to-integrate.html">How to connect a batch producer or consumer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/how-to-chain-filesystems.html">How to convert a file through an fsspec chain</a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs/explanation.html">Interchange design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/how-to-resolve-schemas.html">How to resolve schemas from files and registries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/how-to-convert-resources.html">How to convert Xarray and Zarr resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/how-to-rust.html">How to integrate Rust batch streams</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/api.html">Interchange API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/resources.html">Schema and converter reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/explanation.html">Interchange design</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="autoapi/fsspec_data/index.html">fsspec_data</a><input aria-label="Toggle navigation of fsspec_data" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="autoapi/fsspec_data/_version/index.html">fsspec_data._version</a></li>
@@ -273,31 +277,34 @@
 </div>
 <section class="tex2jax_ignore mathjax_ignore" id="fsspec-data">
 <h1>fsspec-data<a class="headerlink" href="#fsspec-data" title="Link to this heading">¶</a></h1>
-<p>Arrow interchange planning for the fsspec data ecosystem.</p>
+<p>Convert tabular formats and reconcile Arrow schemas over fsspec.</p>
 <p><a class="reference external" href="https://github.com/1kbgz/fsspec-data/actions/workflows/build.yaml"><img alt="Build Status" src="https://github.com/1kbgz/fsspec-data/actions/workflows/build.yaml/badge.svg?branch=main&amp;event=push" /></a>
 <a class="reference external" href="https://codecov.io/gh/1kbgz/fsspec-data"><img alt="codecov" src="https://codecov.io/gh/1kbgz/fsspec-data/branch/main/graph/badge.svg" /></a>
 <a class="reference external" href="https://github.com/1kbgz/fsspec-data"><img alt="License" src="https://img.shields.io/github/license/1kbgz/fsspec-data" /></a>
 <a class="reference external" href="https://pypi.python.org/pypi/fsspec-data"><img alt="PyPI" src="https://img.shields.io/pypi/v/fsspec-data.svg" /></a></p>
-<p><code class="docutils literal notranslate"><span class="pre">fsspec-data</span></code> reconciles provided and requested tabular schemas and formats without taking
-ownership of database discovery or dataframe query planning. A pure-Rust core and Python
-bindings apply the same decisions to Arrow record batches and PyArrow objects.</p>
-<p>The first release supports format-aware conversion plans, exact/projection/compatible/
-coerce schema policies, registered Arrow IPC/Parquet/CSV/JSONL codecs, bounded lazy batch
-iteration with cancellation, and read-only conversion through chained fsspec URLs.</p>
-<section id="documentation">
-<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="docs/tutorial.html"><span class="std std-doc">Convert tabular data</span></a> in a
-guided first example.</p></li>
-<li><p><a class="reference internal" href="docs/how-to-integrate.html"><span class="std std-doc">Connect a batch producer or consumer</span></a>
-to the interchange layer.</p></li>
-<li><p><a class="reference internal" href="docs/how-to-chain-filesystems.html"><span class="std std-doc">Convert a file through an fsspec chain</span></a>
-while retaining its source filesystem.</p></li>
-<li><p><a class="reference internal" href="docs/explanation.html"><span class="std std-doc">Understand the interchange design</span></a>
-and package boundaries.</p></li>
-<li><p><a class="reference internal" href="docs/api.html"><span class="std std-doc">Look up the interchange API</span></a>,
-including policies, codecs, and errors.</p></li>
-</ul>
+<p><code class="docutils literal notranslate"><span class="pre">fsspec-data</span></code> plans schema mappings and executes them over Arrow record batches.
+Codecs handle Arrow IPC, Parquet, CSV, and JSONL. A read-only chained filesystem
+exposes converted files; a separate converter registry handles resources such as
+Xarray datasets and Zarr stores.</p>
+<section id="start-here">
+<h2>Start here<a class="headerlink" href="#start-here" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="docs/tutorial.html"><span class="std std-doc">Convert CSV identifiers to Parquet</span></a> walks through planning,
+batch iteration, and encoded output.</p>
+</section>
+<section id="how-to-guides">
+<h2>How-to guides<a class="headerlink" href="#how-to-guides" title="Link to this heading">¶</a></h2>
+<p>For application work, <a class="reference internal" href="docs/how-to-integrate.html"><span class="std std-doc">connect a batch producer or consumer</span></a>,
+<a class="reference internal" href="docs/how-to-chain-filesystems.html"><span class="std std-doc">convert a file through an fsspec chain</span></a>, or
+<a class="reference internal" href="docs/how-to-resolve-schemas.html"><span class="std std-doc">resolve schemas from files and registries</span></a>.
+<a class="reference internal" href="docs/how-to-convert-resources.html"><span class="std std-doc">Convert Xarray and Zarr resources</span></a> covers native
+resource routes and converter registration.</p>
+</section>
+<section id="reference-and-explanation">
+<h2>Reference and explanation<a class="headerlink" href="#reference-and-explanation" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference internal" href="docs/api.html"><span class="std std-doc">interchange API reference</span></a> covers codecs, policies, limits, and
+planning. <a class="reference internal" href="docs/resources.html"><span class="std std-doc">Schema and converter reference</span></a> describes resolution
+and resource routes. Read <a class="reference internal" href="docs/explanation.html"><span class="std std-doc">Interchange design</span></a> for the
+boundaries between schemas, data, and consumers.</p>
 </section>
 </section>
 

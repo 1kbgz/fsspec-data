@@ -1,20 +1,20 @@
 # Convert tabular data
 
 This tutorial converts CSV records with string identifiers into Parquet records with
-integer identifiers. Along the way, you will create a conversion plan and consume its
-output in bounded Arrow batches.
+integer identifiers. We will create a conversion plan and consume its output in two-row Arrow batches.
 
 ## Install fsspec-data
 
-Install the package and PyArrow:
+Use Python 3.10 or newer and install the package:
 
 ```console
-python -m pip install fsspec-data pyarrow
+python -m pip install fsspec-data
 ```
 
 ## Create CSV input
 
-Define the schema supplied by the producer and create one Arrow record batch:
+Create `convert_demo.py`. Add the following snippets in order, then run
+`python convert_demo.py` to check their output. First, create one Arrow batch:
 
 ```python
 import pyarrow as pa

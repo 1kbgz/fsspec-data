@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Interchange API reference" href="api.html"><link rel="prev" title="How to convert a file through an fsspec chain" href="how-to-chain-filesystems.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="API Reference" href="../autoapi/index.html"><link rel="prev" title="Schema and converter reference" href="resources.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Interchange design - fsspec-data v0.2.3</title>
@@ -201,8 +201,12 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Convert tabular data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how-to-integrate.html">How to connect a batch producer or consumer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how-to-chain-filesystems.html">How to convert a file through an fsspec chain</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Interchange design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-resolve-schemas.html">How to resolve schemas from files and registries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-convert-resources.html">How to convert Xarray and Zarr resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-rust.html">How to integrate Rust batch streams</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Interchange API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Schema and converter reference</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Interchange design</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../autoapi/fsspec_data/index.html">fsspec_data</a><input aria-label="Toggle navigation of fsspec_data" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/fsspec_data/_version/index.html">fsspec_data._version</a></li>
@@ -313,7 +317,7 @@ physical decoding and encoding around that mapping.</p>
     class D,P,X,E,R,N operation
     class AB arrow
     </pre><p>Schema resolution may perform I/O, but it completes before source data is opened. Each
-reference carries only its own storage or registry credentials. Once B and C are Arrow
+reference uses only its own storage or registry credentials. Once B and C are Arrow
 schemas, planning is pure: it validates the requested projection without reading A. Execution
 then decodes, applies that stable plan batch by batch, and encodes the requested representation.</p>
 </section>
@@ -362,8 +366,9 @@ actually contains nulls.</p>
 </section>
 <section id="streaming-is-the-default-execution-model">
 <h2>Streaming is the default execution model<a class="headerlink" href="#streaming-is-the-default-execution-model" title="Link to this heading">¶</a></h2>
-<p>Record batches keep memory bounded and allow a consumer to stop early. Row, batch, and byte
-limits protect previews and interactive clients from unexpectedly large inputs.
+<p>Record batches keep memory bounded and allow a consumer to stop early. Row and batch limits bound yielded rows, while byte limits reject batches above
+a cumulative Arrow-memory budget. These limits do not cap encoded source size or
+all allocations inside a format decoder.
 Cancellation propagates through the planned stream to its decoder.</p>
 <p>Encoded conversion is a buffering adapter on top of that stream. It exists for consumers
 that require a complete byte buffer, while the batch iterator remains the primary boundary
@@ -405,23 +410,23 @@ in particular, Parquet can defer encoded output until <code class="docutils lite
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="api.html">
+          <a class="next-page" href="../autoapi/index.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Interchange API reference</div>
+                <div class="title">API Reference</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="how-to-chain-filesystems.html">
+          <a class="prev-page" href="resources.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">How to convert a file through an fsspec chain</div>
+                <div class="title">Schema and converter reference</div>
                 
               </div>
             </a>
