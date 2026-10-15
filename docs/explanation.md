@@ -46,7 +46,7 @@ flowchart LR
 ```
 
 Schema resolution may perform I/O, but it completes before source data is opened. Each
-reference carries only its own storage or registry credentials. Once B and C are Arrow
+reference uses only its own storage or registry credentials. Once B and C are Arrow
 schemas, planning is pure: it validates the requested projection without reading A. Execution
 then decodes, applies that stable plan batch by batch, and encodes the requested representation.
 
@@ -101,8 +101,9 @@ actually contains nulls.
 
 ## Streaming is the default execution model
 
-Record batches keep memory bounded and allow a consumer to stop early. Row, batch, and byte
-limits protect previews and interactive clients from unexpectedly large inputs.
+Record batches keep memory bounded and allow a consumer to stop early. Row and batch limits bound yielded rows, while byte limits reject batches above
+a cumulative Arrow-memory budget. These limits do not cap encoded source size or
+all allocations inside a format decoder.
 Cancellation propagates through the planned stream to its decoder.
 
 Encoded conversion is a buffering adapter on top of that stream. It exists for consumers

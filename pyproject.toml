@@ -219,7 +219,12 @@ pages = [
     "docs/tutorial.md",
     "docs/how-to-integrate.md",
     "docs/how-to-chain-filesystems.md",
-    "docs/explanation.md",
+    "docs/how-to-resolve-schemas.md",
+    "docs/how-to-convert-resources.md",
+    "docs/how-to-rust.md",
     "docs/api.md",
+    "docs/resources.md",
+    "docs/explanation.md",
 ]
 use-autoapi = true
+autoapi-ignore = []
