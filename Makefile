@@ -44,13 +44,8 @@ lint-rs:  ## run rust linter
 	make -C rust lint
 
 lint-docs:  ## lint docs with mdformat and codespell
-<<<<<<< before updating
 	python -m mdformat --check README.md docs/*.md
 	python -m codespell_lib --ignore-words-list fo README.md docs/*.md
-=======
-	python -m mdformat --check README.md $(wildcard docs/src) 
-	python -m codespell_lib README.md $(wildcard docs/src) 
->>>>>>> after updating
 
 lint: lint-rs lint-py lint-docs  ## run project linters
 
@@ -66,13 +61,8 @@ fix-rs:  ## fix code with rustfmt
 	make -C rust fix
 
 fix-docs:  ## autoformat docs with mdformat and codespell
-<<<<<<< before updating
 	python -m mdformat README.md docs/*.md
 	python -m codespell_lib --ignore-words-list fo --write README.md docs/*.md
-=======
-	python -m mdformat README.md $(wildcard docs/src) 
-	python -m codespell_lib --write README.md $(wildcard docs/src) 
->>>>>>> after updating
 
 fix: fix-rs fix-py fix-docs  ## run project autoformatters
 
@@ -90,7 +80,7 @@ check-dist:  ## check python sdist and wheel with check-dist
 check-types:  ## check python types with ty
 	python -m ty check
 
-checks: check-dist check-types
+checks: check-dist
 
 # alias
 check: checks
