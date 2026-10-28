@@ -696,6 +696,6 @@ Package Contents
 .. py:function:: resolve_schema(value: pyarrow.Schema | SchemaRef | None, registry: SchemaResolverRegistry | None = None) -> ResolvedSchema | None
 
 .. py:data:: __version__
-   :value: '0.2.3'
+   :value: '0.2.4'
 
 
