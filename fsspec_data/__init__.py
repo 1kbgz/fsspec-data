@@ -32,7 +32,7 @@ from .schema import (
     resolve_schema,
 )
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 __all__ = [
     "CONVERTER_ENTRY_POINT_GROUP",
