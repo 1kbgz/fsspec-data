@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>fsspec_data &#8212; fsspec-data v0.2.4</title>
+    <title>fsspec_data &#8212; fsspec-data v0.3.0</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/fuma.css?v=ca04d621" />
     <link rel="stylesheet" type="text/css" href="../../_static/fuma-code.css?v=a950e949" />
@@ -16,7 +16,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/fonts/fuma-fonts.css?v=c2892c73" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/custom.css?v=88c24c6a" />
-    <script src="../../_static/documentation_options.js?v=6ffd866b"></script>
+    <script src="../../_static/documentation_options.js?v=e259d695"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -49,7 +49,7 @@
   <div class="fd-subnav-inner">
     <button type="button" class="fd-icon-button fd-sidebar-toggle" aria-controls="fd-sidebar" aria-expanded="false" aria-label="Toggle navigation" title="Toggle navigation">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-    </button><a class="fd-brand" href="../../index.html"><span class="fd-brand-name">fsspec-data v0.2.4</span>
+    </button><a class="fd-brand" href="../../index.html"><span class="fd-brand-name">fsspec-data v0.3.0</span>
 </a>
 
     <div class="fd-nav-actions">
@@ -64,7 +64,7 @@
 
 <aside id="fd-sidebar" aria-label="Documentation">
   <div class="fd-sidebar-header">
-    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../../index.html"><span class="fd-brand-name">fsspec-data v0.2.4</span>
+    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../../index.html"><span class="fd-brand-name">fsspec-data v0.3.0</span>
 </a>
       <button type="button" class="fd-icon-button fd-sidebar-collapse" aria-label="Collapse sidebar" title="Collapse sidebar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
     </div>
@@ -375,6 +375,18 @@
     <a href="#fsspec_data.DataFileSystem.schema_policy">DataFileSystem.schema_policy</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataFileSystem.renames">DataFileSystem.renames</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataFileSystem.defaults">DataFileSystem.defaults</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataFileSystem.drop">DataFileSystem.drop</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataFileSystem.casts">DataFileSystem.casts</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.DataFileSystem.batch_size">DataFileSystem.batch_size</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -489,6 +501,15 @@
     <a href="#fsspec_data.DecodedBatchStream.collect">DecodedBatchStream.collect()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.FieldAddition">FieldAddition</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FieldAddition.target_index">FieldAddition.target_index</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FieldAddition.value">FieldAddition.value</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.FieldMapping">FieldMapping</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -525,10 +546,16 @@
     <a href="#fsspec_data.InterchangePlan.requested_format">InterchangePlan.requested_format</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangePlan.additions">InterchangePlan.additions</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.InterchangePlan.apply_table">InterchangePlan.apply_table()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.InterchangePlan.apply_batch">InterchangePlan.apply_batch()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangePlan._arrays">InterchangePlan._arrays()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.InterchangePlan._apply_mapping">InterchangePlan._apply_mapping()</a>
@@ -559,6 +586,18 @@
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.InterchangeRequest.policy">InterchangeRequest.policy</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangeRequest.renames">InterchangeRequest.renames</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangeRequest.defaults">InterchangeRequest.defaults</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangeRequest.drop">InterchangeRequest.drop</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangeRequest.casts">InterchangeRequest.casts</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.InterchangeRequest.plan">InterchangeRequest.plan()</a>
@@ -786,37 +825,40 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.DecodedBatchStream" title="fsspec_data.DecodedBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedBatchStream</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.FieldMapping" title="fsspec_data.FieldMapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FieldMapping</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.FieldAddition" title="fsspec_data.FieldAddition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FieldAddition</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.InterchangePlan" title="fsspec_data.InterchangePlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterchangePlan</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.FieldMapping" title="fsspec_data.FieldMapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FieldMapping</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.InterchangeRequest" title="fsspec_data.InterchangeRequest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterchangeRequest</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.InterchangePlan" title="fsspec_data.InterchangePlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterchangePlan</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.PlannedBatchStream" title="fsspec_data.PlannedBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PlannedBatchStream</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.InterchangeRequest" title="fsspec_data.InterchangeRequest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterchangeRequest</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaPolicy" title="fsspec_data.SchemaPolicy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaPolicy</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.PlannedBatchStream" title="fsspec_data.PlannedBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PlannedBatchStream</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaPolicy" title="fsspec_data.SchemaPolicy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaPolicy</span></code></a></p></td>
 <td><p>str(object='') -&gt; str</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.ResolvedSchema" title="fsspec_data.ResolvedSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResolvedSchema</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.ResolvedSchema" title="fsspec_data.ResolvedSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResolvedSchema</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaDocument" title="fsspec_data.SchemaDocument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaDocument</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaDocument" title="fsspec_data.SchemaDocument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaDocument</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaFormat" title="fsspec_data.SchemaFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaFormat</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaFormat" title="fsspec_data.SchemaFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaFormat</span></code></a></p></td>
 <td><p>str(object='') -&gt; str</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaProvenance" title="fsspec_data.SchemaProvenance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaProvenance</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaProvenance" title="fsspec_data.SchemaProvenance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaProvenance</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaRef" title="fsspec_data.SchemaRef"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaRef</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaRef" title="fsspec_data.SchemaRef"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaRef</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaResolverRegistry" title="fsspec_data.SchemaResolverRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaResolverRegistry</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaResolverRegistry" title="fsspec_data.SchemaResolverRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaResolverRegistry</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -826,8 +868,8 @@
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.plan_schema" title="fsspec_data.plan_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_schema</span></code></a>(provided_schema, requested_schema, policy) → InterchangePlan</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.plan_schema" title="fsspec_data.plan_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_schema</span></code></a>(provided_schema, requested_schema, policy, *) → InterchangePlan</p></td>
+<td><p>Plan how provided fields become requested fields.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.json_schema_to_arrow" title="fsspec_data.json_schema_to_arrow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">json_schema_to_arrow</span></code></a>(value) → pyarrow.Schema</p></td>
 <td><p></p></td>
@@ -927,7 +969,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="fsspec_data.DataFileSystem">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">DataFileSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_protocol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec.AbstractFileSystem</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provided_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">fsspec_data.interchange.DataFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requested_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">fsspec_data.interchange.DataFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provided_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec_data.schema.SchemaInput</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec_data.schema.SchemaInput</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.SchemaPolicy" title="fsspec_data.interchange.SchemaPolicy"><span class="pre">fsspec_data.interchange.SchemaPolicy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">SchemaPolicy.EXACT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spool_max_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/filesystem.html#DataFileSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataFileSystem" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">DataFileSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_protocol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec.AbstractFileSystem</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provided_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">fsspec_data.interchange.DataFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requested_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">fsspec_data.interchange.DataFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provided_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec_data.schema.SchemaInput</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec_data.schema.SchemaInput</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.SchemaPolicy" title="fsspec_data.interchange.SchemaPolicy"><span class="pre">fsspec_data.interchange.SchemaPolicy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">SchemaPolicy.EXACT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spool_max_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/filesystem.html#DataFileSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataFileSystem" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">fsspec.implementations.chained.ChainedFileSystem</span></code></p>
 <p>Read-only format and schema conversion layered over another filesystem.</p>
 <p>Create and configure file-system instance</p>
@@ -1004,6 +1046,26 @@ storing this instance.</p></li>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.DataFileSystem.schema_policy">
 <span class="sig-name descname"><span class="pre">schema_policy</span></span><a class="headerlink" href="#fsspec_data.DataFileSystem.schema_policy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.DataFileSystem.renames">
+<span class="sig-name descname"><span class="pre">renames</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.DataFileSystem.renames" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.DataFileSystem.defaults">
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.DataFileSystem.defaults" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.DataFileSystem.drop">
+<span class="sig-name descname"><span class="pre">drop</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.DataFileSystem.drop" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.DataFileSystem.casts">
+<span class="sig-name descname"><span class="pre">casts</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.DataFileSystem.casts" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1264,6 +1326,21 @@ errors defaults to ‘strict’.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.FieldAddition">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">FieldAddition</span></span><a class="reference internal" href="../../_modules/fsspec_data/interchange.html#FieldAddition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FieldAddition" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.FieldAddition.target_index">
+<span class="sig-name descname"><span class="pre">target_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#fsspec_data.FieldAddition.target_index" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.FieldAddition.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pyarrow.Array</span></em><a class="headerlink" href="#fsspec_data.FieldAddition.value" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="fsspec_data.FieldMapping">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">FieldMapping</span></span><a class="reference internal" href="../../_modules/fsspec_data/interchange.html#FieldMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FieldMapping" title="Link to this definition">¶</a></dt>
 <dd><dl class="py attribute">
@@ -1321,6 +1398,11 @@ errors defaults to ‘strict’.</p>
 <span class="sig-name descname"><span class="pre">requested_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#fsspec_data.DataFormat" title="fsspec_data.DataFormat"><span class="pre">DataFormat</span></a></em><a class="headerlink" href="#fsspec_data.InterchangePlan.requested_format" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.InterchangePlan.additions">
+<span class="sig-name descname"><span class="pre">additions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fsspec_data.FieldAddition" title="fsspec_data.FieldAddition"><span class="pre">FieldAddition</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#fsspec_data.InterchangePlan.additions" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.InterchangePlan.apply_table">
 <span class="sig-name descname"><span class="pre">apply_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Table</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Table</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/interchange.html#InterchangePlan.apply_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.InterchangePlan.apply_table" title="Link to this definition">¶</a></dt>
@@ -1329,6 +1411,11 @@ errors defaults to ‘strict’.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.InterchangePlan.apply_batch">
 <span class="sig-name descname"><span class="pre">apply_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.RecordBatch</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.RecordBatch</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/interchange.html#InterchangePlan.apply_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.InterchangePlan.apply_batch" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.InterchangePlan._arrays">
+<span class="sig-name descname"><span class="pre">_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Table</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.RecordBatch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/interchange.html#InterchangePlan._arrays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.InterchangePlan._arrays" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1379,6 +1466,26 @@ errors defaults to ‘strict’.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.InterchangeRequest.policy">
 <span class="sig-name descname"><span class="pre">policy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#fsspec_data.SchemaPolicy" title="fsspec_data.SchemaPolicy"><span class="pre">SchemaPolicy</span></a></em><a class="headerlink" href="#fsspec_data.InterchangeRequest.policy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.InterchangeRequest.renames">
+<span class="sig-name descname"><span class="pre">renames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.InterchangeRequest.renames" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.InterchangeRequest.defaults">
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.InterchangeRequest.defaults" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.InterchangeRequest.drop">
+<span class="sig-name descname"><span class="pre">drop</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.InterchangeRequest.drop" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.InterchangeRequest.casts">
+<span class="sig-name descname"><span class="pre">casts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.InterchangeRequest.casts" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1461,8 +1568,15 @@ errors defaults to ‘strict’.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.plan_schema">
-<span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">plan_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provided_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.SchemaPolicy" title="fsspec_data.SchemaPolicy"><span class="pre">SchemaPolicy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.InterchangePlan" title="fsspec_data.InterchangePlan"><span class="pre">InterchangePlan</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/interchange.html#plan_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.plan_schema" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">plan_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provided_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.SchemaPolicy" title="fsspec_data.SchemaPolicy"><span class="pre">SchemaPolicy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">renames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.InterchangePlan" title="fsspec_data.InterchangePlan"><span class="pre">InterchangePlan</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/interchange.html#plan_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.plan_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Plan how provided fields become requested fields.</p>
+<p><code class="docutils literal notranslate"><span class="pre">renames</span></code> maps provided field names to requested names. <code class="docutils literal notranslate"><span class="pre">defaults</span></code> maps requested
+field names to a constant; <code class="docutils literal notranslate"><span class="pre">None</span></code> adds an all-null field. <code class="docutils literal notranslate"><span class="pre">drop</span></code> lists provided
+fields to remove. <code class="docutils literal notranslate"><span class="pre">casts</span></code> maps requested field names to the most permissive cast
+allowed for that field: <code class="docutils literal notranslate"><span class="pre">&quot;safe&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;runtime_checked&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;lossy&quot;</span></code>.</p>
+<p>With any of these options, fields are matched by name after renames, and every
+provided field must be used or dropped unless <code class="docutils literal notranslate"><span class="pre">policy</span></code> is <code class="docutils literal notranslate"><span class="pre">projection</span></code>.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.json_schema_to_arrow">
@@ -1632,7 +1746,7 @@ errors defaults to ‘strict’.</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="fsspec_data.__version__">
-<span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">__version__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.2.4'</span></em><a class="headerlink" href="#fsspec_data.__version__" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">__version__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.3.0'</span></em><a class="headerlink" href="#fsspec_data.__version__" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -1771,6 +1885,18 @@ errors defaults to ‘strict’.</p>
     <a href="#fsspec_data.DataFileSystem.schema_policy">DataFileSystem.schema_policy</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataFileSystem.renames">DataFileSystem.renames</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataFileSystem.defaults">DataFileSystem.defaults</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataFileSystem.drop">DataFileSystem.drop</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataFileSystem.casts">DataFileSystem.casts</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.DataFileSystem.batch_size">DataFileSystem.batch_size</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -1885,6 +2011,15 @@ errors defaults to ‘strict’.</p>
     <a href="#fsspec_data.DecodedBatchStream.collect">DecodedBatchStream.collect()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.FieldAddition">FieldAddition</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FieldAddition.target_index">FieldAddition.target_index</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FieldAddition.value">FieldAddition.value</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.FieldMapping">FieldMapping</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -1921,10 +2056,16 @@ errors defaults to ‘strict’.</p>
     <a href="#fsspec_data.InterchangePlan.requested_format">InterchangePlan.requested_format</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangePlan.additions">InterchangePlan.additions</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.InterchangePlan.apply_table">InterchangePlan.apply_table()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.InterchangePlan.apply_batch">InterchangePlan.apply_batch()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangePlan._arrays">InterchangePlan._arrays()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.InterchangePlan._apply_mapping">InterchangePlan._apply_mapping()</a>
@@ -1955,6 +2096,18 @@ errors defaults to ‘strict’.</p>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.InterchangeRequest.policy">InterchangeRequest.policy</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangeRequest.renames">InterchangeRequest.renames</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangeRequest.defaults">InterchangeRequest.defaults</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangeRequest.drop">InterchangeRequest.drop</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.InterchangeRequest.casts">InterchangeRequest.casts</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.InterchangeRequest.plan">InterchangeRequest.plan()</a>

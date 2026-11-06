@@ -20,6 +20,8 @@ Constructor parameters:
 - `requested_schema`: output `pyarrow.Schema`, nested schema options, or schema reference.
   Defaults to the source schema.
 - `schema_policy: SchemaPolicy | str`: reconciliation policy. Defaults to `exact`.
+- `renames`, `defaults`, `drop`, `casts`: field operations passed to
+  [`plan_schema`](#plan_schemaprovided_schema-requested_schema-policy--renamesnone-defaultsnone-dropnone-castsnone).
 - `batch_size: int`: maximum rows per decoded batch. Defaults to `1024`.
 - `row_limit: int | None`: maximum decoded rows.
 - `byte_limit: int | None`: maximum cumulative Arrow array memory in decoded batches.
@@ -84,6 +86,15 @@ Attributes:
 - `target_index: int`: index in the requested schema.
 - `cast: str | None`: `safe`, `lossy`, `runtime_checked`, or `None`.
 - `check_nulls: bool`: whether execution must reject null input values.
+
+## `FieldAddition`
+
+Describes one output field filled with a constant instead of a provided field.
+
+Attributes:
+
+- `target_index: int`: index in the requested schema.
+- `value: pyarrow.Array`: one value of the requested field type, or one null.
 
 ## `CodecCapabilities`
 
@@ -236,6 +247,7 @@ Attributes:
 - `provided_schema: pyarrow.Schema`: source schema.
 - `requested_schema: pyarrow.Schema`: target schema.
 - `policy: SchemaPolicy`: reconciliation policy.
+- `renames`, `defaults`, `drop`, `casts`: optional field operations passed to `plan_schema`.
 
 ### `plan()`
 
@@ -252,6 +264,7 @@ Attributes:
 - `requested_schema: pyarrow.Schema`: schema produced as output.
 - `policy: SchemaPolicy`: applied schema policy.
 - `mappings: tuple[FieldMapping, ...]`: ordered field mappings.
+- `additions: tuple[FieldAddition, ...]`: requested fields filled with constants.
 - `provided_format: DataFormat`: source encoding.
 - `requested_format: DataFormat`: target encoding.
 
@@ -281,12 +294,28 @@ explicit buffering adapter.
 Iterates lazily over planned `pyarrow.RecordBatch` values. `schema` is the requested schema.
 `cancel()` cancels the underlying decoded stream.
 
-## `plan_schema(provided_schema, requested_schema, policy)`
+## `plan_schema(provided_schema, requested_schema, policy, *, renames=None, defaults=None, drop=None, casts=None)`
 
 Returns an Arrow-to-Arrow `InterchangePlan` without reading data.
 
+Field operations:
+
+- `renames: Mapping[str, str]`: provided field name to requested field name.
+- `defaults: Mapping[str, Any]`: requested field name to a constant. The constant is cast to
+  the requested type while planning. `None` adds an all-null field, which must be nullable.
+- `drop: Sequence[str]`: provided fields to remove.
+- `casts: Mapping[str, str]`: requested field name to the most permissive cast allowed for
+  that field, in order `safe`, `runtime_checked`, `lossy`. It replaces the policy's limit
+  for that field: `compatible` allows `safe`, `coerce` allows `lossy`, and `projection`
+  allows no cast.
+
+Without field operations, fields are matched as described for each policy. With any field
+operation, fields are matched by name after renames, every provided field must be used or
+listed in `drop` unless the policy is `projection`, and `exact` is rejected. A requested
+field with both a matching provided field and a default is an error.
+
 Raises `TypeError` for non-PyArrow schemas and `ValueError` when schemas violate the selected
-policy or require an unregistered cast.
+policy, require an unregistered or disallowed cast, or field operations conflict.
 
 ```python
 import pyarrow as pa
@@ -296,4 +325,17 @@ from fsspec_data import SchemaPolicy, plan_schema
 provided = pa.schema([pa.field("id", pa.int32(), nullable=False)])
 requested = pa.schema([pa.field("id", pa.int64(), nullable=True)])
 plan = plan_schema(provided, requested, SchemaPolicy.COMPATIBLE)
+```
+
+```python
+provided = pa.schema([pa.field("customer_number", pa.int64()), pa.field("legacy", pa.bool_())])
+requested = pa.schema([pa.field("customer_id", pa.int64()), pa.field("region", pa.string())])
+plan = plan_schema(
+    provided,
+    requested,
+    "compatible",
+    renames={"customer_number": "customer_id"},
+    defaults={"region": "us"},
+    drop=["legacy"],
+)
 ```

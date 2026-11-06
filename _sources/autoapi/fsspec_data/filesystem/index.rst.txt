@@ -31,7 +31,7 @@ Functions
 Module Contents
 ---------------
 
-.. py:class:: DataFileSystem(fo: str, target_protocol: str | None = None, target_options: dict[str, Any] | None = None, fs: fsspec.AbstractFileSystem | None = None, provided_format: fsspec_data.interchange.DataFormat | str | None = None, requested_format: fsspec_data.interchange.DataFormat | str | None = None, provided_schema: fsspec_data.schema.SchemaInput = None, requested_schema: fsspec_data.schema.SchemaInput = None, schema_policy: fsspec_data.interchange.SchemaPolicy | str = SchemaPolicy.EXACT, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, spool_max_size: int = 8 * 1024 * 1024, **kwargs: Any)
+.. py:class:: DataFileSystem(fo: str, target_protocol: str | None = None, target_options: dict[str, Any] | None = None, fs: fsspec.AbstractFileSystem | None = None, provided_format: fsspec_data.interchange.DataFormat | str | None = None, requested_format: fsspec_data.interchange.DataFormat | str | None = None, provided_schema: fsspec_data.schema.SchemaInput = None, requested_schema: fsspec_data.schema.SchemaInput = None, schema_policy: fsspec_data.interchange.SchemaPolicy | str = SchemaPolicy.EXACT, renames: collections.abc.Mapping[str, str] | None = None, defaults: collections.abc.Mapping[str, Any] | None = None, drop: collections.abc.Sequence[str] | None = None, casts: collections.abc.Mapping[str, str] | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, spool_max_size: int = 8 * 1024 * 1024, **kwargs: Any)
 
    Bases: :py:obj:`fsspec.implementations.chained.ChainedFileSystem`
 
@@ -109,6 +109,26 @@ Module Contents
 
 
    .. py:attribute:: schema_policy
+
+
+   .. py:attribute:: renames
+      :value: None
+
+
+
+   .. py:attribute:: defaults
+      :value: None
+
+
+
+   .. py:attribute:: drop
+      :value: None
+
+
+
+   .. py:attribute:: casts
+      :value: None
+
 
 
    .. py:attribute:: batch_size

@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Interchange API reference &#8212; fsspec-data v0.2.4</title>
+    <title>Interchange API reference &#8212; fsspec-data v0.3.0</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/fuma.css?v=ca04d621" />
     <link rel="stylesheet" type="text/css" href="../_static/fuma-code.css?v=a950e949" />
@@ -16,7 +16,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/fonts/fuma-fonts.css?v=c2892c73" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/custom.css?v=88c24c6a" />
-    <script src="../_static/documentation_options.js?v=6ffd866b"></script>
+    <script src="../_static/documentation_options.js?v=e259d695"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -49,7 +49,7 @@
   <div class="fd-subnav-inner">
     <button type="button" class="fd-icon-button fd-sidebar-toggle" aria-controls="fd-sidebar" aria-expanded="false" aria-label="Toggle navigation" title="Toggle navigation">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-    </button><a class="fd-brand" href="../index.html"><span class="fd-brand-name">fsspec-data v0.2.4</span>
+    </button><a class="fd-brand" href="../index.html"><span class="fd-brand-name">fsspec-data v0.3.0</span>
 </a>
 
     <div class="fd-nav-actions">
@@ -64,7 +64,7 @@
 
 <aside id="fd-sidebar" aria-label="Documentation">
   <div class="fd-sidebar-header">
-    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../index.html"><span class="fd-brand-name">fsspec-data v0.2.4</span>
+    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../index.html"><span class="fd-brand-name">fsspec-data v0.3.0</span>
 </a>
       <button type="button" class="fd-icon-button fd-sidebar-collapse" aria-label="Collapse sidebar" title="Collapse sidebar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
     </div>
@@ -288,6 +288,9 @@
     <a href="#fieldmapping">FieldMapping</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
+    <a href="#fieldaddition">FieldAddition</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
     <a href="#codeccapabilities">CodecCapabilities</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
@@ -360,7 +363,7 @@
     <a href="#plannedbatchstream">PlannedBatchStream</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
-    <a href="#plan-schema-provided-schema-requested-schema-policy">plan_schema(provided_schema, requested_schema, policy)</a>
+    <a href="#plan-schema-provided-schema-requested-schema-policy-renames-none-defaults-none-drop-none-casts-none">plan_schema(provided_schema, requested_schema, policy, *, renames=None, defaults=None, drop=None, casts=None)</a>
   </li>
 </ul>
 </div>
@@ -390,6 +393,8 @@ Required for CSV and JSONL.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">requested_schema</span></code>: output <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code>, nested schema options, or schema reference.
 Defaults to the source schema.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">schema_policy:</span> <span class="pre">SchemaPolicy</span> <span class="pre">|</span> <span class="pre">str</span></code>: reconciliation policy. Defaults to <code class="docutils literal notranslate"><span class="pre">exact</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">renames</span></code>, <code class="docutils literal notranslate"><span class="pre">defaults</span></code>, <code class="docutils literal notranslate"><span class="pre">drop</span></code>, <code class="docutils literal notranslate"><span class="pre">casts</span></code>: field operations passed to
+<a class="reference internal" href="#plan_schemaprovided_schema-requested_schema-policy--renamesnone-defaultsnone-dropnone-castsnone"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">plan_schema</span></code></span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">batch_size:</span> <span class="pre">int</span></code>: maximum rows per decoded batch. Defaults to <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">row_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: maximum decoded rows.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">byte_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: maximum cumulative Arrow array memory in decoded batches.</p></li>
@@ -459,6 +464,15 @@ coercion performs a runtime null check. Nested-type coercions are not registered
 <li><p><code class="docutils literal notranslate"><span class="pre">target_index:</span> <span class="pre">int</span></code>: index in the requested schema.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cast:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: <code class="docutils literal notranslate"><span class="pre">safe</span></code>, <code class="docutils literal notranslate"><span class="pre">lossy</span></code>, <code class="docutils literal notranslate"><span class="pre">runtime_checked</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">check_nulls:</span> <span class="pre">bool</span></code>: whether execution must reject null input values.</p></li>
+</ul>
+</section>
+<section id="fieldaddition">
+<h2><code class="docutils literal notranslate"><span class="pre">FieldAddition</span></code><a class="headerlink" href="#fieldaddition" title="Link to this heading">¶</a></h2>
+<p>Describes one output field filled with a constant instead of a provided field.</p>
+<p>Attributes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">target_index:</span> <span class="pre">int</span></code>: index in the requested schema.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">value:</span> <span class="pre">pyarrow.Array</span></code>: one value of the requested field type, or one null.</p></li>
 </ul>
 </section>
 <section id="codeccapabilities">
@@ -601,6 +615,7 @@ Arrow schema.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">provided_schema:</span> <span class="pre">pyarrow.Schema</span></code>: source schema.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">requested_schema:</span> <span class="pre">pyarrow.Schema</span></code>: target schema.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">policy:</span> <span class="pre">SchemaPolicy</span></code>: reconciliation policy.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">renames</span></code>, <code class="docutils literal notranslate"><span class="pre">defaults</span></code>, <code class="docutils literal notranslate"><span class="pre">drop</span></code>, <code class="docutils literal notranslate"><span class="pre">casts</span></code>: optional field operations passed to <code class="docutils literal notranslate"><span class="pre">plan_schema</span></code>.</p></li>
 </ul>
 <section id="plan">
 <h3><code class="docutils literal notranslate"><span class="pre">plan()</span></code><a class="headerlink" href="#plan" title="Link to this heading">¶</a></h3>
@@ -617,6 +632,7 @@ no data.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">requested_schema:</span> <span class="pre">pyarrow.Schema</span></code>: schema produced as output.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">policy:</span> <span class="pre">SchemaPolicy</span></code>: applied schema policy.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">mappings:</span> <span class="pre">tuple[FieldMapping,</span> <span class="pre">...]</span></code>: ordered field mappings.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">additions:</span> <span class="pre">tuple[FieldAddition,</span> <span class="pre">...]</span></code>: requested fields filled with constants.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">provided_format:</span> <span class="pre">DataFormat</span></code>: source encoding.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">requested_format:</span> <span class="pre">DataFormat</span></code>: target encoding.</p></li>
 </ul>
@@ -646,11 +662,26 @@ explicit buffering adapter.</p>
 <p>Iterates lazily over planned <code class="docutils literal notranslate"><span class="pre">pyarrow.RecordBatch</span></code> values. <code class="docutils literal notranslate"><span class="pre">schema</span></code> is the requested schema.
 <code class="docutils literal notranslate"><span class="pre">cancel()</span></code> cancels the underlying decoded stream.</p>
 </section>
-<section id="plan-schema-provided-schema-requested-schema-policy">
-<h2><code class="docutils literal notranslate"><span class="pre">plan_schema(provided_schema,</span> <span class="pre">requested_schema,</span> <span class="pre">policy)</span></code><a class="headerlink" href="#plan-schema-provided-schema-requested-schema-policy" title="Link to this heading">¶</a></h2>
+<section id="plan-schema-provided-schema-requested-schema-policy-renames-none-defaults-none-drop-none-casts-none">
+<h2><code class="docutils literal notranslate"><span class="pre">plan_schema(provided_schema,</span> <span class="pre">requested_schema,</span> <span class="pre">policy,</span> <span class="pre">*,</span> <span class="pre">renames=None,</span> <span class="pre">defaults=None,</span> <span class="pre">drop=None,</span> <span class="pre">casts=None)</span></code><a class="headerlink" href="#plan-schema-provided-schema-requested-schema-policy-renames-none-defaults-none-drop-none-casts-none" title="Link to this heading">¶</a></h2>
 <p>Returns an Arrow-to-Arrow <code class="docutils literal notranslate"><span class="pre">InterchangePlan</span></code> without reading data.</p>
+<p>Field operations:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">renames:</span> <span class="pre">Mapping[str,</span> <span class="pre">str]</span></code>: provided field name to requested field name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">defaults:</span> <span class="pre">Mapping[str,</span> <span class="pre">Any]</span></code>: requested field name to a constant. The constant is cast to
+the requested type while planning. <code class="docutils literal notranslate"><span class="pre">None</span></code> adds an all-null field, which must be nullable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">drop:</span> <span class="pre">Sequence[str]</span></code>: provided fields to remove.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">casts:</span> <span class="pre">Mapping[str,</span> <span class="pre">str]</span></code>: requested field name to the most permissive cast allowed for
+that field, in order <code class="docutils literal notranslate"><span class="pre">safe</span></code>, <code class="docutils literal notranslate"><span class="pre">runtime_checked</span></code>, <code class="docutils literal notranslate"><span class="pre">lossy</span></code>. It replaces the policy’s limit
+for that field: <code class="docutils literal notranslate"><span class="pre">compatible</span></code> allows <code class="docutils literal notranslate"><span class="pre">safe</span></code>, <code class="docutils literal notranslate"><span class="pre">coerce</span></code> allows <code class="docutils literal notranslate"><span class="pre">lossy</span></code>, and <code class="docutils literal notranslate"><span class="pre">projection</span></code>
+allows no cast.</p></li>
+</ul>
+<p>Without field operations, fields are matched as described for each policy. With any field
+operation, fields are matched by name after renames, every provided field must be used or
+listed in <code class="docutils literal notranslate"><span class="pre">drop</span></code> unless the policy is <code class="docutils literal notranslate"><span class="pre">projection</span></code>, and <code class="docutils literal notranslate"><span class="pre">exact</span></code> is rejected. A requested
+field with both a matching provided field and a default is an error.</p>
 <p>Raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> for non-PyArrow schemas and <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when schemas violate the selected
-policy or require an unregistered cast.</p>
+policy, require an unregistered or disallowed cast, or field operations conflict.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">SchemaPolicy</span><span class="p">,</span> <span class="n">plan_schema</span>
@@ -658,6 +689,18 @@ policy or require an unregistered cast.</p>
 <span class="n">provided</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">schema</span><span class="p">([</span><span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">int32</span><span class="p">(),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)])</span>
 <span class="n">requested</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">schema</span><span class="p">([</span><span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
 <span class="n">plan</span> <span class="o">=</span> <span class="n">plan_schema</span><span class="p">(</span><span class="n">provided</span><span class="p">,</span> <span class="n">requested</span><span class="p">,</span> <span class="n">SchemaPolicy</span><span class="o">.</span><span class="n">COMPATIBLE</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">provided</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">schema</span><span class="p">([</span><span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">"customer_number"</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()),</span> <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">"legacy"</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">bool_</span><span class="p">())])</span>
+<span class="n">requested</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">schema</span><span class="p">([</span><span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">"customer_id"</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()),</span> <span class="n">pa</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s2">"region"</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">())])</span>
+<span class="n">plan</span> <span class="o">=</span> <span class="n">plan_schema</span><span class="p">(</span>
+    <span class="n">provided</span><span class="p">,</span>
+    <span class="n">requested</span><span class="p">,</span>
+    <span class="s2">"compatible"</span><span class="p">,</span>
+    <span class="n">renames</span><span class="o">=</span><span class="p">{</span><span class="s2">"customer_number"</span><span class="p">:</span> <span class="s2">"customer_id"</span><span class="p">},</span>
+    <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s2">"region"</span><span class="p">:</span> <span class="s2">"us"</span><span class="p">},</span>
+    <span class="n">drop</span><span class="o">=</span><span class="p">[</span><span class="s2">"legacy"</span><span class="p">],</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -707,6 +750,9 @@ policy or require an unregistered cast.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#fieldmapping">FieldMapping</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#fieldaddition">FieldAddition</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#codeccapabilities">CodecCapabilities</a>
@@ -781,7 +827,7 @@ policy or require an unregistered cast.</p>
     <a href="#plannedbatchstream">PlannedBatchStream</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
-    <a href="#plan-schema-provided-schema-requested-schema-policy">plan_schema(provided_schema, requested_schema, policy)</a>
+    <a href="#plan-schema-provided-schema-requested-schema-policy-renames-none-defaults-none-drop-none-casts-none">plan_schema(provided_schema, requested_schema, policy, *, renames=None, defaults=None, drop=None, casts=None)</a>
   </li>
 </ul>
 

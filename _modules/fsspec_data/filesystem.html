@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>fsspec_data.filesystem &#8212; fsspec-data v0.2.4</title>
+    <title>fsspec_data.filesystem &#8212; fsspec-data v0.3.0</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/fuma.css?v=ca04d621" />
     <link rel="stylesheet" type="text/css" href="../../_static/fuma-code.css?v=a950e949" />
@@ -15,7 +15,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/fonts/fuma-fonts.css?v=c2892c73" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/custom.css?v=88c24c6a" />
-    <script src="../../_static/documentation_options.js?v=6ffd866b"></script>
+    <script src="../../_static/documentation_options.js?v=e259d695"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -453,7 +453,7 @@ window.runMermaid = runMermaid;</script>
   <div class="fd-subnav-inner">
     <button type="button" class="fd-icon-button fd-sidebar-toggle" aria-controls="fd-sidebar" aria-expanded="false" aria-label="Toggle navigation" title="Toggle navigation">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-    </button><a class="fd-brand" href="../../index.html"><span class="fd-brand-name">fsspec-data v0.2.4</span>
+    </button><a class="fd-brand" href="../../index.html"><span class="fd-brand-name">fsspec-data v0.3.0</span>
 </a>
 
     <div class="fd-nav-actions">
@@ -468,7 +468,7 @@ window.runMermaid = runMermaid;</script>
 
 <aside id="fd-sidebar" aria-label="Documentation">
   <div class="fd-sidebar-header">
-    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../../index.html"><span class="fd-brand-name">fsspec-data v0.2.4</span>
+    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../../index.html"><span class="fd-brand-name">fsspec-data v0.3.0</span>
 </a>
       <button type="button" class="fd-icon-button fd-sidebar-collapse" aria-label="Collapse sidebar" title="Collapse sidebar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
     </div>
@@ -691,6 +691,7 @@ window.runMermaid = runMermaid;</script>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">fsspec</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractFileSystem</span><span class="p">,</span> <span class="n">filesystem</span>
@@ -719,6 +720,10 @@ window.runMermaid = runMermaid;</script>
         <span class="n">provided_schema</span><span class="p">:</span> <span class="n">SchemaInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">requested_schema</span><span class="p">:</span> <span class="n">SchemaInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">schema_policy</span><span class="p">:</span> <span class="n">SchemaPolicy</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">SchemaPolicy</span><span class="o">.</span><span class="n">EXACT</span><span class="p">,</span>
+        <span class="n">renames</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">defaults</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">drop</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">casts</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
         <span class="n">row_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">byte_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -743,6 +748,10 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">provided_schema_provenance</span><span class="p">:</span> <span class="n">SchemaProvenance</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">requested_schema_provenance</span><span class="p">:</span> <span class="n">SchemaProvenance</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">schema_policy</span> <span class="o">=</span> <span class="n">SchemaPolicy</span><span class="p">(</span><span class="n">schema_policy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renames</span> <span class="o">=</span> <span class="n">renames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span> <span class="o">=</span> <span class="n">defaults</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drop</span> <span class="o">=</span> <span class="n">drop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">casts</span> <span class="o">=</span> <span class="n">casts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">row_limit</span> <span class="o">=</span> <span class="n">row_limit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">byte_limit</span> <span class="o">=</span> <span class="n">byte_limit</span>
@@ -829,6 +838,10 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">provided_schema</span><span class="p">,</span>
                 <span class="n">requested_schema</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">schema_policy</span><span class="p">,</span>
+                <span class="n">renames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">renames</span><span class="p">,</span>
+                <span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">,</span>
+                <span class="n">drop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">drop</span><span class="p">,</span>
+                <span class="n">casts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">casts</span><span class="p">,</span>
             <span class="p">)</span><span class="o">.</span><span class="n">plan</span><span class="p">()</span>
             <span class="n">batches</span> <span class="o">=</span> <span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">apply_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">decoded</span><span class="p">)</span>
             <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">requested_format</span><span class="p">)</span><span class="o">.</span><span class="n">encode_batches_to</span><span class="p">(</span><span class="n">batches</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">requested_schema</span><span class="p">)</span></div>

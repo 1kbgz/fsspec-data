@@ -43,6 +43,10 @@ Functions
    fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation
    fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit
    fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size
+   fsspec_data.tests.test_all.test_plan_schema_renames_adds_and_drops_fields
+   fsspec_data.tests.test_all.test_plan_schema_requires_explicit_drop_outside_projection
+   fsspec_data.tests.test_all.test_plan_schema_cast_override_allows_lossy_cast
+   fsspec_data.tests.test_all.test_plan_schema_rejects_invalid_operations
 
 
 Module Contents
@@ -115,4 +119,12 @@ Module Contents
 .. py:function:: test_lazy_decode_enforces_byte_limit()
 
 .. py:function:: test_lazy_decode_rejects_zero_batch_size()
+
+.. py:function:: test_plan_schema_renames_adds_and_drops_fields()
+
+.. py:function:: test_plan_schema_requires_explicit_drop_outside_projection()
+
+.. py:function:: test_plan_schema_cast_override_allows_lossy_cast()
+
+.. py:function:: test_plan_schema_rejects_invalid_operations(options, message)
 

@@ -36,6 +36,7 @@ Functions
    fsspec_data.tests.test_schema.test_json_schema_rejects_ambiguous_constructs
    fsspec_data.tests.test_schema.test_schema_resolution_precedes_source_read
    fsspec_data.tests.test_schema.test_schema_reference_rejects_unknown_options
+   fsspec_data.tests.test_schema.test_fsspec_open_maps_referenced_csv_schema_onto_renamed_and_added_fields
 
 
 Module Contents
@@ -80,4 +81,6 @@ Module Contents
 .. py:function:: test_schema_resolution_precedes_source_read(monkeypatch)
 
 .. py:function:: test_schema_reference_rejects_unknown_options()
+
+.. py:function:: test_fsspec_open_maps_referenced_csv_schema_onto_renamed_and_added_fields()
 

@@ -27,6 +27,7 @@ Classes
    fsspec_data.interchange.Codec
    fsspec_data.interchange.CodecRegistry
    fsspec_data.interchange.FieldMapping
+   fsspec_data.interchange.FieldAddition
    fsspec_data.interchange.InterchangeRequest
    fsspec_data.interchange.InterchangePlan
 
@@ -37,6 +38,7 @@ Functions
 .. autoapisummary::
 
    fsspec_data.interchange.plan_schema
+   fsspec_data.interchange._default_array
    fsspec_data.interchange._ensure_pyarrow
 
 
@@ -238,6 +240,16 @@ Module Contents
 
 
 
+.. py:class:: FieldAddition
+
+   .. py:attribute:: target_index
+      :type:  int
+
+
+   .. py:attribute:: value
+      :type:  pyarrow.Array
+
+
 .. py:class:: InterchangeRequest
 
    .. py:attribute:: provided_format
@@ -258,6 +270,30 @@ Module Contents
 
    .. py:attribute:: policy
       :type:  SchemaPolicy
+
+
+   .. py:attribute:: renames
+      :type:  collections.abc.Mapping[str, str] | None
+      :value: None
+
+
+
+   .. py:attribute:: defaults
+      :type:  collections.abc.Mapping[str, Any] | None
+      :value: None
+
+
+
+   .. py:attribute:: drop
+      :type:  collections.abc.Sequence[str] | None
+      :value: None
+
+
+
+   .. py:attribute:: casts
+      :type:  collections.abc.Mapping[str, str] | None
+      :value: None
+
 
 
    .. py:method:: plan() -> InterchangePlan
@@ -289,10 +325,19 @@ Module Contents
       :type:  DataFormat
 
 
+   .. py:attribute:: additions
+      :type:  tuple[FieldAddition, ...]
+      :value: ()
+
+
+
    .. py:method:: apply_table(table: pyarrow.Table) -> pyarrow.Table
 
 
    .. py:method:: apply_batch(batch: pyarrow.RecordBatch) -> pyarrow.RecordBatch
+
+
+   .. py:method:: _arrays(data: pyarrow.Table | pyarrow.RecordBatch, num_rows: int) -> list
 
 
    .. py:method:: _apply_mapping(array: pyarrow.Array | pyarrow.ChunkedArray, mapping: FieldMapping)
@@ -307,7 +352,20 @@ Module Contents
    .. py:method:: convert(data: bytes | bytearray | memoryview | BinaryIO, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> bytes
 
 
-.. py:function:: plan_schema(provided_schema: pyarrow.Schema, requested_schema: pyarrow.Schema, policy: SchemaPolicy | str) -> InterchangePlan
+.. py:function:: plan_schema(provided_schema: pyarrow.Schema, requested_schema: pyarrow.Schema, policy: SchemaPolicy | str, *, renames: collections.abc.Mapping[str, str] | None = None, defaults: collections.abc.Mapping[str, Any] | None = None, drop: collections.abc.Sequence[str] | None = None, casts: collections.abc.Mapping[str, str] | None = None) -> InterchangePlan
+
+   Plan how provided fields become requested fields.
+
+   ``renames`` maps provided field names to requested names. ``defaults`` maps requested
+   field names to a constant; ``None`` adds an all-null field. ``drop`` lists provided
+   fields to remove. ``casts`` maps requested field names to the most permissive cast
+   allowed for that field: ``"safe"``, ``"runtime_checked"``, or ``"lossy"``.
+
+   With any of these options, fields are matched by name after renames, and every
+   provided field must be used or dropped unless ``policy`` is ``projection``.
+
+
+.. py:function:: _default_array(value: Any) -> pyarrow.Array
 
 .. py:function:: _ensure_pyarrow(value: Any) -> pyarrow.Schema
 
