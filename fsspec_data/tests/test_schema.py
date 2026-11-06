@@ -404,3 +404,41 @@ def test_schema_reference_rejects_unknown_options():
             fs=fsspec.filesystem("memory"),
             provided_schema={"url": "memory://schemas/source.arrow", "credentials": {}},
         )
+
+
+def test_fsspec_open_maps_referenced_csv_schema_onto_renamed_and_added_fields():
+    memory_fs = fsspec.filesystem("memory")
+    memory_fs.store.clear()
+    memory_fs.pipe("orders.csv", b"customer_number,name\n1,ada\n2,grace\n")
+    source_schema = {
+        "fields": [
+            {"name": "customer_number", "type": "int64", "nullable": False},
+            {"name": "name", "type": "string", "nullable": True},
+        ]
+    }
+    target_schema = pa.schema(
+        [
+            pa.field("customer_id", pa.int64(), nullable=False),
+            pa.field("name", pa.string()),
+            pa.field("region", pa.string(), nullable=False),
+        ]
+    )
+    memory_fs.pipe("schemas/source.json", json.dumps(source_schema).encode())
+    memory_fs.pipe("schemas/target.arrow", target_schema.serialize().to_pybytes())
+    fsspec.register_implementation("fsspec-data", DataFileSystem, clobber=True)
+
+    with fsspec.open(
+        "fsspec-data://orders.parquet::memory://orders.csv",
+        provided_schema={"url": "memory://schemas/source.json", "format": "arrow-json"},
+        requested_schema="memory://schemas/target.arrow",
+        schema_policy="compatible",
+        renames={"customer_number": "customer_id"},
+        defaults={"region": "us"},
+    ) as file:
+        result = pq.read_table(file)
+
+    assert result.schema.equals(target_schema, check_metadata=False)
+    assert result.to_pylist() == [
+        {"customer_id": 1, "name": "ada", "region": "us"},
+        {"customer_id": 2, "name": "grace", "region": "us"},
+    ]

@@ -1,7 +1,8 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 
-use arrow::array::RecordBatch;
-use arrow::compute::{cast_with_options, CastOptions};
+use arrow::array::{new_null_array, ArrayRef, RecordBatch, RecordBatchOptions, UInt32Array};
+use arrow::compute::{cast_with_options, take, CastOptions};
 use arrow::datatypes::{DataType, Schema, SchemaRef};
 
 use crate::error::{InterchangeError, Result};
@@ -80,11 +81,29 @@ pub enum CastKind {
 }
 
 impl CastKind {
+    pub fn parse(value: &str) -> Result<Self> {
+        match value {
+            "safe" => Ok(Self::Safe),
+            "lossy" => Ok(Self::Lossy),
+            "runtime_checked" => Ok(Self::RuntimeChecked),
+            value => Err(InterchangeError::UnknownCastKind(value.to_string())),
+        }
+    }
+
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Safe => "safe",
             Self::Lossy => "lossy",
             Self::RuntimeChecked => "runtime_checked",
+        }
+    }
+
+    /// Permissiveness order: runtime-checked casts fail on bad values, lossy casts do not.
+    fn rank(self) -> u8 {
+        match self {
+            Self::Safe => 0,
+            Self::RuntimeChecked => 1,
+            Self::Lossy => 2,
         }
     }
 }
@@ -153,6 +172,36 @@ pub struct FieldMapping {
     pub check_nulls: bool,
 }
 
+/// A requested field filled with one value instead of a provided field.
+#[derive(Clone, Debug)]
+pub struct FieldAddition {
+    pub target_index: usize,
+    /// One value of the requested field type.
+    pub value: ArrayRef,
+}
+
+/// Explicit field operations applied while planning a projection.
+#[derive(Clone, Debug, Default)]
+pub struct ProjectionOptions {
+    /// Provided field name to requested field name.
+    pub renames: HashMap<String, String>,
+    /// Requested field name to a one-element array. A null element adds an all-null field.
+    pub defaults: HashMap<String, ArrayRef>,
+    /// Provided field names to remove.
+    pub drop: Vec<String>,
+    /// Requested field name to the most permissive cast allowed for that field.
+    pub casts: HashMap<String, CastKind>,
+}
+
+impl ProjectionOptions {
+    pub fn is_empty(&self) -> bool {
+        self.renames.is_empty()
+            && self.defaults.is_empty()
+            && self.drop.is_empty()
+            && self.casts.is_empty()
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct InterchangeRequest {
     pub provided_format: DataFormat,
@@ -160,6 +209,7 @@ pub struct InterchangeRequest {
     pub provided_schema: SchemaRef,
     pub requested_schema: SchemaRef,
     pub policy: SchemaPolicy,
+    pub options: ProjectionOptions,
 }
 
 #[derive(Clone, Debug)]
@@ -170,6 +220,7 @@ pub struct InterchangePlan {
     pub requested_schema: SchemaRef,
     pub policy: SchemaPolicy,
     pub mappings: Vec<FieldMapping>,
+    pub additions: Vec<FieldAddition>,
 }
 
 impl InterchangePlan {
@@ -177,37 +228,41 @@ impl InterchangePlan {
         if !schema_fields_equal(batch.schema().as_ref(), self.provided_schema.as_ref()) {
             return Err(InterchangeError::InputSchema);
         }
-        let columns = self
-            .mappings
-            .iter()
-            .map(|mapping| {
-                let source = batch.column(mapping.source_index);
-                if mapping.check_nulls && source.null_count() > 0 {
-                    return Err(InterchangeError::RuntimeNullability(
-                        self.requested_schema
-                            .field(mapping.target_index)
-                            .name()
-                            .clone(),
-                    ));
-                }
-                match mapping.cast {
-                    Some(_) => Ok(cast_with_options(
-                        source,
-                        self.requested_schema
-                            .field(mapping.target_index)
-                            .data_type(),
-                        &CastOptions {
-                            safe: false,
-                            ..CastOptions::default()
-                        },
-                    )?),
-                    None => Ok(source.clone()),
-                }
-            })
-            .collect::<Result<Vec<_>>>()?;
-        Ok(RecordBatch::try_new(
+        let mut columns: Vec<Option<ArrayRef>> = vec![None; self.requested_schema.fields().len()];
+        for mapping in &self.mappings {
+            let source = batch.column(mapping.source_index);
+            if mapping.check_nulls && source.null_count() > 0 {
+                return Err(InterchangeError::RuntimeNullability(
+                    self.requested_schema
+                        .field(mapping.target_index)
+                        .name()
+                        .clone(),
+                ));
+            }
+            columns[mapping.target_index] = Some(match mapping.cast {
+                Some(_) => cast_with_options(
+                    source,
+                    self.requested_schema
+                        .field(mapping.target_index)
+                        .data_type(),
+                    &CastOptions {
+                        safe: false,
+                        ..CastOptions::default()
+                    },
+                )?,
+                None => source.clone(),
+            });
+        }
+        if !self.additions.is_empty() {
+            let indices = UInt32Array::from(vec![0; batch.num_rows()]);
+            for addition in &self.additions {
+                columns[addition.target_index] = Some(take(&addition.value, &indices, None)?);
+            }
+        }
+        Ok(RecordBatch::try_new_with_options(
             self.requested_schema.clone(),
-            columns,
+            columns.into_iter().map(Option::unwrap).collect(),
+            &RecordBatchOptions::new().with_row_count(Some(batch.num_rows())),
         )?)
     }
 
@@ -228,10 +283,11 @@ impl InterchangePlan {
 pub fn plan(request: &InterchangeRequest) -> Result<InterchangePlan> {
     DEFAULT_REGISTRY.get(request.provided_format)?;
     DEFAULT_REGISTRY.get(request.requested_format)?;
-    let mut plan = plan_schema(
+    let mut plan = plan_schema_with(
         request.provided_schema.clone(),
         request.requested_schema.clone(),
         request.policy,
+        &request.options,
     )?;
     plan.provided_format = request.provided_format;
     plan.requested_format = request.requested_format;
@@ -243,9 +299,35 @@ pub fn plan_schema(
     requested_schema: SchemaRef,
     policy: SchemaPolicy,
 ) -> Result<InterchangePlan> {
+    plan_schema_with(
+        provided_schema,
+        requested_schema,
+        policy,
+        &ProjectionOptions::default(),
+    )
+}
+
+/// Plans a projection with explicit renames, defaults, drops, and per-field casts.
+///
+/// Without options this matches [`plan_schema`]. With options, fields are matched by
+/// name after renames. Every provided field must be used or dropped, except under the
+/// projection policy, which drops unused fields implicitly.
+pub fn plan_schema_with(
+    provided_schema: SchemaRef,
+    requested_schema: SchemaRef,
+    policy: SchemaPolicy,
+    options: &ProjectionOptions,
+) -> Result<InterchangePlan> {
     let provided = schema_descriptors(provided_schema.as_ref());
     let requested = schema_descriptors(requested_schema.as_ref());
-    let mappings = plan_field_descriptors(&provided, &requested, policy)?;
+    let (mappings, additions) = if options.is_empty() {
+        (
+            plan_field_descriptors(&provided, &requested, policy)?,
+            Vec::new(),
+        )
+    } else {
+        plan_operations(&provided, &requested, policy, options)?
+    };
     Ok(InterchangePlan {
         provided_format: DataFormat::Arrow,
         requested_format: DataFormat::Arrow,
@@ -253,6 +335,181 @@ pub fn plan_schema(
         requested_schema,
         policy,
         mappings,
+        additions,
+    })
+}
+
+fn plan_operations(
+    provided: &[FieldDescriptor],
+    requested: &[FieldDescriptor],
+    policy: SchemaPolicy,
+    options: &ProjectionOptions,
+) -> Result<(Vec<FieldMapping>, Vec<FieldAddition>)> {
+    if policy == SchemaPolicy::Exact {
+        return Err(InterchangeError::ExactOperations);
+    }
+    for name in options.renames.keys().chain(&options.drop) {
+        match provided.iter().filter(|field| &field.name == name).count() {
+            0 => return Err(InterchangeError::MissingProvidedField(name.clone())),
+            1 => {}
+            _ => return Err(InterchangeError::AmbiguousField(name.clone())),
+        }
+    }
+    if let Some(name) = options
+        .drop
+        .iter()
+        .find(|name| options.renames.contains_key(*name))
+    {
+        return Err(InterchangeError::RenameDropConflict(name.clone()));
+    }
+    let requested_names = [
+        ("rename", options.renames.values().collect::<Vec<_>>()),
+        ("default", options.defaults.keys().collect()),
+        ("cast", options.casts.keys().collect()),
+    ];
+    for (operation, names) in requested_names {
+        if let Some(name) = names
+            .into_iter()
+            .find(|name| !requested.iter().any(|field| &field.name == *name))
+        {
+            return Err(InterchangeError::UnknownRequestedField {
+                operation,
+                field: name.clone(),
+            });
+        }
+    }
+
+    let sources = provided
+        .iter()
+        .enumerate()
+        .filter(|(_, field)| !options.drop.contains(&field.name))
+        .map(|(index, field)| {
+            let name = options.renames.get(&field.name).unwrap_or(&field.name);
+            (index, name)
+        })
+        .collect::<Vec<_>>();
+    let mut used = vec![false; sources.len()];
+    let mut mappings = Vec::new();
+    let mut additions = Vec::new();
+    for (target_index, target) in requested.iter().enumerate() {
+        let matches = sources
+            .iter()
+            .enumerate()
+            .filter(|(_, (_, name))| *name == &target.name)
+            .map(|(position, _)| position)
+            .collect::<Vec<_>>();
+        match (matches.as_slice(), options.defaults.get(&target.name)) {
+            ([], Some(value)) => additions.push(plan_addition(target_index, target, value)?),
+            ([], None) => return Err(InterchangeError::MissingField(target.name.clone())),
+            ([position], None) => {
+                used[*position] = true;
+                let source_index = sources[*position].0;
+                mappings.push(plan_mapping(
+                    source_index,
+                    target_index,
+                    &provided[source_index],
+                    target,
+                    policy,
+                    options.casts.get(&target.name).copied(),
+                )?);
+            }
+            ([_], Some(_)) => return Err(InterchangeError::DefaultConflict(target.name.clone())),
+            _ => return Err(InterchangeError::AmbiguousField(target.name.clone())),
+        }
+    }
+    if policy != SchemaPolicy::Projection {
+        if let Some(position) = used.iter().position(|used| !used) {
+            return Err(InterchangeError::UnmappedField(
+                provided[sources[position].0].name.clone(),
+            ));
+        }
+    }
+    Ok((mappings, additions))
+}
+
+fn plan_mapping(
+    source_index: usize,
+    target_index: usize,
+    source: &FieldDescriptor,
+    target: &FieldDescriptor,
+    policy: SchemaPolicy,
+    cast_override: Option<CastKind>,
+) -> Result<FieldMapping> {
+    let cast = DEFAULT_CAST_REGISTRY.classify(&source.data_type, &target.data_type);
+    let allowed = cast_override.or(match policy {
+        SchemaPolicy::Compatible => Some(CastKind::Safe),
+        SchemaPolicy::Coerce => Some(CastKind::Lossy),
+        SchemaPolicy::Exact | SchemaPolicy::Projection => None,
+    });
+    if source.data_type != target.data_type {
+        match (cast, allowed) {
+            (_, None) => {
+                return Err(InterchangeError::TypeMismatch {
+                    field: target.name.clone(),
+                    provided: format!("{:?}", source.data_type),
+                    requested: format!("{:?}", target.data_type),
+                })
+            }
+            (None, Some(_)) => {
+                return Err(InterchangeError::UnsupportedCast {
+                    field: target.name.clone(),
+                    provided: format!("{:?}", source.data_type),
+                    requested: format!("{:?}", target.data_type),
+                })
+            }
+            (Some(kind), Some(max)) if kind.rank() > max.rank() => {
+                return Err(InterchangeError::CastNotAllowed {
+                    field: target.name.clone(),
+                    cast: kind.as_str(),
+                    allowed: max.as_str(),
+                })
+            }
+            _ => {}
+        }
+    }
+    let check_nulls = source.nullable && !target.nullable;
+    if check_nulls && policy != SchemaPolicy::Coerce {
+        return Err(InterchangeError::Nullability(target.name.clone()));
+    }
+    Ok(FieldMapping {
+        source_index,
+        target_index,
+        cast,
+        check_nulls,
+    })
+}
+
+fn plan_addition(
+    target_index: usize,
+    target: &FieldDescriptor,
+    value: &ArrayRef,
+) -> Result<FieldAddition> {
+    if value.len() != 1 {
+        return Err(InterchangeError::DefaultLength(target.name.clone()));
+    }
+    let value = if value.is_null(0) {
+        if !target.nullable {
+            return Err(InterchangeError::NullDefault(target.name.clone()));
+        }
+        new_null_array(&target.data_type, 1)
+    } else {
+        cast_with_options(
+            value,
+            &target.data_type,
+            &CastOptions {
+                safe: false,
+                ..CastOptions::default()
+            },
+        )
+        .map_err(|source| InterchangeError::DefaultCast {
+            field: target.name.clone(),
+            requested: format!("{:?}", target.data_type),
+            source,
+        })?
+    };
+    Ok(FieldAddition {
+        target_index,
+        value,
     })
 }
 
@@ -490,7 +747,7 @@ pub fn schema_ref(schema: Schema) -> SchemaRef {
 
 #[cfg(test)]
 mod tests {
-    use arrow::array::{Int32Array, Int64Array, RecordBatch, StringArray};
+    use arrow::array::{Array, Float64Array, Int32Array, Int64Array, RecordBatch, StringArray};
     use arrow::datatypes::{DataType, Field, Schema};
 
     use super::*;
@@ -670,11 +927,287 @@ mod tests {
             provided_schema: provided_schema(),
             requested_schema: provided_schema(),
             policy: SchemaPolicy::Exact,
+            options: ProjectionOptions::default(),
         };
 
         let plan = plan(&request).unwrap();
 
         assert_eq!(plan.provided_format, DataFormat::Parquet);
         assert_eq!(plan.requested_format, DataFormat::Arrow);
+    }
+
+    fn options() -> ProjectionOptions {
+        ProjectionOptions::default()
+    }
+
+    fn batch(schema: SchemaRef) -> RecordBatch {
+        RecordBatch::try_new(
+            schema,
+            vec![
+                Arc::new(Int64Array::from(vec![1, 2])),
+                Arc::new(StringArray::from(vec![Some("ada"), None])),
+            ],
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn rename_maps_provided_field_to_requested_name() {
+        let requested = schema_ref(Schema::new(vec![
+            Field::new("customer_id", DataType::Int64, false),
+            Field::new("name", DataType::Utf8, true),
+        ]));
+        let mut options = options();
+        options.renames.insert("id".into(), "customer_id".into());
+        let plan = plan_schema_with(
+            provided_schema(),
+            requested.clone(),
+            SchemaPolicy::Compatible,
+            &options,
+        )
+        .unwrap();
+
+        let result = plan.apply_batch(&batch(provided_schema())).unwrap();
+
+        assert_eq!(result.schema(), requested);
+        assert_eq!(plan.mappings[0].source_index, 0);
+    }
+
+    #[test]
+    fn defaults_add_literal_and_null_fields() {
+        let requested = schema_ref(Schema::new(vec![
+            Field::new("id", DataType::Int64, false),
+            Field::new("name", DataType::Utf8, true),
+            Field::new("region", DataType::Utf8, false),
+            Field::new("score", DataType::Float64, true),
+        ]));
+        let mut options = options();
+        options.defaults.insert(
+            "region".into(),
+            Arc::new(StringArray::from(vec!["us"])) as ArrayRef,
+        );
+        options
+            .defaults
+            .insert("score".into(), new_null_array(&DataType::Null, 1));
+        let plan = plan_schema_with(
+            provided_schema(),
+            requested.clone(),
+            SchemaPolicy::Coerce,
+            &options,
+        )
+        .unwrap();
+
+        let result = plan.apply_batch(&batch(provided_schema())).unwrap();
+
+        assert_eq!(result.schema(), requested);
+        let region = result
+            .column(2)
+            .as_any()
+            .downcast_ref::<StringArray>()
+            .unwrap();
+        assert_eq!(
+            region.iter().collect::<Vec<_>>(),
+            vec![Some("us"), Some("us")]
+        );
+        let score = result
+            .column(3)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap();
+        assert_eq!(score.null_count(), 2);
+    }
+
+    #[test]
+    fn defaults_cast_to_requested_type_at_plan_time() {
+        let requested = schema_ref(Schema::new(vec![
+            Field::new("id", DataType::Int64, false),
+            Field::new("name", DataType::Utf8, true),
+            Field::new("version", DataType::Int32, false),
+        ]));
+        let mut options = options();
+        options.defaults.insert(
+            "version".into(),
+            Arc::new(Int64Array::from(vec![3])) as ArrayRef,
+        );
+        let plan = plan_schema_with(
+            provided_schema(),
+            requested,
+            SchemaPolicy::Compatible,
+            &options,
+        )
+        .unwrap();
+
+        assert_eq!(plan.additions[0].target_index, 2);
+        assert_eq!(plan.additions[0].value.data_type(), &DataType::Int32);
+    }
+
+    #[test]
+    fn additions_keep_row_count_without_source_columns() {
+        let requested = schema_ref(Schema::new(vec![Field::new(
+            "region",
+            DataType::Utf8,
+            false,
+        )]));
+        let mut options = options();
+        options.defaults.insert(
+            "region".into(),
+            Arc::new(StringArray::from(vec!["us"])) as ArrayRef,
+        );
+        let plan = plan_schema_with(
+            provided_schema(),
+            requested,
+            SchemaPolicy::Projection,
+            &options,
+        )
+        .unwrap();
+
+        let result = plan.apply_batch(&batch(provided_schema())).unwrap();
+
+        assert_eq!(result.num_rows(), 2);
+    }
+
+    #[test]
+    fn non_projection_policies_require_explicit_drops() {
+        let requested = schema_ref(Schema::new(vec![Field::new("id", DataType::Int64, false)]));
+        let mut options = options();
+        options.casts.insert("id".into(), CastKind::Safe);
+        let error = plan_schema_with(
+            provided_schema(),
+            requested.clone(),
+            SchemaPolicy::Compatible,
+            &options,
+        )
+        .unwrap_err();
+        assert!(matches!(error, InterchangeError::UnmappedField(name) if name == "name"));
+
+        options.drop.push("name".into());
+        let plan = plan_schema_with(
+            provided_schema(),
+            requested.clone(),
+            SchemaPolicy::Compatible,
+            &options,
+        )
+        .unwrap();
+        let result = plan.apply_batch(&batch(provided_schema())).unwrap();
+        assert_eq!(result.schema(), requested);
+    }
+
+    #[test]
+    fn cast_override_allows_lossy_cast_under_compatible() {
+        let requested = schema_ref(Schema::new(vec![
+            Field::new("id", DataType::Int32, false),
+            Field::new("name", DataType::Utf8, true),
+        ]));
+        let mut options = options();
+        options.casts.insert("id".into(), CastKind::Lossy);
+        let plan = plan_schema_with(
+            provided_schema(),
+            requested,
+            SchemaPolicy::Compatible,
+            &options,
+        )
+        .unwrap();
+
+        assert_eq!(plan.mappings[0].cast, Some(CastKind::Lossy));
+    }
+
+    #[test]
+    fn cast_override_restricts_coerce() {
+        let provided = schema_ref(Schema::new(vec![Field::new("id", DataType::Utf8, false)]));
+        let requested = schema_ref(Schema::new(vec![Field::new("id", DataType::Int64, false)]));
+        let mut options = options();
+        options.casts.insert("id".into(), CastKind::Safe);
+        let error =
+            plan_schema_with(provided, requested, SchemaPolicy::Coerce, &options).unwrap_err();
+
+        assert!(error.to_string().contains("runtime_checked cast"));
+    }
+
+    #[test]
+    fn operations_reject_conflicts_and_unknown_fields() {
+        let requested = schema_ref(Schema::new(vec![
+            Field::new("id", DataType::Int64, false),
+            Field::new("name", DataType::Utf8, true),
+        ]));
+        let plan_with = |options: &ProjectionOptions, policy| {
+            plan_schema_with(provided_schema(), requested.clone(), policy, options).unwrap_err()
+        };
+
+        let mut options = options();
+        options.renames.insert("id".into(), "id".into());
+        assert!(matches!(
+            plan_with(&options, SchemaPolicy::Exact),
+            InterchangeError::ExactOperations
+        ));
+
+        let mut options = self::options();
+        options.renames.insert("missing".into(), "id".into());
+        assert!(matches!(
+            plan_with(&options, SchemaPolicy::Coerce),
+            InterchangeError::MissingProvidedField(_)
+        ));
+
+        let mut options = self::options();
+        options.renames.insert("name".into(), "label".into());
+        options.drop.push("name".into());
+        assert!(matches!(
+            plan_with(&options, SchemaPolicy::Coerce),
+            InterchangeError::RenameDropConflict(_)
+        ));
+
+        let mut options = self::options();
+        options.casts.insert("label".into(), CastKind::Safe);
+        assert!(matches!(
+            plan_with(&options, SchemaPolicy::Coerce),
+            InterchangeError::UnknownRequestedField {
+                operation: "cast",
+                ..
+            }
+        ));
+
+        let mut options = self::options();
+        options.defaults.insert(
+            "name".into(),
+            Arc::new(StringArray::from(vec!["x"])) as ArrayRef,
+        );
+        assert!(matches!(
+            plan_with(&options, SchemaPolicy::Coerce),
+            InterchangeError::DefaultConflict(_)
+        ));
+    }
+
+    #[test]
+    fn null_default_requires_nullable_field() {
+        let requested = schema_ref(Schema::new(vec![
+            Field::new("id", DataType::Int64, false),
+            Field::new("name", DataType::Utf8, true),
+            Field::new("region", DataType::Utf8, false),
+        ]));
+        let mut options = options();
+        options
+            .defaults
+            .insert("region".into(), new_null_array(&DataType::Utf8, 1));
+        let error = plan_schema_with(provided_schema(), requested, SchemaPolicy::Coerce, &options)
+            .unwrap_err();
+
+        assert!(matches!(error, InterchangeError::NullDefault(_)));
+    }
+
+    #[test]
+    fn default_cast_failure_is_reported_at_plan_time() {
+        let requested = schema_ref(Schema::new(vec![
+            Field::new("id", DataType::Int64, false),
+            Field::new("name", DataType::Utf8, true),
+            Field::new("version", DataType::Int32, false),
+        ]));
+        let mut options = options();
+        options.defaults.insert(
+            "version".into(),
+            Arc::new(StringArray::from(vec!["three"])) as ArrayRef,
+        );
+        let error = plan_schema_with(provided_schema(), requested, SchemaPolicy::Coerce, &options)
+            .unwrap_err();
+
+        assert!(matches!(error, InterchangeError::DefaultCast { .. }));
     }
 }

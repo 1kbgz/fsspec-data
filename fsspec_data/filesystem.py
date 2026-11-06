@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import tempfile
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 from fsspec import AbstractFileSystem, filesystem
@@ -27,6 +28,10 @@ class DataFileSystem(ChainedFileSystem):
         provided_schema: SchemaInput = None,
         requested_schema: SchemaInput = None,
         schema_policy: SchemaPolicy | str = SchemaPolicy.EXACT,
+        renames: Mapping[str, str] | None = None,
+        defaults: Mapping[str, Any] | None = None,
+        drop: Sequence[str] | None = None,
+        casts: Mapping[str, str] | None = None,
         batch_size: int = 1024,
         row_limit: int | None = None,
         byte_limit: int | None = None,
@@ -51,6 +56,10 @@ class DataFileSystem(ChainedFileSystem):
         self.provided_schema_provenance: SchemaProvenance | None = None
         self.requested_schema_provenance: SchemaProvenance | None = None
         self.schema_policy = SchemaPolicy(schema_policy)
+        self.renames = renames
+        self.defaults = defaults
+        self.drop = drop
+        self.casts = casts
         self.batch_size = batch_size
         self.row_limit = row_limit
         self.byte_limit = byte_limit
@@ -126,6 +135,10 @@ class DataFileSystem(ChainedFileSystem):
                 provided_schema,
                 requested_schema,
                 self.schema_policy,
+                renames=self.renames,
+                defaults=self.defaults,
+                drop=self.drop,
+                casts=self.casts,
             ).plan()
             batches = (plan.apply_batch(batch) for batch in decoded)
             DEFAULT_REGISTRY.get(requested_format).encode_batches_to(batches, output, schema=requested_schema)

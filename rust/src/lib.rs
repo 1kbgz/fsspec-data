@@ -9,8 +9,8 @@ pub use codec::{
 };
 pub use error::{InterchangeError, Result};
 pub use plan::{
-    plan, plan_field_descriptors, plan_schema, schema_ref, CastKind, CastRegistry, DataFormat,
-    FieldDescriptor, FieldMapping, InterchangePlan, InterchangeRequest, SchemaPolicy,
-    DEFAULT_CAST_REGISTRY,
+    plan, plan_field_descriptors, plan_schema, plan_schema_with, schema_ref, CastKind,
+    CastRegistry, DataFormat, FieldAddition, FieldDescriptor, FieldMapping, InterchangePlan,
+    InterchangeRequest, ProjectionOptions, SchemaPolicy, DEFAULT_CAST_REGISTRY,
 };
 pub use stream::{CancellationToken, DecodedStream, StreamOptions};
