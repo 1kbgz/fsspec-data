@@ -50,6 +50,35 @@ Use `compatible` or `coerce` for casts permitted by those policies. Use a
 `pyarrow.Schema` directly when options stay in Python; use nested descriptors
 when options cross the Rust/Python bridge.
 
+## Rename, add, or drop fields
+
+Pass field operations with the requested schema. Renames map provided names to requested
+names; defaults fill requested fields that have no source; `drop` removes provided fields:
+
+```python
+requested_schema = {
+    "fields": [
+        {"name": "customer_id", "type": "int64", "nullable": False},
+        {"name": "region", "type": "string", "nullable": False},
+    ]
+}
+with fsspec.open(
+    url,
+    "rb",
+    provided_schema=schema,
+    requested_schema=requested_schema,
+    schema_policy="compatible",
+    renames={"id": "customer_id"},
+    defaults={"region": "us"},
+    drop=["name"],
+) as file:
+    customers = pq.read_table(file)
+```
+
+Under `compatible` and `coerce`, every provided field must appear in the output or in
+`drop`. Under `projection`, unused fields are dropped without listing them. Add
+`casts={"amount": "lossy"}` to allow a cast for one field that the policy would reject.
+
 ## Keep backend options scoped
 
 For a database source, pass connection settings under its protocol:

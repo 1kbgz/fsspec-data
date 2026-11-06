@@ -394,3 +394,79 @@ def test_lazy_decode_rejects_zero_batch_size():
 
     with pytest.raises(ValueError, match="batch size"):
         codec.iter_batches(encoded, batch_size=0)
+
+
+def test_plan_schema_renames_adds_and_drops_fields():
+    provided = pa.schema([pa.field("id", pa.int64(), nullable=False), pa.field("name", pa.string()), pa.field("legacy", pa.bool_())])
+    requested = pa.schema(
+        [
+            pa.field("customer_id", pa.int64(), nullable=False),
+            pa.field("name", pa.string()),
+            pa.field("region", pa.string(), nullable=False),
+            pa.field("note", pa.string()),
+        ]
+    )
+    table = pa.Table.from_batches(
+        [
+            pa.record_batch([[1], ["ada"], [True]], schema=provided),
+            pa.record_batch([[2], ["grace"], [False]], schema=provided),
+        ]
+    )
+
+    plan = plan_schema(
+        provided,
+        requested,
+        "coerce",
+        renames={"id": "customer_id"},
+        defaults={"region": "us", "note": None},
+        drop=["legacy"],
+    )
+    result = plan.apply_table(table)
+
+    assert plan.mappings == (FieldMapping(0, 0), FieldMapping(1, 1))
+    assert [addition.target_index for addition in plan.additions] == [2, 3]
+    assert result.schema.equals(requested)
+    assert result.to_pylist() == [
+        {"customer_id": 1, "name": "ada", "region": "us", "note": None},
+        {"customer_id": 2, "name": "grace", "region": "us", "note": None},
+    ]
+
+
+def test_plan_schema_requires_explicit_drop_outside_projection():
+    provided = pa.schema([pa.field("id", pa.int64()), pa.field("name", pa.string())])
+    requested = pa.schema([pa.field("customer_id", pa.int64())])
+
+    with pytest.raises(ValueError, match='"name" is not used; drop it explicitly'):
+        plan_schema(provided, requested, "compatible", renames={"id": "customer_id"})
+
+    plan = plan_schema(provided, requested, "projection", renames={"id": "customer_id"})
+    assert plan.mappings == (FieldMapping(0, 0),)
+
+
+def test_plan_schema_cast_override_allows_lossy_cast():
+    provided = pa.schema([pa.field("amount", pa.float64())])
+    requested = pa.schema([pa.field("amount", pa.float32())])
+    batch = pa.record_batch([[1.5]], schema=provided)
+
+    with pytest.raises(ValueError, match="unsafe cast"):
+        plan_schema(provided, requested, "compatible")
+    plan = plan_schema(provided, requested, "compatible", casts={"amount": "lossy"})
+
+    assert plan.apply_batch(batch).column(0).to_pylist() == [1.5]
+
+
+@pytest.mark.parametrize(
+    ("options", "message"),
+    [
+        ({"renames": {"id": "id"}}, "exact policy does not accept"),
+        ({"drop": ["missing"]}, "provided field not found: missing"),
+        ({"defaults": {"id": 1}}, "has both a source field and a default"),
+        ({"casts": {"id": "sometimes"}}, "unknown cast kind: sometimes"),
+    ],
+)
+def test_plan_schema_rejects_invalid_operations(options, message):
+    schema = pa.schema([pa.field("id", pa.int64())])
+    policy = "exact" if "renames" in options else "coerce"
+
+    with pytest.raises(ValueError, match=message):
+        plan_schema(schema, schema, policy, **options)

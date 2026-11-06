@@ -56,6 +56,39 @@ pub enum InterchangeError {
         provided: bool,
         requested: bool,
     },
+    #[error("exact policy does not accept renames, defaults, drops, or casts")]
+    ExactOperations,
+    #[error("provided field not found: {0}")]
+    MissingProvidedField(String),
+    #[error("provided field {0:?} is both renamed and dropped")]
+    RenameDropConflict(String),
+    #[error("{operation} names a field that is not in the requested schema: {field}")]
+    UnknownRequestedField {
+        operation: &'static str,
+        field: String,
+    },
+    #[error("requested field {0:?} has both a source field and a default")]
+    DefaultConflict(String),
+    #[error("provided field {0:?} is not used; drop it explicitly")]
+    UnmappedField(String),
+    #[error("default for field {0:?} must contain exactly one value")]
+    DefaultLength(String),
+    #[error("default for non-nullable field {0:?} is null")]
+    NullDefault(String),
+    #[error("default for field {field:?} cannot be cast to {requested}: {source}")]
+    DefaultCast {
+        field: String,
+        requested: String,
+        source: arrow::error::ArrowError,
+    },
+    #[error("field {field:?} requires a {cast} cast, but only {allowed} is allowed")]
+    CastNotAllowed {
+        field: String,
+        cast: &'static str,
+        allowed: &'static str,
+    },
+    #[error("unknown cast kind: {0}")]
+    UnknownCastKind(String),
     #[error("input schema does not match the schema used to create the plan")]
     InputSchema,
     #[error("batch size must be greater than zero")]

@@ -1,16 +1,19 @@
+use std::collections::HashMap;
 use std::io::{self, Read, Seek, SeekFrom, Write};
 
 use ::fsspec_data::{
-    plan_schema as build_plan, CancellationToken, CodecReader, CodecWriter, DataFormat,
-    DecodedStream, InterchangeError, SchemaPolicy, StreamOptions, DEFAULT_REGISTRY,
+    plan_schema_with as build_plan, CancellationToken, CastKind, CodecReader, CodecWriter,
+    DataFormat, DecodedStream, InterchangeError, ProjectionOptions, SchemaPolicy, StreamOptions,
+    DEFAULT_REGISTRY,
 };
-use arrow::array::RecordBatch;
+use arrow::array::{make_array, ArrayData, RecordBatch};
 use arrow::datatypes::Schema;
 use arrow::pyarrow::PyArrowType;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
 type MappingTuple = (usize, usize, Option<String>, bool);
+type AdditionTuple = (usize, PyArrowType<ArrayData>);
 
 struct PythonReader {
     source: Py<PyAny>,
@@ -272,31 +275,58 @@ fn decode_reader(
 }
 
 #[pyfunction]
+#[pyo3(signature = (provided, requested, policy, renames=None, defaults=None, drop=None, casts=None))]
+#[allow(clippy::too_many_arguments)]
 fn plan_schema(
     provided: PyArrowType<Schema>,
     requested: PyArrowType<Schema>,
     policy: &str,
-) -> PyResult<Vec<MappingTuple>> {
+    renames: Option<HashMap<String, String>>,
+    defaults: Option<HashMap<String, PyArrowType<ArrayData>>>,
+    drop: Option<Vec<String>>,
+    casts: Option<HashMap<String, String>>,
+) -> PyResult<(Vec<MappingTuple>, Vec<AdditionTuple>)> {
     let policy = SchemaPolicy::parse(policy).map_err(to_python_error)?;
-    build_plan(
+    let options = ProjectionOptions {
+        renames: renames.unwrap_or_default(),
+        defaults: defaults
+            .unwrap_or_default()
+            .into_iter()
+            .map(|(name, value)| (name, make_array(value.0)))
+            .collect(),
+        drop: drop.unwrap_or_default(),
+        casts: casts
+            .unwrap_or_default()
+            .into_iter()
+            .map(|(name, kind)| Ok((name, CastKind::parse(&kind)?)))
+            .collect::<Result<_, InterchangeError>>()
+            .map_err(to_python_error)?,
+    };
+    let plan = build_plan(
         std::sync::Arc::new(provided.0),
         std::sync::Arc::new(requested.0),
         policy,
+        &options,
     )
-    .map(|plan| {
-        plan.mappings
-            .into_iter()
-            .map(|mapping| {
-                (
-                    mapping.source_index,
-                    mapping.target_index,
-                    mapping.cast.map(|cast| cast.as_str().to_string()),
-                    mapping.check_nulls,
-                )
-            })
-            .collect()
-    })
-    .map_err(to_python_error)
+    .map_err(to_python_error)?;
+    let mappings = plan
+        .mappings
+        .into_iter()
+        .map(|mapping| {
+            (
+                mapping.source_index,
+                mapping.target_index,
+                mapping.cast.map(|cast| cast.as_str().to_string()),
+                mapping.check_nulls,
+            )
+        })
+        .collect();
+    let additions = plan
+        .additions
+        .into_iter()
+        .map(|addition| (addition.target_index, PyArrowType(addition.value.to_data())))
+        .collect();
+    Ok((mappings, additions))
 }
 
 fn to_python_error(error: InterchangeError) -> PyErr {

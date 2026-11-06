@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from enum import Enum
 from importlib import import_module
@@ -191,18 +191,36 @@ class FieldMapping:
 
 
 @dataclass(frozen=True)
+class FieldAddition:
+    target_index: int
+    value: pa.Array
+
+
+@dataclass(frozen=True)
 class InterchangeRequest:
     provided_format: DataFormat
     requested_format: DataFormat
     provided_schema: pa.Schema
     requested_schema: pa.Schema
     policy: SchemaPolicy
+    renames: Mapping[str, str] | None = None
+    defaults: Mapping[str, Any] | None = None
+    drop: Sequence[str] | None = None
+    casts: Mapping[str, str] | None = None
 
     def plan(self) -> InterchangePlan:
         DEFAULT_REGISTRY.get(self.provided_format)
         DEFAULT_REGISTRY.get(self.requested_format)
         return replace(
-            plan_schema(self.provided_schema, self.requested_schema, self.policy),
+            plan_schema(
+                self.provided_schema,
+                self.requested_schema,
+                self.policy,
+                renames=self.renames,
+                defaults=self.defaults,
+                drop=self.drop,
+                casts=self.casts,
+            ),
             provided_format=self.provided_format,
             requested_format=self.requested_format,
         )
@@ -216,16 +234,23 @@ class InterchangePlan:
     mappings: tuple[FieldMapping, ...]
     provided_format: DataFormat = DataFormat.ARROW
     requested_format: DataFormat = DataFormat.ARROW
+    additions: tuple[FieldAddition, ...] = ()
 
     def apply_table(self, table: pa.Table) -> pa.Table:
         self._validate_input_schema(table.schema)
-        arrays = [self._apply_mapping(table.column(mapping.source_index), mapping) for mapping in self.mappings]
-        return pa.Table.from_arrays(arrays, schema=self.requested_schema)
+        return pa.Table.from_arrays(self._arrays(table, table.num_rows), schema=self.requested_schema)
 
     def apply_batch(self, batch: pa.RecordBatch) -> pa.RecordBatch:
         self._validate_input_schema(batch.schema)
-        arrays = [self._apply_mapping(batch.column(mapping.source_index), mapping) for mapping in self.mappings]
-        return pa.RecordBatch.from_arrays(arrays, schema=self.requested_schema)
+        return pa.RecordBatch.from_arrays(self._arrays(batch, batch.num_rows), schema=self.requested_schema)
+
+    def _arrays(self, data: pa.Table | pa.RecordBatch, num_rows: int) -> list:
+        arrays: list = [None] * len(self.requested_schema)
+        for mapping in self.mappings:
+            arrays[mapping.target_index] = self._apply_mapping(data.column(mapping.source_index), mapping)
+        for addition in self.additions:
+            arrays[addition.target_index] = pa.repeat(addition.value[0], num_rows)
+        return arrays
 
     def _apply_mapping(self, array: pa.Array | pa.ChunkedArray, mapping: FieldMapping):
         field = self.requested_schema.field(mapping.target_index)
@@ -283,21 +308,47 @@ def plan_schema(
     provided_schema: pa.Schema,
     requested_schema: pa.Schema,
     policy: SchemaPolicy | str,
+    *,
+    renames: Mapping[str, str] | None = None,
+    defaults: Mapping[str, Any] | None = None,
+    drop: Sequence[str] | None = None,
+    casts: Mapping[str, str] | None = None,
 ) -> InterchangePlan:
+    """Plan how provided fields become requested fields.
+
+    ``renames`` maps provided field names to requested names. ``defaults`` maps requested
+    field names to a constant; ``None`` adds an all-null field. ``drop`` lists provided
+    fields to remove. ``casts`` maps requested field names to the most permissive cast
+    allowed for that field: ``"safe"``, ``"runtime_checked"``, or ``"lossy"``.
+
+    With any of these options, fields are matched by name after renames, and every
+    provided field must be used or dropped unless ``policy`` is ``projection``.
+    """
     provided_schema = _ensure_pyarrow(provided_schema)
     requested_schema = _ensure_pyarrow(requested_schema)
     policy = SchemaPolicy(policy)
-    mappings = _rust.plan_schema(
+    mappings, additions = _rust.plan_schema(
         provided_schema,
         requested_schema,
         policy.value,
+        dict(renames) if renames else None,
+        {name: _default_array(value) for name, value in defaults.items()} if defaults else None,
+        list(drop) if drop else None,
+        dict(casts) if casts else None,
     )
     return InterchangePlan(
         provided_schema=provided_schema,
         requested_schema=requested_schema,
         policy=policy,
         mappings=tuple(FieldMapping(source, target, cast, check_nulls) for source, target, cast, check_nulls in mappings),
+        additions=tuple(FieldAddition(target, value) for target, value in additions),
     )
+
+
+def _default_array(value: Any) -> pa.Array:
+    if isinstance(value, pa.Scalar):
+        return pa.array([value.as_py()], type=value.type)
+    return pa.array([value])
 
 
 def _ensure_pyarrow(value: Any) -> pa.Schema:
