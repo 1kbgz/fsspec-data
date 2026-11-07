@@ -259,6 +259,61 @@ def test_confluent_resolver_fetches_json_schema_with_scoped_credentials(monkeypa
     assert timeout == 3.0
 
 
+AVRO_SCHEMA = {
+    "type": "record",
+    "name": "Order",
+    "fields": [{"name": "id", "type": "long"}, {"name": "note", "type": ["null", "string"], "default": None}],
+}
+
+
+def test_avro_schemas_resolve_from_files_and_confluent(monkeypatch, tmp_path):
+    expected = pa.schema([pa.field("id", pa.int64(), nullable=False), pa.field("note", pa.string())])
+    path = tmp_path / "order.avsc"
+    path.write_text(json.dumps(AVRO_SCHEMA))
+
+    resolved = resolve_schema(SchemaRef(str(path)))
+
+    assert resolved is not None
+    assert resolved.schema.equals(expected, check_metadata=False)
+    assert resolved.provenance.format == "avro-schema"
+
+    payload = {"subject": "orders-value", "version": 2, "id": 9, "schemaType": "AVRO", "schema": json.dumps(AVRO_SCHEMA)}
+    monkeypatch.setattr(confluent_module.urllib.request, "urlopen", lambda request: io.BytesIO(json.dumps(payload).encode()))
+    reference = SchemaRef("confluent://orders-value/versions/latest", storage_options={"registry_url": "https://schemas.example.test"})
+
+    resolved = resolve_schema(reference)
+
+    assert resolved is not None
+    assert resolved.schema.equals(expected, check_metadata=False)
+    assert (resolved.provenance.format, resolved.provenance.identifier) == ("avro-schema", "9")
+
+    path.write_text("not an Avro schema")
+    with pytest.raises(ValueError):
+        resolve_schema(SchemaRef(str(path)))
+
+
+def test_confluent_versions_fetch_every_registered_schema(monkeypatch):
+    responses = {
+        "https://schemas.example.test/subjects/orders-value/versions": [1, 2],
+        "https://schemas.example.test/subjects/orders-value/versions/1": {"version": 1, "id": 4, "schema": "{}"},
+        "https://schemas.example.test/subjects/orders-value/versions/2": {"version": 2, "id": 9, "schema": "{}"},
+    }
+    monkeypatch.setattr(
+        confluent_module.urllib.request,
+        "urlopen",
+        lambda request: io.BytesIO(json.dumps(responses[request.full_url]).encode()),
+    )
+    options = {"registry_url": "https://schemas.example.test"}
+
+    documents = confluent_module.fetch_confluent_versions("confluent://orders-value/versions/latest", options)
+
+    assert [(document.version, document.schema_id) for document in documents] == [("1", "4"), ("2", "9")]
+
+    responses["https://schemas.example.test/subjects/orders-value/versions"] = {"versions": [1]}
+    with pytest.raises(TypeError, match="list of integers"):
+        confluent_module.fetch_confluent_versions("confluent://orders-value/versions/latest", options)
+
+
 def test_fsspec_open_composes_confluent_schema_with_file_schema(monkeypatch):
     monkeypatch.setattr(
         confluent_module.urllib.request,
@@ -303,7 +358,7 @@ def test_fsspec_open_composes_confluent_schema_with_file_schema(monkeypatch):
 @pytest.mark.parametrize(
     ("payload", "message"),
     [
-        ({"schemaType": "AVRO", "schema": "{}"}, "schema type 'AVRO' is not supported"),
+        ({"schemaType": "PROTOBUF", "schema": 'syntax = "proto3";'}, "schema type 'PROTOBUF' is not supported"),
         (
             {
                 "schemaType": "JSON",

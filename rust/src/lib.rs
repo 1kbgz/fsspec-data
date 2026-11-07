@@ -1,8 +1,10 @@
+mod avro;
 mod codec;
 mod error;
 mod plan;
 mod stream;
 
+pub use avro::{avro_arrow_schema, AvroCodec, AvroFraming, AvroValueDecoder, AvroValueEncoder};
 pub use codec::{
     ArrowIpcCodec, Codec, CodecCapabilities, CodecReader, CodecRegistry, CodecWriter, CsvCodec,
     DecodedBatches, JsonLinesCodec, ParquetCodec, DEFAULT_REGISTRY,

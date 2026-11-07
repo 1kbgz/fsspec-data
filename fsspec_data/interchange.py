@@ -18,6 +18,7 @@ class DataFormat(str, Enum):
     PARQUET = "parquet"
     CSV = "csv"
     JSONL = "jsonl"
+    AVRO = "avro"
 
 
 class SchemaPolicy(str, Enum):

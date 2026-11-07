@@ -22,6 +22,23 @@ class ConfluentSchemaDocument:
 
 def fetch_confluent_schema(url: str, storage_options: Mapping[str, Any]) -> ConfluentSchemaDocument:
     subject, requested_version = _parse_reference(url)
+    payload = _get(f"subjects/{quote(subject, safe='')}/versions/{quote(requested_version, safe='')}", storage_options)
+    return _document(payload, subject, requested_version)
+
+
+def fetch_confluent_versions(url: str, storage_options: Mapping[str, Any]) -> tuple[ConfluentSchemaDocument, ...]:
+    """Every registered version of the subject in ``url``, oldest first. The version in
+    ``url`` is ignored."""
+    subject, _ = _parse_reference(url)
+    versions = _get(f"subjects/{quote(subject, safe='')}/versions", storage_options)
+    if not isinstance(versions, list) or not all(isinstance(version, int) for version in versions):
+        raise TypeError("Confluent Schema Registry versions response must be a list of integers")
+    return tuple(
+        _document(_get(f"subjects/{quote(subject, safe='')}/versions/{version}", storage_options), subject, str(version)) for version in versions
+    )
+
+
+def _get(path: str, storage_options: Mapping[str, Any]) -> Any:
     options = dict(storage_options)
     try:
         registry_url = options.pop("registry_url")
@@ -47,7 +64,7 @@ def fetch_confluent_schema(url: str, storage_options: Mapping[str, Any]) -> Conf
     if options:
         raise ValueError(f"unknown Confluent storage options: {', '.join(sorted(options))}")
 
-    endpoint = f"{registry_url.rstrip('/')}/subjects/{quote(subject, safe='')}/versions/{quote(requested_version, safe='')}"
+    endpoint = f"{registry_url.rstrip('/')}/{path}"
     request_headers = {
         "Accept": "application/vnd.schemaregistry.v1+json, application/json",
         **dict(headers),
@@ -63,12 +80,14 @@ def fetch_confluent_schema(url: str, storage_options: Mapping[str, Any]) -> Conf
         else:
             response = urllib.request.urlopen(request, timeout=float(timeout))
         with response:
-            payload = json.load(response)
+            return json.load(response)
     except urllib.error.HTTPError as error:
         raise ValueError(f"Confluent Schema Registry returned HTTP {error.code}") from error
     except urllib.error.URLError as error:
         raise ValueError("Confluent Schema Registry request failed") from error
 
+
+def _document(payload: Any, subject: str, requested_version: str) -> ConfluentSchemaDocument:
     if not isinstance(payload, Mapping):
         raise TypeError("Confluent Schema Registry response must be an object")
     schema = payload.get("schema")

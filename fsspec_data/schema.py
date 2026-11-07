@@ -4,6 +4,7 @@ import json
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from enum import Enum
+from importlib import import_module
 from typing import Any, TypeAlias, cast
 from urllib.parse import urlsplit
 
@@ -18,6 +19,7 @@ class SchemaFormat(str, Enum):
     ARROW_IPC = "arrow-ipc-schema"
     ARROW_JSON = "arrow-json"
     JSON_SCHEMA = "json-schema"
+    AVRO = "avro-schema"
 
 
 @dataclass(frozen=True)
@@ -152,6 +154,8 @@ def _format_from_url(url: str) -> SchemaFormat:
     path = url.split("?", 1)[0].lower()
     if path.endswith((".arrow", ".ipc", ".arrowschema")):
         return SchemaFormat.ARROW_IPC
+    if path.endswith(".avsc"):
+        return SchemaFormat.AVRO
     raise ValueError(f"schema format cannot be inferred from {url!r}; provide format explicitly")
 
 
@@ -173,6 +177,10 @@ def _decode_json_schema(data: bytes) -> pa.Schema:
     return json_schema_to_arrow(value)
 
 
+def _decode_avro_schema(data: bytes) -> pa.Schema:
+    return import_module(".fsspec_data", __package__).avro_arrow_schema(data.decode())
+
+
 def _resolve_fsspec_document(reference: SchemaRef) -> SchemaDocument:
     format = SchemaFormat(reference.format) if reference.format is not None else _format_from_url(reference.url)
     with fsspec.open(reference.url, "rb", **reference.storage_options) as file:
@@ -184,18 +192,22 @@ def _resolve_fsspec_document(reference: SchemaRef) -> SchemaDocument:
     )
 
 
+_CONFLUENT_FORMATS = {"JSON": SchemaFormat.JSON_SCHEMA, "AVRO": SchemaFormat.AVRO}
+
+
 def _resolve_confluent_document(reference: SchemaRef) -> SchemaDocument:
     document = fetch_confluent_schema(reference.url, reference.storage_options)
     if document.references:
         raise ValueError("Confluent schema references are not supported yet")
-    if document.schema_type != "JSON":
+    format = _CONFLUENT_FORMATS.get(document.schema_type)
+    if format is None:
         raise ValueError(f"Confluent schema type {document.schema_type!r} is not supported")
     return SchemaDocument(
         data=document.schema.encode(),
-        format=SchemaFormat.JSON_SCHEMA,
+        format=format,
         provenance=SchemaProvenance(
             source=reference.url,
-            format=SchemaFormat.JSON_SCHEMA.value,
+            format=format.value,
             provider="confluent",
             identifier=document.schema_id,
             version=document.version,
@@ -207,4 +219,5 @@ DEFAULT_SCHEMA_RESOLVERS = SchemaResolverRegistry()
 DEFAULT_SCHEMA_RESOLVERS.register(SchemaFormat.ARROW_JSON, _decode_arrow_json)
 DEFAULT_SCHEMA_RESOLVERS.register(SchemaFormat.ARROW_IPC, _decode_arrow_ipc)
 DEFAULT_SCHEMA_RESOLVERS.register(SchemaFormat.JSON_SCHEMA, _decode_json_schema)
+DEFAULT_SCHEMA_RESOLVERS.register(SchemaFormat.AVRO, _decode_avro_schema)
 DEFAULT_SCHEMA_RESOLVERS.register_provider("confluent", _resolve_confluent_document)

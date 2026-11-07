@@ -14,7 +14,8 @@ path = "src/lib.rs"
 crate-type = ["rlib"]
 
 [dependencies]
-arrow = "54.3.1"
+arrow = "60.1.0"
+arrow-avro = { version = "60.1.0", default-features = false, features = ["deflate", "snappy", "zstd"] }
 bytes = "1"
-parquet = { version = "54.3.1", features = ["arrow"] }
+parquet = { version = "60.1.0", features = ["arrow"] }
 thiserror = "2"

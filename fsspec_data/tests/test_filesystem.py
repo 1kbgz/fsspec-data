@@ -36,6 +36,19 @@ def test_chained_filesystem_converts_csv_to_seekable_parquet(memory_fs):
     assert table.to_pylist() == [{"id": 1, "name": "ada"}, {"id": 2, "name": "grace"}]
 
 
+def test_chained_filesystem_converts_csv_to_avro(memory_fs):
+    from fsspec_data import DEFAULT_REGISTRY
+
+    fs = DataFileSystem(fo="orders.csv", fs=memory_fs, provided_schema=SCHEMA_OPTIONS)
+
+    with fs.open("orders.avro", "rb") as file:
+        data = file.read()
+
+    assert data.startswith(b"Obj\x01")
+    decoded = DEFAULT_REGISTRY.get("avro").decode_batches(data)
+    assert pa.Table.from_batches(decoded.batches).to_pylist() == [{"id": 1, "name": "ada"}, {"id": 2, "name": "grace"}]
+
+
 def test_chained_filesystem_reads_source_without_cat_file(memory_fs, monkeypatch):
     rows = [f"{index},name-{index}\n".encode() for index in range(50_000)]
     encoded = b"id,name\n" + b"".join(rows)

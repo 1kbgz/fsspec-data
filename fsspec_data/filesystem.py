@@ -152,6 +152,7 @@ _SUFFIX_FORMATS = {
     ".ndjson": DataFormat.JSONL,
     ".parquet": DataFormat.PARQUET,
     ".pq": DataFormat.PARQUET,
+    ".avro": DataFormat.AVRO,
 }
 
 

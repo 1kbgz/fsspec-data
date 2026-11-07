@@ -14,6 +14,7 @@ pub enum DataFormat {
     Parquet,
     Csv,
     JsonLines,
+    Avro,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -52,6 +53,7 @@ impl DataFormat {
             "parquet" => Ok(Self::Parquet),
             "csv" => Ok(Self::Csv),
             "jsonl" => Ok(Self::JsonLines),
+            "avro" => Ok(Self::Avro),
             value => Err(InterchangeError::UnknownFormat(value.to_string())),
         }
     }
@@ -62,6 +64,7 @@ impl DataFormat {
             Self::Parquet => "parquet",
             Self::Csv => "csv",
             Self::JsonLines => "jsonl",
+            Self::Avro => "avro",
         }
     }
 }
