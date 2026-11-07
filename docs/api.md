@@ -248,6 +248,10 @@ schema for each schema ID. Values written with older writer schemas resolve to t
 schema. `push(value)` decodes exactly one value, and `flush()` returns every row pushed
 since the previous flush.
 
+`AvroValueEncoder::new(schema, schema_id)` encodes each row of a batch as one value. With a
+schema ID the values use the Confluent wire format; without one they are bare datums.
+`schema()` returns the Arrow schema rows must have, which is also the schema values decode to.
+
 `avro_arrow_schema(schema)` returns the Arrow schema that values with an Avro schema decode
 to. Python exposes it through the `avro-schema` schema format.
 

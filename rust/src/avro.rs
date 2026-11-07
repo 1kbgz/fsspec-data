@@ -2,11 +2,17 @@ use std::io::{BufReader, Cursor, Write};
 
 use arrow::array::RecordBatch;
 use arrow::compute::concat_batches;
-use arrow::datatypes::SchemaRef;
+use std::sync::Arc;
+
+use arrow::datatypes::{Schema, SchemaRef};
 use arrow::error::ArrowError;
 use arrow_avro::reader::{Decoder, DecoderMode, ReaderBuilder};
-use arrow_avro::schema::{AvroSchema, Fingerprint, FingerprintAlgorithm, SchemaStore};
-use arrow_avro::writer::AvroWriter;
+use arrow_avro::schema::{
+    AvroSchema, Fingerprint, FingerprintAlgorithm, FingerprintStrategy, SchemaStore,
+    SCHEMA_METADATA_KEY,
+};
+use arrow_avro::writer::format::{AvroBinaryFormat, AvroSoeFormat};
+use arrow_avro::writer::{AvroWriter, Encoder, WriterBuilder};
 
 use crate::codec::{validate_batch, Codec, CodecCapabilities, CodecReader, CodecWriter};
 use crate::{
@@ -215,6 +221,52 @@ impl AvroValueDecoder {
     }
 }
 
+/// Encodes record batches as individual Avro values, one per row.
+pub struct AvroValueEncoder {
+    encoder: Encoder,
+    schema: SchemaRef,
+}
+
+impl AvroValueEncoder {
+    /// Encodes values with the Avro schema `schema` (JSON). With `schema_id`, values use the
+    /// Confluent wire format with that ID; without one, they are bare datums.
+    pub fn new(schema: &str, schema_id: Option<u32>) -> Result<Self> {
+        let arrow = avro_arrow_schema(schema)?;
+        let mut metadata = arrow.metadata().clone();
+        metadata.insert(SCHEMA_METADATA_KEY.to_string(), schema.to_string());
+        let arrow = Arc::new(Schema::new_with_metadata(arrow.fields().clone(), metadata));
+        let builder = WriterBuilder::new(arrow.as_ref().clone());
+        let encoder = match schema_id {
+            Some(id) => builder
+                .with_fingerprint_strategy(FingerprintStrategy::Id(id))
+                .build_encoder::<AvroSoeFormat>(),
+            None => builder.build_encoder::<AvroBinaryFormat>(),
+        }
+        .map_err(ArrowError::from)?;
+        Ok(Self {
+            encoder,
+            schema: arrow,
+        })
+    }
+
+    /// The Arrow schema of encoded rows, the same as values decode to.
+    pub fn schema(&self) -> SchemaRef {
+        self.schema.clone()
+    }
+
+    /// Encodes each row of `batch`, whose columns must match `schema()` by position.
+    pub fn encode(&mut self, batch: &RecordBatch) -> Result<Vec<Vec<u8>>> {
+        let batch = RecordBatch::try_new(self.schema.clone(), batch.columns().to_vec())?;
+        self.encoder.encode(&batch).map_err(ArrowError::from)?;
+        Ok(self
+            .encoder
+            .flush()
+            .iter()
+            .map(|row| row.to_vec())
+            .collect())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use arrow::array::{AsArray, Int64Array, StringArray};
@@ -289,6 +341,37 @@ mod tests {
                     .unwrap();
             }
             assert_eq!(decoder.flush().unwrap().unwrap().num_rows(), 3);
+        }
+    }
+
+    #[test]
+    fn encoded_values_decode_back() {
+        let batch = RecordBatch::try_new(
+            avro_arrow_schema(V2).unwrap(),
+            vec![
+                Arc::new(Int64Array::from(vec![1, 2])),
+                Arc::new(StringArray::from(vec!["a", "b"])),
+            ],
+        )
+        .unwrap();
+        for (schema_id, framing) in [
+            (None, AvroFraming::Unframed),
+            (Some(5), AvroFraming::Confluent(vec![(5, V2.to_string())])),
+        ] {
+            let values = AvroValueEncoder::new(V2, schema_id)
+                .unwrap()
+                .encode(&batch)
+                .unwrap();
+            assert_eq!(values[0], {
+                let value = datum(1, Some("a"));
+                schema_id.map_or(value.clone(), |id| confluent(id, value))
+            });
+            let mut decoder = AvroValueDecoder::new(V2, framing, 16).unwrap();
+            for value in &values {
+                decoder.push(value).unwrap();
+            }
+            let decoded = decoder.flush().unwrap().unwrap();
+            assert_eq!(decoded.columns(), batch.columns());
         }
     }
 
