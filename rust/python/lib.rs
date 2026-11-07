@@ -21,14 +21,14 @@ struct PythonReader {
 
 impl Read for PythonReader {
     fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let data = self
                 .source
                 .bind(py)
                 .call_method1("read", (buffer.len(),))
                 .map_err(python_io_error)?;
             let data = data
-                .downcast::<PyBytes>()
+                .cast::<PyBytes>()
                 .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error.to_string()))?;
             let data = data.as_bytes();
             if data.len() > buffer.len() {
@@ -45,7 +45,7 @@ impl Read for PythonReader {
 
 impl Seek for PythonReader {
     fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let source = self.source.bind(py);
             let position = match position {
                 SeekFrom::Start(offset) => source.call_method1("seek", (offset, 0)),
@@ -68,7 +68,7 @@ struct PythonWriter {
 
 impl Write for PythonWriter {
     fn write(&mut self, buffer: &[u8]) -> io::Result<usize> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             self.sink
                 .bind(py)
                 .call_method1("write", (PyBytes::new(py, buffer),))
@@ -78,7 +78,7 @@ impl Write for PythonWriter {
     }
 
     fn flush(&mut self) -> io::Result<()> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             self.sink
                 .bind(py)
                 .call_method0("flush")
