@@ -299,6 +299,9 @@
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.schema.SchemaFormat.JSON_SCHEMA">SchemaFormat.JSON_SCHEMA</a>
   </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.schema.SchemaFormat.AVRO">SchemaFormat.AVRO</a>
+  </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.schema.SchemaRef">SchemaRef</a>
   </li>
@@ -405,7 +408,13 @@
     <a href="#fsspec_data.schema._decode_json_schema">_decode_json_schema()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.schema._decode_avro_schema">_decode_avro_schema()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.schema._resolve_fsspec_document">_resolve_fsspec_document()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.schema._CONFLUENT_FORMATS">_CONFLUENT_FORMATS</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.schema._resolve_confluent_document">_resolve_confluent_document()</a>
@@ -448,7 +457,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.schema.SchemaProvider" title="fsspec_data.schema.SchemaProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaProvider</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.schema.DEFAULT_SCHEMA_RESOLVERS" title="fsspec_data.schema.DEFAULT_SCHEMA_RESOLVERS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_SCHEMA_RESOLVERS</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.schema._CONFLUENT_FORMATS" title="fsspec_data.schema._CONFLUENT_FORMATS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_CONFLUENT_FORMATS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.schema.DEFAULT_SCHEMA_RESOLVERS" title="fsspec_data.schema.DEFAULT_SCHEMA_RESOLVERS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_SCHEMA_RESOLVERS</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -507,10 +519,13 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.schema._decode_json_schema" title="fsspec_data.schema._decode_json_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_decode_json_schema</span></code></a>(data) → pyarrow.Schema</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.schema._resolve_fsspec_document" title="fsspec_data.schema._resolve_fsspec_document"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_resolve_fsspec_document</span></code></a>(reference) → SchemaDocument</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.schema._decode_avro_schema" title="fsspec_data.schema._decode_avro_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_decode_avro_schema</span></code></a>(data) → pyarrow.Schema</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.schema._resolve_confluent_document" title="fsspec_data.schema._resolve_confluent_document"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_resolve_confluent_document</span></code></a>(reference) → SchemaDocument</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.schema._resolve_fsspec_document" title="fsspec_data.schema._resolve_fsspec_document"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_resolve_fsspec_document</span></code></a>(reference) → SchemaDocument</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.schema._resolve_confluent_document" title="fsspec_data.schema._resolve_confluent_document"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_resolve_confluent_document</span></code></a>(reference) → SchemaDocument</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -545,6 +560,11 @@ errors defaults to ‘strict’.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.schema.SchemaFormat.JSON_SCHEMA">
 <span class="sig-name descname"><span class="pre">JSON_SCHEMA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'json-schema'</span></em><a class="headerlink" href="#fsspec_data.schema.SchemaFormat.JSON_SCHEMA" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.schema.SchemaFormat.AVRO">
+<span class="sig-name descname"><span class="pre">AVRO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'avro-schema'</span></em><a class="headerlink" href="#fsspec_data.schema.SchemaFormat.AVRO" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -725,8 +745,18 @@ errors defaults to ‘strict’.</p>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.schema._decode_avro_schema">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.schema.</span></span><span class="sig-name descname"><span class="pre">_decode_avro_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Schema</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/schema.html#_decode_avro_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.schema._decode_avro_schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.schema._resolve_fsspec_document">
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.schema.</span></span><span class="sig-name descname"><span class="pre">_resolve_fsspec_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.schema.SchemaRef" title="fsspec_data.schema.SchemaRef"><span class="pre">SchemaRef</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.schema.SchemaDocument" title="fsspec_data.schema.SchemaDocument"><span class="pre">SchemaDocument</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/schema.html#_resolve_fsspec_document"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.schema._resolve_fsspec_document" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fsspec_data.schema._CONFLUENT_FORMATS">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.schema.</span></span><span class="sig-name descname"><span class="pre">_CONFLUENT_FORMATS</span></span><a class="headerlink" href="#fsspec_data.schema._CONFLUENT_FORMATS" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -798,6 +828,9 @@ errors defaults to ‘strict’.</p>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.schema.SchemaFormat.JSON_SCHEMA">SchemaFormat.JSON_SCHEMA</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.schema.SchemaFormat.AVRO">SchemaFormat.AVRO</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.schema.SchemaRef">SchemaRef</a>
@@ -905,7 +938,13 @@ errors defaults to ‘strict’.</p>
     <a href="#fsspec_data.schema._decode_json_schema">_decode_json_schema()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.schema._decode_avro_schema">_decode_avro_schema()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.schema._resolve_fsspec_document">_resolve_fsspec_document()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.schema._CONFLUENT_FORMATS">_CONFLUENT_FORMATS</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.schema._resolve_confluent_document">_resolve_confluent_document()</a>

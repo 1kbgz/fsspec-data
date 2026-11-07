@@ -333,12 +333,14 @@
 </tbody>
 </table>
 <p><code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code> copies storage options and omits them from its representation.
-<code class="docutils literal notranslate"><span class="pre">SchemaFormat</span></code> values are <code class="docutils literal notranslate"><span class="pre">arrow-json</span></code>, <code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code>, and <code class="docutils literal notranslate"><span class="pre">json-schema</span></code>.
-<code class="docutils literal notranslate"><span class="pre">.arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">.ipc</span></code>, and <code class="docutils literal notranslate"><span class="pre">.arrowschema</span></code> infer <code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code>; other suffixes require
-an explicit format.</p>
+<code class="docutils literal notranslate"><span class="pre">SchemaFormat</span></code> values are <code class="docutils literal notranslate"><span class="pre">arrow-json</span></code>, <code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code>, <code class="docutils literal notranslate"><span class="pre">json-schema</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">avro-schema</span></code>. <code class="docutils literal notranslate"><span class="pre">.arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">.ipc</span></code>, and <code class="docutils literal notranslate"><span class="pre">.arrowschema</span></code> infer <code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code>, and <code class="docutils literal notranslate"><span class="pre">.avsc</span></code>
+infers <code class="docutils literal notranslate"><span class="pre">avro-schema</span></code>; other suffixes require an explicit format.</p>
 <p><code class="docutils literal notranslate"><span class="pre">arrow-json</span></code> is an object with a <code class="docutils literal notranslate"><span class="pre">fields</span></code> list. Each field has <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">type</span></code>, and
 optional <code class="docutils literal notranslate"><span class="pre">nullable</span></code> (default true). Types accept PyArrow aliases.
-<code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code> accepts a serialized Arrow schema or Arrow IPC stream.</p>
+<code class="docutils literal notranslate"><span class="pre">arrow-ipc-schema</span></code> accepts a serialized Arrow schema or Arrow IPC stream.
+<code class="docutils literal notranslate"><span class="pre">avro-schema</span></code> accepts Avro schema JSON and resolves to the Arrow schema its values decode
+to.</p>
 <section id="resolve-schema-value-registry-none">
 <h3><code class="docutils literal notranslate"><span class="pre">resolve_schema(value,</span> <span class="pre">registry=None)</span></code><a class="headerlink" href="#resolve-schema-value-registry-none" title="Link to this heading">¶</a></h3>
 <p>Accepts a PyArrow schema, <code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>. Returns <code class="docutils literal notranslate"><span class="pre">ResolvedSchema</span></code> or
@@ -371,8 +373,12 @@ bounds and string lengths are not represented or enforced.</p>
 <p><code class="docutils literal notranslate"><span class="pre">confluent://SUBJECT/versions/VERSION</span></code> accepts <code class="docutils literal notranslate"><span class="pre">latest</span></code>, <code class="docutils literal notranslate"><span class="pre">-1</span></code>, or a positive 32-bit
 integer. Its storage options are required <code class="docutils literal notranslate"><span class="pre">registry_url</span></code>, optional Basic auth
 <code class="docutils literal notranslate"><span class="pre">username</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code>, optional string-valued <code class="docutils literal notranslate"><span class="pre">headers</span></code>, and optional numeric
-<code class="docutils literal notranslate"><span class="pre">timeout</span></code> in seconds. JSON Schema records without external references are
-supported; Avro, Protobuf, and referenced documents raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">timeout</span></code> in seconds. JSON Schema and Avro subjects without external references are
+supported; Protobuf and referenced documents raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">fsspec_data.confluent.fetch_confluent_versions(url,</span> <span class="pre">storage_options)</span></code> returns a document
+for every registered version of the subject in <code class="docutils literal notranslate"><span class="pre">url</span></code>, oldest first, ignoring the version in
+the URL. Readers of Confluent-framed data use it to find the writer schema for each schema
+ID.</p>
 </section>
 </section>
 <section id="resource-converters">

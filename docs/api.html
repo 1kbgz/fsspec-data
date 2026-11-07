@@ -339,6 +339,9 @@
     <a href="#get-format">get(format)</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
+    <a href="#rust-avro-values">Rust Avro values</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
     <a href="#interchangerequest">InterchangeRequest</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
@@ -411,7 +414,8 @@ are listed in <a class="reference internal" href="resources.html"><span class="s
 <p>After conversion starts, <code class="docutils literal notranslate"><span class="pre">provided_schema_provenance</span></code> and <code class="docutils literal notranslate"><span class="pre">requested_schema_provenance</span></code>
 describe resolved schema sources without exposing storage options.</p>
 <p>Recognized suffixes are <code class="docutils literal notranslate"><span class="pre">.arrow</span></code> and <code class="docutils literal notranslate"><span class="pre">.ipc</span></code> for Arrow IPC streams, <code class="docutils literal notranslate"><span class="pre">.parquet</span></code> and <code class="docutils literal notranslate"><span class="pre">.pq</span></code> for
-Parquet, <code class="docutils literal notranslate"><span class="pre">.csv</span></code> for CSV, and <code class="docutils literal notranslate"><span class="pre">.jsonl</span></code> and <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code> for line-delimited JSON.</p>
+Parquet, <code class="docutils literal notranslate"><span class="pre">.csv</span></code> for CSV, <code class="docutils literal notranslate"><span class="pre">.jsonl</span></code> and <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code> for line-delimited JSON, and <code class="docutils literal notranslate"><span class="pre">.avro</span></code> for
+Avro object container files.</p>
 <p><code class="docutils literal notranslate"><span class="pre">open</span></code> accepts read mode and returns a seekable spooled file. Conversion reads from the source incrementally and finishes encoding output before
 returning the file. Row limits and cancellation may stop source reads before EOF.
 <code class="docutils literal notranslate"><span class="pre">info()</span></code> can trigger conversion to determine output size.</p>
@@ -420,8 +424,9 @@ returning the file. Row limits and cancellation may stop source reads before EOF
 </section>
 <section id="dataformat">
 <h2><code class="docutils literal notranslate"><span class="pre">DataFormat</span></code><a class="headerlink" href="#dataformat" title="Link to this heading">¶</a></h2>
-<p>Identifies an interchange encoding. Values are <code class="docutils literal notranslate"><span class="pre">arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">parquet</span></code>, <code class="docutils literal notranslate"><span class="pre">csv</span></code>, and <code class="docutils literal notranslate"><span class="pre">jsonl</span></code>.
-<code class="docutils literal notranslate"><span class="pre">arrow</span></code> denotes an Arrow IPC stream. <code class="docutils literal notranslate"><span class="pre">jsonl</span></code> denotes line-delimited JSON records.</p>
+<p>Identifies an interchange encoding. Values are <code class="docutils literal notranslate"><span class="pre">arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">parquet</span></code>, <code class="docutils literal notranslate"><span class="pre">csv</span></code>, <code class="docutils literal notranslate"><span class="pre">jsonl</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">avro</span></code>. <code class="docutils literal notranslate"><span class="pre">arrow</span></code> denotes an Arrow IPC stream. <code class="docutils literal notranslate"><span class="pre">jsonl</span></code> denotes line-delimited JSON records.
+<code class="docutils literal notranslate"><span class="pre">avro</span></code> denotes an Avro object container file.</p>
 </section>
 <section id="schemapolicy">
 <h2><code class="docutils literal notranslate"><span class="pre">SchemaPolicy</span></code><a class="headerlink" href="#schemapolicy" title="Link to this heading">¶</a></h2>
@@ -574,10 +579,10 @@ schema and submits it to the format writer.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">finish(self:</span> <span class="pre">Box&lt;Self&gt;)</span></code>: writes the format footer and consumes the session. The borrowed
 sink remains owned by the caller.</p></li>
 </ul>
-<p>Arrow IPC, Parquet, CSV, and JSONL codecs support resumable writers.</p>
+<p>Arrow IPC, Parquet, CSV, JSONL, and Avro codecs support resumable writers.</p>
 <p>Arrow IPC makes encoded batch bytes available to the sink during <code class="docutils literal notranslate"><span class="pre">write_batch</span></code>. The Parquet
 writer accepts batches incrementally but may buffer its output until <code class="docutils literal notranslate"><span class="pre">finish</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">Codec::encode_stream</span></code> uses the same writer session for all four codecs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Codec::encode_stream</span></code> uses the same writer session for all five codecs.</p>
 <p>Python <code class="docutils literal notranslate"><span class="pre">Codec.encode_batches_to</span></code> uses an owned writer session backed by the supplied binary
 file object.</p>
 <section id="codec-start-writer-schema-output">
@@ -598,12 +603,27 @@ cloneable sinks allow the caller to observe output while the session owns its si
 <h3><code class="docutils literal notranslate"><span class="pre">get(format)</span></code><a class="headerlink" href="#get-format" title="Link to this heading">¶</a></h3>
 <p>Returns the registered <code class="docutils literal notranslate"><span class="pre">Codec</span></code> for a <code class="docutils literal notranslate"><span class="pre">DataFormat</span></code> or its string value. Raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>
 for unknown values and <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> when a known format has no registered codec.</p>
-<p><code class="docutils literal notranslate"><span class="pre">DEFAULT_REGISTRY</span></code> contains Arrow IPC stream, Parquet, CSV, and JSONL codecs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DEFAULT_REGISTRY</span></code> contains Arrow IPC stream, Parquet, CSV, JSONL, and Avro codecs.</p>
 <p>Arrow IPC preserves input batch boundaries up to <code class="docutils literal notranslate"><span class="pre">batch_size</span></code>. Parquet preserves schema and
 row order but may select different output batch boundaries. CSV writes a header row. CSV
 and JSONL require an explicit decode schema because neither encoding stores a complete
-Arrow schema.</p>
+Arrow schema. Avro files carry their schema in the file header.</p>
 </section>
+</section>
+<section id="rust-avro-values">
+<h2>Rust Avro values<a class="headerlink" href="#rust-avro-values" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">AvroValueDecoder</span></code> decodes individual Avro values, such as message payloads, rather than
+container files. <code class="docutils literal notranslate"><span class="pre">AvroValueDecoder::new(schema,</span> <span class="pre">framing,</span> <span class="pre">batch_size)</span></code> takes the reader
+schema as Avro JSON. <code class="docutils literal notranslate"><span class="pre">AvroFraming::Unframed</span></code> expects bare datums written with that schema;
+<code class="docutils literal notranslate"><span class="pre">AvroFraming::Confluent(writers)</span></code> expects the Confluent wire format and holds the writer
+schema for each schema ID. Values written with older writer schemas resolve to the reader
+schema. <code class="docutils literal notranslate"><span class="pre">push(value)</span></code> decodes exactly one value, and <code class="docutils literal notranslate"><span class="pre">flush()</span></code> returns every row pushed
+since the previous flush.</p>
+<p><code class="docutils literal notranslate"><span class="pre">AvroValueEncoder::new(schema,</span> <span class="pre">schema_id)</span></code> encodes each row of a batch as one value. With a
+schema ID the values use the Confluent wire format; without one they are bare datums.
+<code class="docutils literal notranslate"><span class="pre">schema()</span></code> returns the Arrow schema rows must have, which is also the schema values decode to.</p>
+<p><code class="docutils literal notranslate"><span class="pre">avro_arrow_schema(schema)</span></code> returns the Arrow schema that values with an Avro schema decode
+to. Python exposes it through the <code class="docutils literal notranslate"><span class="pre">avro-schema</span></code> schema format.</p>
 </section>
 <section id="interchangerequest">
 <h2><code class="docutils literal notranslate"><span class="pre">InterchangeRequest</span></code><a class="headerlink" href="#interchangerequest" title="Link to this heading">¶</a></h2>
@@ -801,6 +821,9 @@ policy, require an unregistered or disallowed cast, or field operations conflict
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#get-format">get(format)</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#rust-avro-values">Rust Avro values</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#interchangerequest">InterchangeRequest</a>

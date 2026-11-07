@@ -18,6 +18,9 @@ Functions
 .. autoapisummary::
 
    fsspec_data.confluent.fetch_confluent_schema
+   fsspec_data.confluent.fetch_confluent_versions
+   fsspec_data.confluent._get
+   fsspec_data.confluent._document
    fsspec_data.confluent._parse_reference
 
 
@@ -51,6 +54,16 @@ Module Contents
 
 
 .. py:function:: fetch_confluent_schema(url: str, storage_options: collections.abc.Mapping[str, Any]) -> ConfluentSchemaDocument
+
+.. py:function:: fetch_confluent_versions(url: str, storage_options: collections.abc.Mapping[str, Any]) -> tuple[ConfluentSchemaDocument, ...]
+
+   Every registered version of the subject in ``url``, oldest first. The version in
+   ``url`` is ignored.
+
+
+.. py:function:: _get(path: str, storage_options: collections.abc.Mapping[str, Any]) -> Any
+
+.. py:function:: _document(payload: Any, subject: str, requested_version: str) -> ConfluentSchemaDocument
 
 .. py:function:: _parse_reference(url: str) -> tuple[str, str]
 

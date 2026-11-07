@@ -759,6 +759,8 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangePlan._arrays">(fsspec_data.InterchangePlan method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema._CONFLUENT_FORMATS">_CONFLUENT_FORMATS (in module fsspec_data.schema)</a>
+</li>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem._convert">_convert() (fsspec_data.DataFileSystem method)</a>
 
       <ul>
@@ -779,6 +781,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema._decode_arrow_json">_decode_arrow_json() (in module fsspec_data.schema)</a>
 </li>
+      <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema._decode_avro_schema">_decode_avro_schema() (in module fsspec_data.schema)</a>
+</li>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema._decode_json_schema">_decode_json_schema() (in module fsspec_data.schema)</a>
 </li>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema.SchemaResolverRegistry._decoders">_decoders (fsspec_data.schema.SchemaResolverRegistry attribute)</a>
@@ -789,16 +793,18 @@ window.runMermaid = runMermaid;</script>
       </ul></li>
       <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange._default_array">_default_array() (in module fsspec_data.interchange)</a>
 </li>
+      <li><a href="autoapi/fsspec_data/confluent/index.html#fsspec_data.confluent._document">_document() (in module fsspec_data.confluent)</a>
+</li>
       <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange._ensure_pyarrow">_ensure_pyarrow() (in module fsspec_data.interchange)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.ConverterRegistry._entry_points_loaded">_entry_points_loaded (fsspec_data.ConverterRegistry attribute)</a>
 
       <ul>
         <li><a href="autoapi/fsspec_data/converters/index.html#fsspec_data.converters.ConverterRegistry._entry_points_loaded">(fsspec_data.converters.ConverterRegistry attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseBufferedFile._fetch_range">_fetch_range() (fsspec_data.backends.base.BaseBufferedFile method)</a>
 </li>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema._field_from_options">_field_from_options() (in module fsspec_data.schema)</a>
@@ -806,6 +812,8 @@ window.runMermaid = runMermaid;</script>
       <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem._format_from_path">_format_from_path() (in module fsspec_data.filesystem)</a>
 </li>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema._format_from_url">_format_from_url() (in module fsspec_data.schema)</a>
+</li>
+      <li><a href="autoapi/fsspec_data/confluent/index.html#fsspec_data.confluent._get">_get() (in module fsspec_data.confluent)</a>
 </li>
       <li><a href="autoapi/fsspec_data/xarray_zarr/index.html#fsspec_data.xarray_zarr._import_xarray">_import_xarray() (in module fsspec_data.xarray_zarr)</a>
 </li>
@@ -901,14 +909,14 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangePlan.apply_table">(fsspec_data.InterchangePlan method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFormat.ARROW">ARROW (fsspec_data.DataFormat attribute)</a>
 
       <ul>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.DataFormat.ARROW">(fsspec_data.interchange.DataFormat attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema.SchemaFormat.ARROW_IPC">ARROW_IPC (fsspec_data.schema.SchemaFormat attribute)</a>
 
       <ul>
@@ -921,6 +929,18 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.SchemaFormat.ARROW_JSON">(fsspec_data.SchemaFormat attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFormat.AVRO">AVRO (fsspec_data.DataFormat attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.DataFormat.AVRO">(fsspec_data.interchange.DataFormat attribute)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema.SchemaFormat.AVRO">(fsspec_data.schema.SchemaFormat attribute)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.SchemaFormat.AVRO">(fsspec_data.SchemaFormat attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.AVRO_SCHEMA">AVRO_SCHEMA (in module fsspec_data.tests.test_schema)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -1222,6 +1242,8 @@ window.runMermaid = runMermaid;</script>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/confluent/index.html#fsspec_data.confluent.fetch_confluent_schema">fetch_confluent_schema() (in module fsspec_data.confluent)</a>
+</li>
+      <li><a href="autoapi/fsspec_data/confluent/index.html#fsspec_data.confluent.fetch_confluent_versions">fetch_confluent_versions() (in module fsspec_data.confluent)</a>
 </li>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FieldAddition">FieldAddition (class in fsspec_data)</a>
 
@@ -1975,6 +1997,10 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_arrow_ipc_schema_format_is_inferred">test_arrow_ipc_schema_format_is_inferred() (in module fsspec_data.tests.test_schema)</a>
 </li>
+      <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_avro_schemas_resolve_from_files_and_confluent">test_avro_schemas_resolve_from_files_and_confluent() (in module fsspec_data.tests.test_schema)</a>
+</li>
+      <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_chained_filesystem_converts_csv_to_avro">test_chained_filesystem_converts_csv_to_avro() (in module fsspec_data.tests.test_filesystem)</a>
+</li>
       <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_chained_filesystem_converts_csv_to_seekable_parquet">test_chained_filesystem_converts_csv_to_seekable_parquet() (in module fsspec_data.tests.test_filesystem)</a>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_chained_filesystem_reads_source_without_cat_file">test_chained_filesystem_reads_source_without_cat_file() (in module fsspec_data.tests.test_filesystem)</a>
@@ -2005,6 +2031,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_confluent_resolver_requires_registry_url">test_confluent_resolver_requires_registry_url() (in module fsspec_data.tests.test_schema)</a>
 </li>
+      <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_confluent_versions_fetch_every_registered_schema">test_confluent_versions_fetch_every_registered_schema() (in module fsspec_data.tests.test_schema)</a>
+</li>
       <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_converted_output_rolls_over_at_spool_limit">test_converted_output_rolls_over_at_spool_limit() (in module fsspec_data.tests.test_filesystem)</a>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_converters/index.html#fsspec_data.tests.test_converters.test_converter_registry_loads_entry_points_lazily">test_converter_registry_loads_entry_points_lazily() (in module fsspec_data.tests.test_converters)</a>
@@ -2029,12 +2057,12 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_filesystem_is_read_only">test_filesystem_is_read_only() (in module fsspec_data.tests.test_filesystem)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_fsspec_open_composes_confluent_schema_with_file_schema">test_fsspec_open_composes_confluent_schema_with_file_schema() (in module fsspec_data.tests.test_schema)</a>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_fsspec_open_maps_referenced_csv_schema_onto_renamed_and_added_fields">test_fsspec_open_maps_referenced_csv_schema_onto_renamed_and_added_fields() (in module fsspec_data.tests.test_schema)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_fsspec_open_resolves_json_schemas">test_fsspec_open_resolves_json_schemas() (in module fsspec_data.tests.test_schema)</a>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_fsspec_open_resolves_referenced_schemas">test_fsspec_open_resolves_referenced_schemas() (in module fsspec_data.tests.test_schema)</a>

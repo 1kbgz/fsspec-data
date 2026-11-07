@@ -86,6 +86,11 @@ Module Contents
 
 
 
+   .. py:attribute:: AVRO
+      :value: 'avro'
+
+
+
 .. py:class:: SchemaPolicy
 
    Bases: :py:obj:`str`, :py:obj:`enum.Enum`

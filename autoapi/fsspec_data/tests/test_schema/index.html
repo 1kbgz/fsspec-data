@@ -324,6 +324,15 @@
     <a href="#fsspec_data.tests.test_schema.test_confluent_resolver_fetches_json_schema_with_scoped_credentials">test_confluent_resolver_fetches_json_schema_with_scoped_credentials()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_schema.AVRO_SCHEMA">AVRO_SCHEMA</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_schema.test_avro_schemas_resolve_from_files_and_confluent">test_avro_schemas_resolve_from_files_and_confluent()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_schema.test_confluent_versions_fetch_every_registered_schema">test_confluent_versions_fetch_every_registered_schema()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_schema.test_fsspec_open_composes_confluent_schema_with_file_schema">test_fsspec_open_composes_confluent_schema_with_file_schema()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
@@ -392,6 +401,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_schema.TARGET_JSON_SCHEMA" title="fsspec_data.tests.test_schema.TARGET_JSON_SCHEMA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TARGET_JSON_SCHEMA</span></code></a></p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_schema.AVRO_SCHEMA" title="fsspec_data.tests.test_schema.AVRO_SCHEMA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AVRO_SCHEMA</span></code></a></p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -421,6 +433,12 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_schema.test_confluent_resolver_fetches_json_schema_with_scoped_credentials" title="fsspec_data.tests.test_schema.test_confluent_resolver_fetches_json_schema_with_scoped_credentials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_confluent_resolver_fetches_json_schema_with_scoped_credentials</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_schema.test_avro_schemas_resolve_from_files_and_confluent" title="fsspec_data.tests.test_schema.test_avro_schemas_resolve_from_files_and_confluent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_avro_schemas_resolve_from_files_and_confluent</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_schema.test_confluent_versions_fetch_every_registered_schema" title="fsspec_data.tests.test_schema.test_confluent_versions_fetch_every_registered_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_confluent_versions_fetch_every_registered_schema</span></code></a>(...)</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_schema.test_fsspec_open_composes_confluent_schema_with_file_schema" title="fsspec_data.tests.test_schema.test_fsspec_open_composes_confluent_schema_with_file_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_fsspec_open_composes_confluent_schema_with_file_schema</span></code></a>(...)</p></td>
@@ -515,6 +533,21 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.tests.test_schema.test_confluent_resolver_fetches_json_schema_with_scoped_credentials">
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_schema.</span></span><span class="sig-name descname"><span class="pre">test_confluent_resolver_fetches_json_schema_with_scoped_credentials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">monkeypatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_schema.test_confluent_resolver_fetches_json_schema_with_scoped_credentials" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_schema.AVRO_SCHEMA">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_schema.</span></span><span class="sig-name descname"><span class="pre">AVRO_SCHEMA</span></span><a class="headerlink" href="#fsspec_data.tests.test_schema.AVRO_SCHEMA" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_schema.test_avro_schemas_resolve_from_files_and_confluent">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_schema.</span></span><span class="sig-name descname"><span class="pre">test_avro_schemas_resolve_from_files_and_confluent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">monkeypatch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_schema.test_avro_schemas_resolve_from_files_and_confluent" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_schema.test_confluent_versions_fetch_every_registered_schema">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_schema.</span></span><span class="sig-name descname"><span class="pre">test_confluent_versions_fetch_every_registered_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">monkeypatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_schema.test_confluent_versions_fetch_every_registered_schema" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -640,6 +673,15 @@
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_schema.test_confluent_resolver_fetches_json_schema_with_scoped_credentials">test_confluent_resolver_fetches_json_schema_with_scoped_credentials()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_schema.AVRO_SCHEMA">AVRO_SCHEMA</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_schema.test_avro_schemas_resolve_from_files_and_confluent">test_avro_schemas_resolve_from_files_and_confluent()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_schema.test_confluent_versions_fetch_every_registered_schema">test_confluent_versions_fetch_every_registered_schema()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_schema.test_fsspec_open_composes_confluent_schema_with_file_schema">test_fsspec_open_composes_confluent_schema_with_file_schema()</a>

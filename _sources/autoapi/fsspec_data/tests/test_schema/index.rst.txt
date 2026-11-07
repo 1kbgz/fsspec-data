@@ -14,6 +14,7 @@ Attributes
    fsspec_data.tests.test_schema.SOURCE_SCHEMA_JSON
    fsspec_data.tests.test_schema.SOURCE_JSON_SCHEMA
    fsspec_data.tests.test_schema.TARGET_JSON_SCHEMA
+   fsspec_data.tests.test_schema.AVRO_SCHEMA
 
 
 Functions
@@ -29,6 +30,8 @@ Functions
    fsspec_data.tests.test_schema.test_fsspec_open_resolves_referenced_schemas
    fsspec_data.tests.test_schema.test_fsspec_open_resolves_json_schemas
    fsspec_data.tests.test_schema.test_confluent_resolver_fetches_json_schema_with_scoped_credentials
+   fsspec_data.tests.test_schema.test_avro_schemas_resolve_from_files_and_confluent
+   fsspec_data.tests.test_schema.test_confluent_versions_fetch_every_registered_schema
    fsspec_data.tests.test_schema.test_fsspec_open_composes_confluent_schema_with_file_schema
    fsspec_data.tests.test_schema.test_confluent_resolver_rejects_unsupported_documents
    fsspec_data.tests.test_schema.test_confluent_resolver_requires_registry_url
@@ -67,6 +70,12 @@ Module Contents
 .. py:function:: test_fsspec_open_resolves_json_schemas()
 
 .. py:function:: test_confluent_resolver_fetches_json_schema_with_scoped_credentials(monkeypatch)
+
+.. py:data:: AVRO_SCHEMA
+
+.. py:function:: test_avro_schemas_resolve_from_files_and_confluent(monkeypatch, tmp_path)
+
+.. py:function:: test_confluent_versions_fetch_every_registered_schema(monkeypatch)
 
 .. py:function:: test_fsspec_open_composes_confluent_schema_with_file_schema(monkeypatch)
 

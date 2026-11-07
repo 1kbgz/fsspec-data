@@ -309,6 +309,15 @@
     <a href="#fsspec_data.confluent.fetch_confluent_schema">fetch_confluent_schema()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.confluent.fetch_confluent_versions">fetch_confluent_versions()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.confluent._get">_get()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.confluent._document">_document()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.confluent._parse_reference">_parse_reference()</a>
   </li>
 </ul>
@@ -350,7 +359,16 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.confluent.fetch_confluent_schema" title="fsspec_data.confluent.fetch_confluent_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fetch_confluent_schema</span></code></a>(url, storage_options) → ConfluentSchemaDocument</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.confluent._parse_reference" title="fsspec_data.confluent._parse_reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_parse_reference</span></code></a>(url) → tuple[str, str]</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.confluent.fetch_confluent_versions" title="fsspec_data.confluent.fetch_confluent_versions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fetch_confluent_versions</span></code></a>(url, storage_options) → tuple[ConfluentSchemaDocument, ...]</p></td>
+<td><p>Every registered version of the subject in <code class="docutils literal notranslate"><span class="pre">url</span></code>, oldest first. The version in</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.confluent._get" title="fsspec_data.confluent._get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get</span></code></a>(path, storage_options) → Any</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.confluent._document" title="fsspec_data.confluent._document"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_document</span></code></a>(payload, subject, requested_version) → ConfluentSchemaDocument</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.confluent._parse_reference" title="fsspec_data.confluent._parse_reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_parse_reference</span></code></a>(url) → tuple[str, str]</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -396,6 +414,23 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.confluent.fetch_confluent_schema">
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.confluent.</span></span><span class="sig-name descname"><span class="pre">fetch_confluent_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.confluent.ConfluentSchemaDocument" title="fsspec_data.confluent.ConfluentSchemaDocument"><span class="pre">ConfluentSchemaDocument</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/confluent.html#fetch_confluent_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.confluent.fetch_confluent_schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.confluent.fetch_confluent_versions">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.confluent.</span></span><span class="sig-name descname"><span class="pre">fetch_confluent_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fsspec_data.confluent.ConfluentSchemaDocument" title="fsspec_data.confluent.ConfluentSchemaDocument"><span class="pre">ConfluentSchemaDocument</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/confluent.html#fetch_confluent_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.confluent.fetch_confluent_versions" title="Link to this definition">¶</a></dt>
+<dd><p>Every registered version of the subject in <code class="docutils literal notranslate"><span class="pre">url</span></code>, oldest first. The version in
+<code class="docutils literal notranslate"><span class="pre">url</span></code> is ignored.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.confluent._get">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.confluent.</span></span><span class="sig-name descname"><span class="pre">_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/confluent.html#_get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.confluent._get" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.confluent._document">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.confluent.</span></span><span class="sig-name descname"><span class="pre">_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requested_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.confluent.ConfluentSchemaDocument" title="fsspec_data.confluent.ConfluentSchemaDocument"><span class="pre">ConfluentSchemaDocument</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/confluent.html#_document"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.confluent._document" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -471,6 +506,15 @@
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.confluent.fetch_confluent_schema">fetch_confluent_schema()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.confluent.fetch_confluent_versions">fetch_confluent_versions()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.confluent._get">_get()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.confluent._document">_document()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.confluent._parse_reference">_parse_reference()</a>

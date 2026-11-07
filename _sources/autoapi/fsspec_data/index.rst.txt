@@ -406,6 +406,11 @@ Package Contents
 
 
 
+   .. py:attribute:: AVRO
+      :value: 'avro'
+
+
+
 .. py:class:: DecodedBatches
 
    .. py:attribute:: schema
@@ -701,6 +706,11 @@ Package Contents
 
    .. py:attribute:: JSON_SCHEMA
       :value: 'json-schema'
+
+
+
+   .. py:attribute:: AVRO
+      :value: 'avro-schema'
 
 
 

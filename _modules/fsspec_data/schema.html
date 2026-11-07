@@ -694,6 +694,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypeAlias</span><span class="p">,</span> <span class="n">cast</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlsplit</span>
 
@@ -709,7 +710,8 @@ window.runMermaid = runMermaid;</script>
 <span class="k">class</span><span class="w"> </span><span class="nc">SchemaFormat</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
     <span class="n">ARROW_IPC</span> <span class="o">=</span> <span class="s2">"arrow-ipc-schema"</span>
     <span class="n">ARROW_JSON</span> <span class="o">=</span> <span class="s2">"arrow-json"</span>
-    <span class="n">JSON_SCHEMA</span> <span class="o">=</span> <span class="s2">"json-schema"</span></div>
+    <span class="n">JSON_SCHEMA</span> <span class="o">=</span> <span class="s2">"json-schema"</span>
+    <span class="n">AVRO</span> <span class="o">=</span> <span class="s2">"avro-schema"</span></div>
 
 
 
@@ -886,6 +888,8 @@ window.runMermaid = runMermaid;</script>
     <span class="n">path</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"?"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">".arrow"</span><span class="p">,</span> <span class="s2">".ipc"</span><span class="p">,</span> <span class="s2">".arrowschema"</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">SchemaFormat</span><span class="o">.</span><span class="n">ARROW_IPC</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".avsc"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SchemaFormat</span><span class="o">.</span><span class="n">AVRO</span>
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"schema format cannot be inferred from </span><span class="si">{</span><span class="n">url</span><span class="si">!r}</span><span class="s2">; provide format explicitly"</span><span class="p">)</span></div>
 
 
@@ -917,6 +921,13 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="_decode_avro_schema">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/schema/index.html#fsspec_data._decode_avro_schema">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_decode_avro_schema</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">".fsspec_data"</span><span class="p">,</span> <span class="n">__package__</span><span class="p">)</span><span class="o">.</span><span class="n">avro_arrow_schema</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span></div>
+
+
+
 <div class="viewcode-block" id="_resolve_fsspec_document">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/schema/index.html#fsspec_data._resolve_fsspec_document">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_fsspec_document</span><span class="p">(</span><span class="n">reference</span><span class="p">:</span> <span class="n">SchemaRef</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SchemaDocument</span><span class="p">:</span>
@@ -931,20 +942,24 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<span class="n">_CONFLUENT_FORMATS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"JSON"</span><span class="p">:</span> <span class="n">SchemaFormat</span><span class="o">.</span><span class="n">JSON_SCHEMA</span><span class="p">,</span> <span class="s2">"AVRO"</span><span class="p">:</span> <span class="n">SchemaFormat</span><span class="o">.</span><span class="n">AVRO</span><span class="p">}</span>
+
+
 <div class="viewcode-block" id="_resolve_confluent_document">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/schema/index.html#fsspec_data._resolve_confluent_document">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_confluent_document</span><span class="p">(</span><span class="n">reference</span><span class="p">:</span> <span class="n">SchemaRef</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SchemaDocument</span><span class="p">:</span>
     <span class="n">document</span> <span class="o">=</span> <span class="n">fetch_confluent_schema</span><span class="p">(</span><span class="n">reference</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">reference</span><span class="o">.</span><span class="n">storage_options</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">references</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Confluent schema references are not supported yet"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">schema_type</span> <span class="o">!=</span> <span class="s2">"JSON"</span><span class="p">:</span>
+    <span class="nb">format</span> <span class="o">=</span> <span class="n">_CONFLUENT_FORMATS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">schema_type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Confluent schema type </span><span class="si">{</span><span class="n">document</span><span class="o">.</span><span class="n">schema_type</span><span class="si">!r}</span><span class="s2"> is not supported"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">SchemaDocument</span><span class="p">(</span>
         <span class="n">data</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
-        <span class="nb">format</span><span class="o">=</span><span class="n">SchemaFormat</span><span class="o">.</span><span class="n">JSON_SCHEMA</span><span class="p">,</span>
+        <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">,</span>
         <span class="n">provenance</span><span class="o">=</span><span class="n">SchemaProvenance</span><span class="p">(</span>
             <span class="n">source</span><span class="o">=</span><span class="n">reference</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
-            <span class="nb">format</span><span class="o">=</span><span class="n">SchemaFormat</span><span class="o">.</span><span class="n">JSON_SCHEMA</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
             <span class="n">provider</span><span class="o">=</span><span class="s2">"confluent"</span><span class="p">,</span>
             <span class="n">identifier</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">schema_id</span><span class="p">,</span>
             <span class="n">version</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
@@ -957,6 +972,7 @@ window.runMermaid = runMermaid;</script>
 <span class="n">DEFAULT_SCHEMA_RESOLVERS</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SchemaFormat</span><span class="o">.</span><span class="n">ARROW_JSON</span><span class="p">,</span> <span class="n">_decode_arrow_json</span><span class="p">)</span>
 <span class="n">DEFAULT_SCHEMA_RESOLVERS</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SchemaFormat</span><span class="o">.</span><span class="n">ARROW_IPC</span><span class="p">,</span> <span class="n">_decode_arrow_ipc</span><span class="p">)</span>
 <span class="n">DEFAULT_SCHEMA_RESOLVERS</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SchemaFormat</span><span class="o">.</span><span class="n">JSON_SCHEMA</span><span class="p">,</span> <span class="n">_decode_json_schema</span><span class="p">)</span>
+<span class="n">DEFAULT_SCHEMA_RESOLVERS</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SchemaFormat</span><span class="o">.</span><span class="n">AVRO</span><span class="p">,</span> <span class="n">_decode_avro_schema</span><span class="p">)</span>
 <span class="n">DEFAULT_SCHEMA_RESOLVERS</span><span class="o">.</span><span class="n">register_provider</span><span class="p">(</span><span class="s2">"confluent"</span><span class="p">,</span> <span class="n">_resolve_confluent_document</span><span class="p">)</span>
 </pre></div>
 

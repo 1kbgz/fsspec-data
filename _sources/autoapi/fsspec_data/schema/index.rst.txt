@@ -12,6 +12,7 @@ Attributes
    fsspec_data.schema.SchemaInput
    fsspec_data.schema.SchemaDecoder
    fsspec_data.schema.SchemaProvider
+   fsspec_data.schema._CONFLUENT_FORMATS
    fsspec_data.schema.DEFAULT_SCHEMA_RESOLVERS
 
 
@@ -41,6 +42,7 @@ Functions
    fsspec_data.schema._decode_arrow_json
    fsspec_data.schema._decode_arrow_ipc
    fsspec_data.schema._decode_json_schema
+   fsspec_data.schema._decode_avro_schema
    fsspec_data.schema._resolve_fsspec_document
    fsspec_data.schema._resolve_confluent_document
 
@@ -79,6 +81,11 @@ Module Contents
 
    .. py:attribute:: JSON_SCHEMA
       :value: 'json-schema'
+
+
+
+   .. py:attribute:: AVRO
+      :value: 'avro-schema'
 
 
 
@@ -198,7 +205,11 @@ Module Contents
 
 .. py:function:: _decode_json_schema(data: bytes) -> pyarrow.Schema
 
+.. py:function:: _decode_avro_schema(data: bytes) -> pyarrow.Schema
+
 .. py:function:: _resolve_fsspec_document(reference: SchemaRef) -> SchemaDocument
+
+.. py:data:: _CONFLUENT_FORMATS
 
 .. py:function:: _resolve_confluent_document(reference: SchemaRef) -> SchemaDocument
 
