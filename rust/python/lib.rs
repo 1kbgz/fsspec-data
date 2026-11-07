@@ -135,6 +135,13 @@ impl NativeBatchStream {
     }
 }
 
+/// The Arrow schema that values with the Avro schema `schema` (JSON) decode to.
+#[pyfunction]
+fn avro_arrow_schema(schema: &str) -> PyResult<PyArrowType<Schema>> {
+    let schema = ::fsspec_data::avro_arrow_schema(schema).map_err(to_python_error)?;
+    Ok(PyArrowType(schema.as_ref().clone()))
+}
+
 #[pyfunction]
 fn codec_capabilities(format: &str) -> PyResult<(bool, bool, bool)> {
     let format = DataFormat::parse(format).map_err(to_python_error)?;
@@ -346,6 +353,7 @@ fn to_python_error(error: InterchangeError) -> PyErr {
 
 #[pymodule]
 fn fsspec_data(m: &Bound<PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(avro_arrow_schema, m)?)?;
     m.add_function(wrap_pyfunction!(codec_capabilities, m)?)?;
     m.add_function(wrap_pyfunction!(decode_batches, m)?)?;
     m.add_function(wrap_pyfunction!(decode_reader, m)?)?;

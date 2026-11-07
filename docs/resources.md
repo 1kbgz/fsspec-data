@@ -12,13 +12,15 @@ All names below are exported from `fsspec_data`.
 | `SchemaDocument`   | `data: bytes`, `format: SchemaFormat`, `provenance: SchemaProvenance`.     |
 
 `SchemaRef` copies storage options and omits them from its representation.
-`SchemaFormat` values are `arrow-json`, `arrow-ipc-schema`, and `json-schema`.
-`.arrow`, `.ipc`, and `.arrowschema` infer `arrow-ipc-schema`; other suffixes require
-an explicit format.
+`SchemaFormat` values are `arrow-json`, `arrow-ipc-schema`, `json-schema`, and
+`avro-schema`. `.arrow`, `.ipc`, and `.arrowschema` infer `arrow-ipc-schema`, and `.avsc`
+infers `avro-schema`; other suffixes require an explicit format.
 
 `arrow-json` is an object with a `fields` list. Each field has `name`, `type`, and
 optional `nullable` (default true). Types accept PyArrow aliases.
 `arrow-ipc-schema` accepts a serialized Arrow schema or Arrow IPC stream.
+`avro-schema` accepts Avro schema JSON and resolves to the Arrow schema its values decode
+to.
 
 ### `resolve_schema(value, registry=None)`
 
@@ -53,8 +55,8 @@ bounds and string lengths are not represented or enforced.
 `confluent://SUBJECT/versions/VERSION` accepts `latest`, `-1`, or a positive 32-bit
 integer. Its storage options are required `registry_url`, optional Basic auth
 `username` and `password`, optional string-valued `headers`, and optional numeric
-`timeout` in seconds. JSON Schema records without external references are
-supported; Avro, Protobuf, and referenced documents raise `ValueError`.
+`timeout` in seconds. JSON Schema and Avro subjects without external references are
+supported; Protobuf and referenced documents raise `ValueError`.
 
 ## Resource converters
 

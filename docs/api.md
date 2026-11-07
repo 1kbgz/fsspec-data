@@ -41,7 +41,8 @@ After conversion starts, `provided_schema_provenance` and `requested_schema_prov
 describe resolved schema sources without exposing storage options.
 
 Recognized suffixes are `.arrow` and `.ipc` for Arrow IPC streams, `.parquet` and `.pq` for
-Parquet, `.csv` for CSV, and `.jsonl` and `.ndjson` for line-delimited JSON.
+Parquet, `.csv` for CSV, `.jsonl` and `.ndjson` for line-delimited JSON, and `.avro` for
+Avro object container files.
 
 `open` accepts read mode and returns a seekable spooled file. Conversion reads from the source incrementally and finishes encoding output before
 returning the file. Row limits and cancellation may stop source reads before EOF.
@@ -53,8 +54,9 @@ Schema values and resolver registries are described in [Schema and converter ref
 
 ## `DataFormat`
 
-Identifies an interchange encoding. Values are `arrow`, `parquet`, `csv`, and `jsonl`.
-`arrow` denotes an Arrow IPC stream. `jsonl` denotes line-delimited JSON records.
+Identifies an interchange encoding. Values are `arrow`, `parquet`, `csv`, `jsonl`, and
+`avro`. `arrow` denotes an Arrow IPC stream. `jsonl` denotes line-delimited JSON records.
+`avro` denotes an Avro object container file.
 
 ## `SchemaPolicy`
 
@@ -201,12 +203,12 @@ Methods:
 - `finish(self: Box<Self>)`: writes the format footer and consumes the session. The borrowed
   sink remains owned by the caller.
 
-Arrow IPC, Parquet, CSV, and JSONL codecs support resumable writers.
+Arrow IPC, Parquet, CSV, JSONL, and Avro codecs support resumable writers.
 
 Arrow IPC makes encoded batch bytes available to the sink during `write_batch`. The Parquet
 writer accepts batches incrementally but may buffer its output until `finish`.
 
-`Codec::encode_stream` uses the same writer session for all four codecs.
+`Codec::encode_stream` uses the same writer session for all five codecs.
 
 Python `Codec.encode_batches_to` uses an owned writer session backed by the supplied binary
 file object.
@@ -229,12 +231,25 @@ cloneable sinks allow the caller to observe output while the session owns its si
 Returns the registered `Codec` for a `DataFormat` or its string value. Raises `ValueError`
 for unknown values and `NotImplementedError` when a known format has no registered codec.
 
-`DEFAULT_REGISTRY` contains Arrow IPC stream, Parquet, CSV, and JSONL codecs.
+`DEFAULT_REGISTRY` contains Arrow IPC stream, Parquet, CSV, JSONL, and Avro codecs.
 
 Arrow IPC preserves input batch boundaries up to `batch_size`. Parquet preserves schema and
 row order but may select different output batch boundaries. CSV writes a header row. CSV
 and JSONL require an explicit decode schema because neither encoding stores a complete
-Arrow schema.
+Arrow schema. Avro files carry their schema in the file header.
+
+## Rust Avro values
+
+`AvroValueDecoder` decodes individual Avro values, such as message payloads, rather than
+container files. `AvroValueDecoder::new(schema, framing, batch_size)` takes the reader
+schema as Avro JSON. `AvroFraming::Unframed` expects bare datums written with that schema;
+`AvroFraming::Confluent(writers)` expects the Confluent wire format and holds the writer
+schema for each schema ID. Values written with older writer schemas resolve to the reader
+schema. `push(value)` decodes exactly one value, and `flush()` returns every row pushed
+since the previous flush.
+
+`avro_arrow_schema(schema)` returns the Arrow schema that values with an Avro schema decode
+to. Python exposes it through the `avro-schema` schema format.
 
 ## `InterchangeRequest`
 

@@ -16,6 +16,7 @@ use parquet::arrow::ArrowWriter;
 use parquet::errors::ParquetError;
 use parquet::file::reader::{ChunkReader, Length};
 
+use crate::avro::AvroCodec;
 use crate::{
     CancellationToken, DataFormat, DecodedStream, InterchangeError, Result, StreamOptions,
 };
@@ -138,6 +139,7 @@ pub static DEFAULT_REGISTRY: LazyLock<CodecRegistry> = LazyLock::new(|| {
     registry.register(ParquetCodec);
     registry.register(CsvCodec);
     registry.register(JsonLinesCodec);
+    registry.register(AvroCodec);
     registry
 });
 
@@ -584,7 +586,7 @@ fn required_schema(format: DataFormat, schema: Option<SchemaRef>) -> Result<Sche
     schema.ok_or_else(|| InterchangeError::DecodeSchemaRequired(format.as_str().to_string()))
 }
 
-fn validate_batch(schema: &SchemaRef, batch: &RecordBatch) -> Result<()> {
+pub(crate) fn validate_batch(schema: &SchemaRef, batch: &RecordBatch) -> Result<()> {
     if batch.schema().as_ref() != schema.as_ref() {
         return Err(InterchangeError::InputSchema);
     }
@@ -740,12 +742,13 @@ mod tests {
             DataFormat::Parquet,
             DataFormat::Csv,
             DataFormat::JsonLines,
+            DataFormat::Avro,
         ] {
             let codec = DEFAULT_REGISTRY.get(format).unwrap();
             let encoded = codec.encode(schema.clone(), &batches).unwrap();
             let decode_schema = match format {
                 DataFormat::Csv | DataFormat::JsonLines => Some(schema.clone()),
-                DataFormat::Arrow | DataFormat::Parquet => None,
+                DataFormat::Arrow | DataFormat::Parquet | DataFormat::Avro => None,
             };
             let (reader, _) = CountingReader::new(encoded);
             let decoded = codec
@@ -798,6 +801,7 @@ mod tests {
             DataFormat::Parquet,
             DataFormat::Csv,
             DataFormat::JsonLines,
+            DataFormat::Avro,
         ] {
             let codec = DEFAULT_REGISTRY.get(format).unwrap();
             let mut sink = SharedSink::default();
@@ -811,7 +815,7 @@ mod tests {
             writer.finish().unwrap();
 
             match format {
-                DataFormat::Arrow | DataFormat::Csv | DataFormat::JsonLines => {
+                DataFormat::Arrow | DataFormat::Csv | DataFormat::JsonLines | DataFormat::Avro => {
                     assert!(first_len > header_len);
                     assert!(second_len > first_len);
                 }
@@ -824,14 +828,14 @@ mod tests {
                 DataFormat::Arrow | DataFormat::Parquet => {
                     assert!(observed.len() > second_len);
                 }
-                DataFormat::Csv | DataFormat::JsonLines => {
+                DataFormat::Csv | DataFormat::JsonLines | DataFormat::Avro => {
                     assert_eq!(observed.len(), second_len);
                 }
             }
             let encoded = observed.bytes();
             let decode_schema = match format {
                 DataFormat::Csv | DataFormat::JsonLines => Some(schema.clone()),
-                DataFormat::Arrow | DataFormat::Parquet => None,
+                DataFormat::Arrow | DataFormat::Parquet | DataFormat::Avro => None,
             };
             let decoded = codec.decode(&encoded, decode_schema).unwrap();
             let combined = arrow::compute::concat_batches(&schema, &decoded.batches).unwrap();
@@ -850,6 +854,7 @@ mod tests {
             DataFormat::Parquet,
             DataFormat::Csv,
             DataFormat::JsonLines,
+            DataFormat::Avro,
         ] {
             let codec = DEFAULT_REGISTRY.get(format).unwrap();
             let mut encoded = Vec::new();
@@ -869,6 +874,7 @@ mod tests {
             DataFormat::Parquet,
             DataFormat::Csv,
             DataFormat::JsonLines,
+            DataFormat::Avro,
         ] {
             let codec = DEFAULT_REGISTRY.get(format).unwrap();
             let sink = SharedSink::default();
@@ -883,7 +889,7 @@ mod tests {
 
             let decode_schema = match format {
                 DataFormat::Csv | DataFormat::JsonLines => Some(schema.clone()),
-                DataFormat::Arrow | DataFormat::Parquet => None,
+                DataFormat::Arrow | DataFormat::Parquet | DataFormat::Avro => None,
             };
             let decoded = codec.decode(&observed.bytes(), decode_schema).unwrap();
             let combined = arrow::compute::concat_batches(&schema, &decoded.batches).unwrap();
