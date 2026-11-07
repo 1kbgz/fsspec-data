@@ -58,6 +58,11 @@ integer. Its storage options are required `registry_url`, optional Basic auth
 `timeout` in seconds. JSON Schema and Avro subjects without external references are
 supported; Protobuf and referenced documents raise `ValueError`.
 
+`fsspec_data.confluent.fetch_confluent_versions(url, storage_options)` returns a document
+for every registered version of the subject in `url`, oldest first, ignoring the version in
+the URL. Readers of Confluent-framed data use it to find the writer schema for each schema
+ID.
+
 ## Resource converters
 
 ### `Converter(source_type, target_type, handler)`

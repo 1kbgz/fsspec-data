@@ -292,6 +292,28 @@ def test_avro_schemas_resolve_from_files_and_confluent(monkeypatch, tmp_path):
         resolve_schema(SchemaRef(str(path)))
 
 
+def test_confluent_versions_fetch_every_registered_schema(monkeypatch):
+    responses = {
+        "https://schemas.example.test/subjects/orders-value/versions": [1, 2],
+        "https://schemas.example.test/subjects/orders-value/versions/1": {"version": 1, "id": 4, "schema": "{}"},
+        "https://schemas.example.test/subjects/orders-value/versions/2": {"version": 2, "id": 9, "schema": "{}"},
+    }
+    monkeypatch.setattr(
+        confluent_module.urllib.request,
+        "urlopen",
+        lambda request: io.BytesIO(json.dumps(responses[request.full_url]).encode()),
+    )
+    options = {"registry_url": "https://schemas.example.test"}
+
+    documents = confluent_module.fetch_confluent_versions("confluent://orders-value/versions/latest", options)
+
+    assert [(document.version, document.schema_id) for document in documents] == [("1", "4"), ("2", "9")]
+
+    responses["https://schemas.example.test/subjects/orders-value/versions"] = {"versions": [1]}
+    with pytest.raises(TypeError, match="list of integers"):
+        confluent_module.fetch_confluent_versions("confluent://orders-value/versions/latest", options)
+
+
 def test_fsspec_open_composes_confluent_schema_with_file_schema(monkeypatch):
     monkeypatch.setattr(
         confluent_module.urllib.request,
