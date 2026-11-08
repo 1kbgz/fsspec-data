@@ -143,6 +143,21 @@ fn avro_arrow_schema(schema: &str) -> PyResult<PyArrowType<Schema>> {
 }
 
 #[pyfunction]
+fn infer_schema(
+    format: &str,
+    sample: &[u8],
+    max_records: Option<usize>,
+    truncated: bool,
+) -> PyResult<PyArrowType<Schema>> {
+    let format = DataFormat::parse(format).map_err(to_python_error)?;
+    let schema = DEFAULT_REGISTRY
+        .get(format)
+        .and_then(|codec| codec.infer_schema(sample, max_records, truncated))
+        .map_err(to_python_error)?;
+    Ok(PyArrowType(schema.as_ref().clone()))
+}
+
+#[pyfunction]
 fn codec_capabilities(format: &str) -> PyResult<(bool, bool, bool)> {
     let format = DataFormat::parse(format).map_err(to_python_error)?;
     let capabilities = DEFAULT_REGISTRY
@@ -359,6 +374,7 @@ fn fsspec_data(m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(decode_reader, m)?)?;
     m.add_function(wrap_pyfunction!(decode_stream, m)?)?;
     m.add_function(wrap_pyfunction!(encode_batches, m)?)?;
+    m.add_function(wrap_pyfunction!(infer_schema, m)?)?;
     m.add_function(wrap_pyfunction!(plan_schema, m)?)?;
     m.add_function(wrap_pyfunction!(start_codec_writer, m)?)?;
     Ok(())

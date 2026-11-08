@@ -8,6 +8,8 @@ pub enum InterchangeError {
     CodecNotRegistered(String),
     #[error("codec does not support resumable encoding: {0}")]
     CodecWriterNotSupported(String),
+    #[error("schema inference is not supported for {0}")]
+    SchemaInferenceNotSupported(String),
     #[error("decoding {0} requires an Arrow schema")]
     DecodeSchemaRequired(String),
     #[error("schema policy is not implemented: {0}")]

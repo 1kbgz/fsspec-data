@@ -124,6 +124,18 @@ class Codec:
             writer.write_batch(batch)
         writer.finish()
 
+    def infer_schema(
+        self,
+        sample: bytes | bytearray | memoryview,
+        *,
+        max_records: int | None = None,
+        truncated: bool = False,
+    ) -> pa.Schema:
+        """Infer a schema from the start of an encoded source. CSV and JSONL support
+        inference. A ``truncated`` sample, such as the first bytes of a larger file, may end
+        inside a record, which is ignored."""
+        return _rust.infer_schema(self.format.value, bytes(sample), max_records, truncated)
+
     def decode_batches(
         self,
         data: bytes | bytearray | memoryview | BinaryIO,

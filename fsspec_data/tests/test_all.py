@@ -320,6 +320,29 @@ def test_codec_file_writer_rejects_non_batches():
         codec.encode_batches_to(iter([batch, invalid]), io.BytesIO(), schema=provided)
 
 
+@pytest.mark.parametrize(
+    ("format", "sample"),
+    [
+        (DataFormat.CSV, b"id,score,name\n1,1.5,ada\n2,2.5,grace\n3,x"),
+        (DataFormat.JSONL, b'{"id": 1, "score": 1.5, "name": "ada"}\n{"id": 2, "score": 2.5, "name": "grace"}\n{"id": 3, "sc'),
+    ],
+)
+def test_text_codecs_infer_schemas_for_decoding(format, sample):
+    codec = DEFAULT_REGISTRY.get(format)
+
+    schema = codec.infer_schema(sample, truncated=True)
+
+    assert schema.types == [pa.int64(), pa.float64(), pa.string()]
+    rows = codec.decode_batches(sample[: sample.rindex(b"\n") + 1], schema=schema).batches[0].to_pylist()
+    assert rows == [{"id": 1, "score": 1.5, "name": "ada"}, {"id": 2, "score": 2.5, "name": "grace"}]
+    assert codec.infer_schema(sample, max_records=1, truncated=True).names == ["id", "score", "name"]
+
+
+def test_embedded_schema_codecs_do_not_infer():
+    with pytest.raises(ValueError, match="not supported for parquet"):
+        DEFAULT_REGISTRY.get(DataFormat.PARQUET).infer_schema(b"")
+
+
 @pytest.mark.parametrize("format", [DataFormat.CSV, DataFormat.JSONL])
 def test_text_codec_decode_requires_schema(format):
     codec = DEFAULT_REGISTRY.get(format)
