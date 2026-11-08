@@ -471,6 +471,9 @@
     <a href="#fsspec_data.interchange.InterchangeRequest.casts">InterchangeRequest.casts</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.interchange.InterchangeRequest.schema_resolvers">InterchangeRequest.schema_resolvers</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.interchange.InterchangeRequest.plan">InterchangeRequest.plan()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
@@ -496,6 +499,12 @@
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.interchange.InterchangePlan.additions">InterchangePlan.additions</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.interchange.InterchangePlan.provided_schema_provenance">InterchangePlan.provided_schema_provenance</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.interchange.InterchangePlan.requested_schema_provenance">InterchangePlan.requested_schema_provenance</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.interchange.InterchangePlan.apply_table">InterchangePlan.apply_table()</a>
@@ -597,7 +606,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.interchange.InterchangeRequest" title="fsspec_data.interchange.InterchangeRequest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterchangeRequest</span></code></a></p></td>
-<td><p></p></td>
+<td><p>A conversion request. Either schema may be a PyArrow schema or a schema reference;</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.interchange.InterchangePlan" title="fsspec_data.interchange.InterchangePlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterchangePlan</span></code></a></p></td>
 <td><p></p></td>
@@ -903,7 +912,10 @@ errors defaults to ‘strict’.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="fsspec_data.interchange.InterchangeRequest">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.interchange.</span></span><span class="sig-name descname"><span class="pre">InterchangeRequest</span></span><a class="reference internal" href="../../../_modules/fsspec_data/interchange.html#InterchangeRequest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.interchange.InterchangeRequest" title="Link to this definition">¶</a></dt>
-<dd><dl class="py attribute">
+<dd><p>A conversion request. Either schema may be a PyArrow schema or a schema reference;
+references are resolved with <code class="docutils literal notranslate"><span class="pre">schema_resolvers</span></code> before planning, and the plan records
+their provenance.</p>
+<dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.interchange.InterchangeRequest.provided_format">
 <span class="sig-name descname"><span class="pre">provided_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">DataFormat</span></a></em><a class="headerlink" href="#fsspec_data.interchange.InterchangeRequest.provided_format" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -915,12 +927,12 @@ errors defaults to ‘strict’.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.interchange.InterchangeRequest.provided_schema">
-<span class="sig-name descname"><span class="pre">provided_schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pyarrow.Schema</span></em><a class="headerlink" href="#fsspec_data.interchange.InterchangeRequest.provided_schema" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">provided_schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">fsspec_data.schema.SchemaInput</span></em><a class="headerlink" href="#fsspec_data.interchange.InterchangeRequest.provided_schema" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.interchange.InterchangeRequest.requested_schema">
-<span class="sig-name descname"><span class="pre">requested_schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pyarrow.Schema</span></em><a class="headerlink" href="#fsspec_data.interchange.InterchangeRequest.requested_schema" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">requested_schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">fsspec_data.schema.SchemaInput</span></em><a class="headerlink" href="#fsspec_data.interchange.InterchangeRequest.requested_schema" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -946,6 +958,11 @@ errors defaults to ‘strict’.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.interchange.InterchangeRequest.casts">
 <span class="sig-name descname"><span class="pre">casts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.interchange.InterchangeRequest.casts" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.interchange.InterchangeRequest.schema_resolvers">
+<span class="sig-name descname"><span class="pre">schema_resolvers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../schema/index.html#fsspec_data.schema.SchemaResolverRegistry" title="fsspec_data.schema.SchemaResolverRegistry"><span class="pre">fsspec_data.schema.SchemaResolverRegistry</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.interchange.InterchangeRequest.schema_resolvers" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -991,6 +1008,16 @@ errors defaults to ‘strict’.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.interchange.InterchangePlan.additions">
 <span class="sig-name descname"><span class="pre">additions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fsspec_data.interchange.FieldAddition" title="fsspec_data.interchange.FieldAddition"><span class="pre">FieldAddition</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#fsspec_data.interchange.InterchangePlan.additions" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.interchange.InterchangePlan.provided_schema_provenance">
+<span class="sig-name descname"><span class="pre">provided_schema_provenance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../schema/index.html#fsspec_data.schema.SchemaProvenance" title="fsspec_data.schema.SchemaProvenance"><span class="pre">fsspec_data.schema.SchemaProvenance</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.interchange.InterchangePlan.provided_schema_provenance" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.interchange.InterchangePlan.requested_schema_provenance">
+<span class="sig-name descname"><span class="pre">requested_schema_provenance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../schema/index.html#fsspec_data.schema.SchemaProvenance" title="fsspec_data.schema.SchemaProvenance"><span class="pre">fsspec_data.schema.SchemaProvenance</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.interchange.InterchangePlan.requested_schema_provenance" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1284,6 +1311,9 @@ provided field must be used or dropped unless <code class="docutils literal notr
     <a href="#fsspec_data.interchange.InterchangeRequest.casts">InterchangeRequest.casts</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.interchange.InterchangeRequest.schema_resolvers">InterchangeRequest.schema_resolvers</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.interchange.InterchangeRequest.plan">InterchangeRequest.plan()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
@@ -1309,6 +1339,12 @@ provided field must be used or dropped unless <code class="docutils literal notr
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.interchange.InterchangePlan.additions">InterchangePlan.additions</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.interchange.InterchangePlan.provided_schema_provenance">InterchangePlan.provided_schema_provenance</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.interchange.InterchangePlan.requested_schema_provenance">InterchangePlan.requested_schema_provenance</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.interchange.InterchangePlan.apply_table">InterchangePlan.apply_table()</a>

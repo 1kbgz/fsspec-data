@@ -700,6 +700,8 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.compute</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pc</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">.schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">SchemaInput</span><span class="p">,</span> <span class="n">SchemaProvenance</span><span class="p">,</span> <span class="n">SchemaResolverRegistry</span><span class="p">,</span> <span class="n">normalize_schema</span><span class="p">,</span> <span class="n">resolve_schema</span>
+
 <span class="n">_rust</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">".fsspec_data"</span><span class="p">,</span> <span class="n">__package__</span><span class="p">)</span>
 
 
@@ -957,25 +959,34 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data.InterchangeRequest">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">InterchangeRequest</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A conversion request. Either schema may be a PyArrow schema or a schema reference;</span>
+<span class="sd">    references are resolved with ``schema_resolvers`` before planning, and the plan records</span>
+<span class="sd">    their provenance."""</span>
+
     <span class="n">provided_format</span><span class="p">:</span> <span class="n">DataFormat</span>
     <span class="n">requested_format</span><span class="p">:</span> <span class="n">DataFormat</span>
-    <span class="n">provided_schema</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span>
-    <span class="n">requested_schema</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span>
+    <span class="n">provided_schema</span><span class="p">:</span> <span class="n">SchemaInput</span>
+    <span class="n">requested_schema</span><span class="p">:</span> <span class="n">SchemaInput</span>
     <span class="n">policy</span><span class="p">:</span> <span class="n">SchemaPolicy</span>
     <span class="n">renames</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">defaults</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">drop</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">casts</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">schema_resolvers</span><span class="p">:</span> <span class="n">SchemaResolverRegistry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="InterchangeRequest.plan">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data.InterchangeRequest.plan">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plan</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InterchangePlan</span><span class="p">:</span>
         <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provided_format</span><span class="p">)</span>
         <span class="n">DEFAULT_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">requested_format</span><span class="p">)</span>
+        <span class="n">provided</span> <span class="o">=</span> <span class="n">resolve_schema</span><span class="p">(</span><span class="n">normalize_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provided_schema</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema_resolvers</span><span class="p">)</span>
+        <span class="n">requested</span> <span class="o">=</span> <span class="n">resolve_schema</span><span class="p">(</span><span class="n">normalize_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">requested_schema</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema_resolvers</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">provided</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">requested</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"interchange requests require provided and requested schemas"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">replace</span><span class="p">(</span>
             <span class="n">plan_schema</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">provided_schema</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">requested_schema</span><span class="p">,</span>
+                <span class="n">provided</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span>
+                <span class="n">requested</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="p">,</span>
                 <span class="n">renames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">renames</span><span class="p">,</span>
                 <span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">,</span>
@@ -984,6 +995,8 @@ window.runMermaid = runMermaid;</script>
             <span class="p">),</span>
             <span class="n">provided_format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">provided_format</span><span class="p">,</span>
             <span class="n">requested_format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">requested_format</span><span class="p">,</span>
+            <span class="n">provided_schema_provenance</span><span class="o">=</span><span class="n">provided</span><span class="o">.</span><span class="n">provenance</span><span class="p">,</span>
+            <span class="n">requested_schema_provenance</span><span class="o">=</span><span class="n">requested</span><span class="o">.</span><span class="n">provenance</span><span class="p">,</span>
         <span class="p">)</span></div>
 </div>
 
@@ -1000,6 +1013,8 @@ window.runMermaid = runMermaid;</script>
     <span class="n">provided_format</span><span class="p">:</span> <span class="n">DataFormat</span> <span class="o">=</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">ARROW</span>
     <span class="n">requested_format</span><span class="p">:</span> <span class="n">DataFormat</span> <span class="o">=</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">ARROW</span>
     <span class="n">additions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">FieldAddition</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">provided_schema_provenance</span><span class="p">:</span> <span class="n">SchemaProvenance</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">requested_schema_provenance</span><span class="p">:</span> <span class="n">SchemaProvenance</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="InterchangePlan.apply_table">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data.InterchangePlan.apply_table">[docs]</a>

@@ -632,15 +632,19 @@ to. Python exposes it through the <code class="docutils literal notranslate"><sp
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">provided_format:</span> <span class="pre">DataFormat</span></code>: source encoding.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">requested_format:</span> <span class="pre">DataFormat</span></code>: target encoding.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">provided_schema:</span> <span class="pre">pyarrow.Schema</span></code>: source schema.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">requested_schema:</span> <span class="pre">pyarrow.Schema</span></code>: target schema.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provided_schema</span></code>: source schema, as a PyArrow schema or a schema reference.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">requested_schema</span></code>: target schema, as a PyArrow schema or a schema reference.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">policy:</span> <span class="pre">SchemaPolicy</span></code>: reconciliation policy.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">renames</span></code>, <code class="docutils literal notranslate"><span class="pre">defaults</span></code>, <code class="docutils literal notranslate"><span class="pre">drop</span></code>, <code class="docutils literal notranslate"><span class="pre">casts</span></code>: optional field operations passed to <code class="docutils literal notranslate"><span class="pre">plan_schema</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schema_resolvers:</span> <span class="pre">SchemaResolverRegistry</span> <span class="pre">|</span> <span class="pre">None</span></code>: resolvers for schema references.
+<code class="docutils literal notranslate"><span class="pre">DEFAULT_SCHEMA_RESOLVERS</span></code> is used when it is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
+<p>Schema references are <code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code> values, URL strings, or mappings with <code class="docutils literal notranslate"><span class="pre">url</span></code>, <code class="docutils literal notranslate"><span class="pre">format</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">storage_options</span></code>, as accepted by <code class="docutils literal notranslate"><span class="pre">DataFileSystem</span></code>.</p>
 <section id="plan">
 <h3><code class="docutils literal notranslate"><span class="pre">plan()</span></code><a class="headerlink" href="#plan" title="Link to this heading">¶</a></h3>
-<p>Validates registered source and target codecs and returns <code class="docutils literal notranslate"><span class="pre">InterchangePlan</span></code>. Planning reads
-no data.</p>
+<p>Resolves schema references, validates registered source and target codecs, and returns
+<code class="docutils literal notranslate"><span class="pre">InterchangePlan</span></code>. Resolution may read the schema documents; planning reads no source data.</p>
 </section>
 </section>
 <section id="interchangeplan">
@@ -655,6 +659,8 @@ no data.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">additions:</span> <span class="pre">tuple[FieldAddition,</span> <span class="pre">...]</span></code>: requested fields filled with constants.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">provided_format:</span> <span class="pre">DataFormat</span></code>: source encoding.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">requested_format:</span> <span class="pre">DataFormat</span></code>: target encoding.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provided_schema_provenance</span></code>, <code class="docutils literal notranslate"><span class="pre">requested_schema_provenance</span></code>: <code class="docutils literal notranslate"><span class="pre">SchemaProvenance</span></code> of each
+schema when the plan came from <code class="docutils literal notranslate"><span class="pre">InterchangeRequest.plan()</span></code>, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 <section id="apply-table-table">
 <h3><code class="docutils literal notranslate"><span class="pre">apply_table(table)</span></code><a class="headerlink" href="#apply-table-table" title="Link to this heading">¶</a></h3>

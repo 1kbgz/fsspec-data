@@ -505,6 +505,18 @@ Package Contents
 
 
 
+   .. py:attribute:: provided_schema_provenance
+      :type:  fsspec_data.schema.SchemaProvenance | None
+      :value: None
+
+
+
+   .. py:attribute:: requested_schema_provenance
+      :type:  fsspec_data.schema.SchemaProvenance | None
+      :value: None
+
+
+
    .. py:method:: apply_table(table: pyarrow.Table) -> pyarrow.Table
 
 
@@ -528,6 +540,11 @@ Package Contents
 
 .. py:class:: InterchangeRequest
 
+   A conversion request. Either schema may be a PyArrow schema or a schema reference;
+   references are resolved with ``schema_resolvers`` before planning, and the plan records
+   their provenance.
+
+
    .. py:attribute:: provided_format
       :type:  DataFormat
 
@@ -537,11 +554,11 @@ Package Contents
 
 
    .. py:attribute:: provided_schema
-      :type:  pyarrow.Schema
+      :type:  fsspec_data.schema.SchemaInput
 
 
    .. py:attribute:: requested_schema
-      :type:  pyarrow.Schema
+      :type:  fsspec_data.schema.SchemaInput
 
 
    .. py:attribute:: policy
@@ -568,6 +585,12 @@ Package Contents
 
    .. py:attribute:: casts
       :type:  collections.abc.Mapping[str, str] | None
+      :value: None
+
+
+
+   .. py:attribute:: schema_resolvers
+      :type:  fsspec_data.schema.SchemaResolverRegistry | None
       :value: None
 
 

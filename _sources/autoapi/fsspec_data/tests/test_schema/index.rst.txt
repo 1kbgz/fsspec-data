@@ -28,6 +28,8 @@ Functions
    fsspec_data.tests.test_schema.test_json_schema_maps_structural_types_and_nullability
    fsspec_data.tests.test_schema.test_data_filesystem_resolves_independent_schema_sources
    fsspec_data.tests.test_schema.test_fsspec_open_resolves_referenced_schemas
+   fsspec_data.tests.test_schema.test_interchange_requests_resolve_references_for_direct_reads
+   fsspec_data.tests.test_schema.test_interchange_requests_use_their_schema_resolvers
    fsspec_data.tests.test_schema.test_fsspec_open_resolves_json_schemas
    fsspec_data.tests.test_schema.test_confluent_resolver_fetches_json_schema_with_scoped_credentials
    fsspec_data.tests.test_schema.test_avro_schemas_resolve_from_files_and_confluent
@@ -66,6 +68,10 @@ Module Contents
 .. py:function:: test_data_filesystem_resolves_independent_schema_sources(monkeypatch)
 
 .. py:function:: test_fsspec_open_resolves_referenced_schemas()
+
+.. py:function:: test_interchange_requests_resolve_references_for_direct_reads()
+
+.. py:function:: test_interchange_requests_use_their_schema_resolvers()
 
 .. py:function:: test_fsspec_open_resolves_json_schemas()
 

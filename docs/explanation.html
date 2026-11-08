@@ -786,9 +786,9 @@ integration enters through Rust or PyArrow.</p>
 </section>
 <section id="planning-precedes-execution">
 <h2>Planning precedes execution<a class="headerlink" href="#planning-precedes-execution" title="Link to this heading">¶</a></h2>
-<p>External schema references are resolved to Arrow schemas before an <code class="docutils literal notranslate"><span class="pre">InterchangeRequest</span></code> is
-created. Resolution may read another filesystem or registry and records schema provenance;
-it is separate from planning.</p>
+<p>External schema references are resolved to Arrow schemas before planning begins.
+Resolution may read another filesystem or registry and records schema provenance; it is
+separate from planning and finishes before any source data is read.</p>
 <p>JSON Schema resolution translates only structural type information. Arrow schemas do not
 encode the complete JSON Schema validation language, so composition, references, ambiguous
 unions, and format-dependent conversions are rejected. Validation-only constraints are not
