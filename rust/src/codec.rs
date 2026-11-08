@@ -3,12 +3,14 @@ use std::io::{self, BufReader, Cursor, Read, Seek, SeekFrom, Write};
 use std::sync::{Arc, LazyLock, Mutex};
 
 use arrow::array::RecordBatch;
+use arrow::csv::reader::Format as CsvFormat;
 use arrow::csv::{
     ReaderBuilder as CsvReaderBuilder, Writer as CsvWriter, WriterBuilder as CsvWriterBuilder,
 };
 use arrow::datatypes::SchemaRef;
 use arrow::ipc::reader::StreamReader;
 use arrow::ipc::writer::StreamWriter;
+use arrow::json::reader::infer_json_schema;
 use arrow::json::{LineDelimitedWriter, ReaderBuilder as JsonReaderBuilder};
 use bytes::Bytes;
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
@@ -91,6 +93,20 @@ pub trait Codec: Send + Sync {
         ))
     }
 
+    /// Infers a schema from the start of an encoded source, reading at most `max_records`
+    /// records. A `truncated` sample may end inside a record, which is ignored.
+    fn infer_schema(
+        &self,
+        sample: &[u8],
+        max_records: Option<usize>,
+        truncated: bool,
+    ) -> Result<SchemaRef> {
+        let _ = (sample, max_records, truncated);
+        Err(InterchangeError::SchemaInferenceNotSupported(
+            self.format().as_str().to_string(),
+        ))
+    }
+
     fn encode(&self, schema: SchemaRef, batches: &[RecordBatch]) -> Result<Vec<u8>> {
         let mut output = Vec::new();
         let mut batches = batches.iter().cloned().map(Ok);
@@ -131,6 +147,17 @@ impl CodecRegistry {
             .cloned()
             .ok_or_else(|| InterchangeError::CodecNotRegistered(format.as_str().to_string()))
     }
+}
+
+/// The complete records of a sample: all of it, or through its last newline when truncated.
+fn complete_records(sample: &[u8], truncated: bool) -> &[u8] {
+    if !truncated {
+        return sample;
+    }
+    sample
+        .iter()
+        .rposition(|byte| *byte == b'\n')
+        .map_or(&[][..], |end| &sample[..=end])
 }
 
 pub static DEFAULT_REGISTRY: LazyLock<CodecRegistry> = LazyLock::new(|| {
@@ -469,6 +496,18 @@ impl Codec for CsvCodec {
         )
     }
 
+    fn infer_schema(
+        &self,
+        sample: &[u8],
+        max_records: Option<usize>,
+        truncated: bool,
+    ) -> Result<SchemaRef> {
+        let (schema, _) = CsvFormat::default()
+            .with_header(true)
+            .infer_schema(complete_records(sample, truncated), max_records)?;
+        Ok(Arc::new(schema))
+    }
+
     fn start_writer<'a>(
         &self,
         schema: SchemaRef,
@@ -561,6 +600,16 @@ impl Codec for JsonLinesCodec {
             options,
             cancellation,
         )
+    }
+
+    fn infer_schema(
+        &self,
+        sample: &[u8],
+        max_records: Option<usize>,
+        truncated: bool,
+    ) -> Result<SchemaRef> {
+        let (schema, _) = infer_json_schema(complete_records(sample, truncated), max_records)?;
+        Ok(Arc::new(schema))
     }
 
     fn start_writer<'a>(
@@ -970,5 +1019,56 @@ mod tests {
 
             assert!(error.contains("requires an Arrow schema"));
         }
+    }
+
+    #[test]
+    fn text_codecs_infer_schemas_from_truncated_samples() {
+        let csv = DEFAULT_REGISTRY.get(DataFormat::Csv).unwrap();
+        let sample = b"id,score,name\n1,1.5,ada\n2,2.5,grace\n3,x";
+        let schema = csv.infer_schema(sample, None, true).unwrap();
+        assert_eq!(
+            schema
+                .fields()
+                .iter()
+                .map(|field| field.data_type().clone())
+                .collect::<Vec<_>>(),
+            [DataType::Int64, DataType::Float64, DataType::Utf8]
+        );
+        let untruncated = csv.infer_schema(b"id,score\n1,x", None, false).unwrap();
+        assert_eq!(untruncated.field(1).data_type(), &DataType::Utf8);
+        let limited = csv.infer_schema(b"a\n1\nx\n", Some(1), false).unwrap();
+        assert_eq!(limited.field(0).data_type(), &DataType::Int64);
+        let decoded = csv.decode(&sample[..36], Some(schema)).unwrap();
+        assert_eq!(decoded.batches[0].num_rows(), 2);
+
+        let jsonl = DEFAULT_REGISTRY.get(DataFormat::JsonLines).unwrap();
+        let schema = jsonl
+            .infer_schema(
+                b"{\"id\": 1, \"tags\": [\"a\"]}\n{\"id\": 2, \"na",
+                None,
+                true,
+            )
+            .unwrap();
+        assert_eq!(schema.field(0).data_type(), &DataType::Int64);
+        assert!(matches!(schema.field(1).data_type(), DataType::List(_)));
+        assert_eq!(
+            jsonl
+                .infer_schema(b"{\"id\": 1}", None, true)
+                .unwrap()
+                .fields()
+                .len(),
+            0
+        );
+        assert!(jsonl.infer_schema(b"[1]\n", None, false).is_err());
+
+        let error = DEFAULT_REGISTRY
+            .get(DataFormat::Parquet)
+            .unwrap()
+            .infer_schema(b"", None, false)
+            .unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "schema inference is not supported for parquet"
+        );
     }
 }
