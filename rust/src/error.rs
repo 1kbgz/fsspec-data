@@ -97,8 +97,28 @@ pub enum InterchangeError {
     StreamCancelled,
     #[error("decoded batch memory exceeds byte limit {limit}: attempted {attempted}")]
     ByteLimitExceeded { limit: usize, attempted: usize },
+    #[error("schema reference: {0}")]
+    SchemaReference(String),
+    #[error("JSON Schema: {0}")]
+    JsonSchema(String),
+    #[error("converter types must be non-empty strings")]
+    ConverterType,
+    #[error("converter from {source_type:?} to {target_type:?} is already registered")]
+    ConverterRegistered {
+        source_type: String,
+        target_type: String,
+    },
+    #[error("no converter registered from {source_type:?} to {target_type:?}")]
+    ConverterNotRegistered {
+        source_type: String,
+        target_type: String,
+    },
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    #[error(transparent)]
+    FileSystem(#[from] fsspec_rs::FsError),
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
     #[error(transparent)]
     Arrow(#[from] arrow::error::ArrowError),
     #[error(transparent)]

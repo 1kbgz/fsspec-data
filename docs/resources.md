@@ -91,3 +91,28 @@ accepts source storage options. It rejects a target and target options.
 `xarray -> zarr` requires a Dataset or DataArray, calls `to_zarr`, and accepts
 target storage options. It rejects source options. Storage options supplied both
 through their dedicated mapping and `conversion_options` raise `ValueError`.
+
+## Rust
+
+The Rust crate mirrors the Python schema and converter types.
+
+| Type                     | Purpose                                                                   |
+| ------------------------ | ------------------------------------------------------------------------- |
+| `SchemaReference`        | `url`, optional `format`, optional `filesystem`, and provider `options`.  |
+| `SchemaFormat`           | `ArrowIpc`, `ArrowJson`, `JsonSchema`, and `Avro`, with the Python names. |
+| `SchemaResolverRegistry` | Decoders by format, providers by protocol, and filesystems by protocol.   |
+| `SchemaProvider`         | Fetches a `SchemaDocument` for a reference. Closures implement it.        |
+| `ConversionEndpoint`     | `url`, optional `filesystem`, and options for one side of a conversion.   |
+| `Converter`              | `source_type`, `target_type`, and `convert(source, target, options)`.     |
+| `ConverterRegistry`      | `register(converter, replace)`, `get`, `routes`, and `convert`.           |
+
+`SchemaResolverRegistry::default()` and `DEFAULT_SCHEMA_RESOLVERS` decode every schema format,
+read `file://` and bare paths with `fsspec_rs::LocalFs`, and, with the `confluent` feature,
+resolve `confluent://` references. `SchemaResolverRegistry::empty()` has none of these.
+`resolve` uses the provider for the reference's protocol if there is one; otherwise it reads
+the URL through the reference's filesystem or the registered one. `SchemaReference` and
+`ConversionEndpoint` omit their options from `Debug` output.
+
+`schema_from_fields` and `json_schema_to_arrow` take a `serde_json::Value` and follow the
+`arrow-json` and JSON Schema rules above. Confluent options are `registry_url`, `username`
+and `password` together, and `timeout` in seconds; custom headers are Python-only.

@@ -10,6 +10,8 @@ from typing import Any, BinaryIO
 import pyarrow as pa
 import pyarrow.compute as pc
 
+from .schema import SchemaInput, SchemaProvenance, SchemaResolverRegistry, normalize_schema, resolve_schema
+
 _rust = import_module(".fsspec_data", __package__)
 
 
@@ -199,23 +201,32 @@ class FieldAddition:
 
 @dataclass(frozen=True)
 class InterchangeRequest:
+    """A conversion request. Either schema may be a PyArrow schema or a schema reference;
+    references are resolved with ``schema_resolvers`` before planning, and the plan records
+    their provenance."""
+
     provided_format: DataFormat
     requested_format: DataFormat
-    provided_schema: pa.Schema
-    requested_schema: pa.Schema
+    provided_schema: SchemaInput
+    requested_schema: SchemaInput
     policy: SchemaPolicy
     renames: Mapping[str, str] | None = None
     defaults: Mapping[str, Any] | None = None
     drop: Sequence[str] | None = None
     casts: Mapping[str, str] | None = None
+    schema_resolvers: SchemaResolverRegistry | None = None
 
     def plan(self) -> InterchangePlan:
         DEFAULT_REGISTRY.get(self.provided_format)
         DEFAULT_REGISTRY.get(self.requested_format)
+        provided = resolve_schema(normalize_schema(self.provided_schema), self.schema_resolvers)
+        requested = resolve_schema(normalize_schema(self.requested_schema), self.schema_resolvers)
+        if provided is None or requested is None:
+            raise ValueError("interchange requests require provided and requested schemas")
         return replace(
             plan_schema(
-                self.provided_schema,
-                self.requested_schema,
+                provided.schema,
+                requested.schema,
                 self.policy,
                 renames=self.renames,
                 defaults=self.defaults,
@@ -224,6 +235,8 @@ class InterchangeRequest:
             ),
             provided_format=self.provided_format,
             requested_format=self.requested_format,
+            provided_schema_provenance=provided.provenance,
+            requested_schema_provenance=requested.provenance,
         )
 
 
@@ -236,6 +249,8 @@ class InterchangePlan:
     provided_format: DataFormat = DataFormat.ARROW
     requested_format: DataFormat = DataFormat.ARROW
     additions: tuple[FieldAddition, ...] = ()
+    provided_schema_provenance: SchemaProvenance | None = None
+    requested_schema_provenance: SchemaProvenance | None = None
 
     def apply_table(self, table: pa.Table) -> pa.Table:
         self._validate_input_schema(table.schema)
