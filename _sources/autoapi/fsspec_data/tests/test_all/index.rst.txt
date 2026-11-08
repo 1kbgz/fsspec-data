@@ -37,6 +37,8 @@ Functions
    fsspec_data.tests.test_all.test_codec_encodes_batches_to_binary_file
    fsspec_data.tests.test_all.test_codec_file_writer_requires_schema_for_empty_stream
    fsspec_data.tests.test_all.test_codec_file_writer_rejects_non_batches
+   fsspec_data.tests.test_all.test_text_codecs_infer_schemas_for_decoding
+   fsspec_data.tests.test_all.test_embedded_schema_codecs_do_not_infer
    fsspec_data.tests.test_all.test_text_codec_decode_requires_schema
    fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits
    fsspec_data.tests.test_all.test_lazy_decode_reads_binary_file_without_eagerly_consuming_it
@@ -107,6 +109,10 @@ Module Contents
 .. py:function:: test_codec_file_writer_requires_schema_for_empty_stream()
 
 .. py:function:: test_codec_file_writer_rejects_non_batches()
+
+.. py:function:: test_text_codecs_infer_schemas_for_decoding(format, sample)
+
+.. py:function:: test_embedded_schema_codecs_do_not_infer()
 
 .. py:function:: test_text_codec_decode_requires_schema(format)
 

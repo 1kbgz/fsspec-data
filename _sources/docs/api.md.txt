@@ -180,6 +180,19 @@ Parameters:
 Calls `iter_batches(...)`, consumes the stream, and returns `DecodedBatches`. Parameters and
 errors match `iter_batches`.
 
+### `infer_schema(sample, *, max_records=None, truncated=False)`
+
+Returns a `pyarrow.Schema` inferred from the start of an encoded source, for decoding CSV or
+JSONL without a provided schema. `max_records` limits how many records are read. Set
+`truncated` when `sample` is the first bytes of a larger source; inference then ignores
+the partial record after the last newline.
+
+CSV inference reads a header row and infers integers, floats, booleans, dates, timestamps,
+and strings. JSONL inference also infers lists and nested objects. Later records may not
+fit an inferred schema, in which case decoding raises `ValueError`. Other formats raise
+`ValueError`; Arrow IPC and Parquet carry their own schema. Rust exposes the same operation
+as `Codec::infer_schema(sample, max_records, truncated)`.
+
 ## Rust `CodecReader`
 
 A marker trait for reader-backed encoded input. Implementations provide `Read + Seek + Send`.

@@ -342,6 +342,14 @@ Package Contents
    .. py:method:: encode_batches_to(batches: collections.abc.Iterable[pyarrow.RecordBatch], output: BinaryIO, *, schema: pyarrow.Schema | None = None) -> None
 
 
+   .. py:method:: infer_schema(sample: bytes | bytearray | memoryview, *, max_records: int | None = None, truncated: bool = False) -> pyarrow.Schema
+
+      Infer a schema from the start of an encoded source. CSV and JSONL support
+      inference. A ``truncated`` sample, such as the first bytes of a larger file, may end
+      inside a record, which is ignored.
+
+
+
    .. py:method:: decode_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatches
 
 
@@ -804,6 +812,6 @@ Package Contents
 .. py:function:: resolve_schema(value: pyarrow.Schema | SchemaRef | None, registry: SchemaResolverRegistry | None = None) -> ResolvedSchema | None
 
 .. py:data:: __version__
-   :value: '0.4.0'
+   :value: '0.5.0'
 
 
