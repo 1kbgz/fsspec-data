@@ -113,6 +113,7 @@ resolve `confluent://` references. `SchemaResolverRegistry::empty()` has none of
 the URL through the reference's filesystem or the registered one. `SchemaReference` and
 `ConversionEndpoint` omit their options from `Debug` output.
 
-`schema_from_fields` and `json_schema_to_arrow` take a `serde_json::Value` and follow the
+`schema_from_fields` takes a `serde_json::Value`, and `json_schema_to_arrow` takes the JSON
+Schema document as text so fields keep the order of `properties`. Both follow the
 `arrow-json` and JSON Schema rules above. Confluent options are `registry_url`, `username`
 and `password` together, and `timeout` in seconds; custom headers are Python-only.

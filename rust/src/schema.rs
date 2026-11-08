@@ -367,9 +367,9 @@ fn decode_arrow_json(data: &[u8]) -> Result<SchemaRef> {
 }
 
 fn decode_json_schema(data: &[u8]) -> Result<SchemaRef> {
-    Ok(Arc::new(json_schema_to_arrow(&serde_json::from_slice(
-        data,
-    )?)?))
+    let document =
+        std::str::from_utf8(data).map_err(|_| schema_error("JSON Schema must be UTF-8 JSON"))?;
+    Ok(Arc::new(json_schema_to_arrow(document)?))
 }
 
 fn decode_avro(data: &[u8]) -> Result<SchemaRef> {
