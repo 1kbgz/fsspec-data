@@ -81,9 +81,9 @@ integration enters through Rust or PyArrow.
 
 ## Planning precedes execution
 
-External schema references are resolved to Arrow schemas before an `InterchangeRequest` is
-created. Resolution may read another filesystem or registry and records schema provenance;
-it is separate from planning.
+External schema references are resolved to Arrow schemas before planning begins.
+Resolution may read another filesystem or registry and records schema provenance; it is
+separate from planning and finishes before any source data is read.
 
 JSON Schema resolution translates only structural type information. Arrow schemas do not
 encode the complete JSON Schema validation language, so composition, references, ambiguous

@@ -263,15 +263,20 @@ Attributes:
 
 - `provided_format: DataFormat`: source encoding.
 - `requested_format: DataFormat`: target encoding.
-- `provided_schema: pyarrow.Schema`: source schema.
-- `requested_schema: pyarrow.Schema`: target schema.
+- `provided_schema`: source schema, as a PyArrow schema or a schema reference.
+- `requested_schema`: target schema, as a PyArrow schema or a schema reference.
 - `policy: SchemaPolicy`: reconciliation policy.
 - `renames`, `defaults`, `drop`, `casts`: optional field operations passed to `plan_schema`.
+- `schema_resolvers: SchemaResolverRegistry | None`: resolvers for schema references.
+  `DEFAULT_SCHEMA_RESOLVERS` is used when it is `None`.
+
+Schema references are `SchemaRef` values, URL strings, or mappings with `url`, `format`, and
+`storage_options`, as accepted by `DataFileSystem`.
 
 ### `plan()`
 
-Validates registered source and target codecs and returns `InterchangePlan`. Planning reads
-no data.
+Resolves schema references, validates registered source and target codecs, and returns
+`InterchangePlan`. Resolution may read the schema documents; planning reads no source data.
 
 ## `InterchangePlan`
 
@@ -286,6 +291,8 @@ Attributes:
 - `additions: tuple[FieldAddition, ...]`: requested fields filled with constants.
 - `provided_format: DataFormat`: source encoding.
 - `requested_format: DataFormat`: target encoding.
+- `provided_schema_provenance`, `requested_schema_provenance`: `SchemaProvenance` of each
+  schema when the plan came from `InterchangeRequest.plan()`, otherwise `None`.
 
 ### `apply_table(table)`
 

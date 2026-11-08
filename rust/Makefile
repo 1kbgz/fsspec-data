@@ -33,13 +33,13 @@ checks: check
 
 .PHONY: test tests
 test:  ## run the tests
-	cargo llvm-cov nextest --workspace --cobertura --output-path junit.xml
+	cargo llvm-cov nextest --workspace --all-features --cobertura --output-path junit.xml
 
 # alias
 tests: test
 
 coverage:  ## collect Rust test coverage
-	cargo llvm-cov nextest --workspace --lcov --output-path coverage
+	cargo llvm-cov nextest --workspace --all-features --lcov --output-path coverage
 
 .PHONY: dist publish
 dist:  ## validate crate packaging

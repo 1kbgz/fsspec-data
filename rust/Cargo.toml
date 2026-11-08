@@ -17,5 +17,12 @@ crate-type = ["rlib"]
 arrow = "60.1.0"
 arrow-avro = { version = "60.1.0", default-features = false, features = ["deflate", "snappy", "zstd"] }
 bytes = "1"
+fsspec_rs = "0.1.7"
 parquet = { version = "60.1.0", features = ["arrow"] }
+serde = "1"
+serde_json = "1"
 thiserror = "2"
+ureq = { version = "3", optional = true }
+
+[features]
+confluent = ["dep:ureq"]

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io::Write;
 use std::sync::Arc;
 
 use arrow::array::{new_null_array, ArrayRef, RecordBatch, RecordBatchOptions, UInt32Array};
@@ -6,7 +7,7 @@ use arrow::compute::{cast_with_options, take, CastOptions};
 use arrow::datatypes::{DataType, Schema, SchemaRef};
 
 use crate::error::{InterchangeError, Result};
-use crate::DEFAULT_REGISTRY;
+use crate::{CancellationToken, CodecReader, DecodedStream, StreamOptions, DEFAULT_REGISTRY};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum DataFormat {
@@ -280,6 +281,72 @@ impl InterchangePlan {
         batches
             .into_iter()
             .map(|batch| batch.and_then(|batch| self.apply_batch(&batch)))
+    }
+
+    /// Decodes `reader` in the provided format and applies this plan to each bounded batch.
+    /// CSV and JSONL are decoded with the provided schema.
+    pub fn iter_batches(
+        &self,
+        reader: Box<dyn CodecReader>,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<PlannedStream> {
+        let decode_schema = matches!(
+            self.provided_format,
+            DataFormat::Csv | DataFormat::JsonLines
+        )
+        .then(|| self.provided_schema.clone());
+        let source = DEFAULT_REGISTRY.get(self.provided_format)?.decode_reader(
+            reader,
+            decode_schema,
+            options,
+            cancellation,
+        )?;
+        Ok(PlannedStream {
+            plan: self.clone(),
+            source,
+        })
+    }
+
+    /// Converts `reader` from the provided format to the requested format one bounded batch
+    /// at a time.
+    pub fn convert(
+        &self,
+        reader: Box<dyn CodecReader>,
+        output: &mut (dyn Write + Send),
+        options: StreamOptions,
+    ) -> Result<()> {
+        let mut batches = self.iter_batches(reader, options, CancellationToken::new())?;
+        DEFAULT_REGISTRY.get(self.requested_format)?.encode_stream(
+            self.requested_schema.clone(),
+            &mut batches,
+            output,
+        )
+    }
+}
+
+/// Decoded batches with an [`InterchangePlan`] applied, in the requested schema.
+pub struct PlannedStream {
+    plan: InterchangePlan,
+    source: DecodedStream,
+}
+
+impl PlannedStream {
+    pub fn schema(&self) -> SchemaRef {
+        self.plan.requested_schema.clone()
+    }
+
+    pub fn cancellation_token(&self) -> CancellationToken {
+        self.source.cancellation_token()
+    }
+}
+
+impl Iterator for PlannedStream {
+    type Item = Result<RecordBatch>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let batch = self.source.next()?;
+        Some(batch.and_then(|batch| self.plan.apply_batch(&batch)))
     }
 }
 
@@ -1212,5 +1279,90 @@ mod tests {
             .unwrap_err();
 
         assert!(matches!(error, InterchangeError::DefaultCast { .. }));
+    }
+
+    #[test]
+    fn plans_convert_referenced_csv_schemas_to_parquet() {
+        use std::io::Cursor;
+
+        use crate::{SchemaFormat, SchemaReference, DEFAULT_SCHEMA_RESOLVERS};
+
+        let directory =
+            std::env::temp_dir().join(format!("fsspec-data-plan-{}", std::process::id()));
+        std::fs::create_dir_all(&directory).unwrap();
+        let schema_path = directory.join("provided.json");
+        std::fs::write(
+            &schema_path,
+            r#"{"fields": [{"name": "id", "type": "int64", "nullable": false}, {"name": "label", "type": "string"}]}"#,
+        )
+        .unwrap();
+        let provided = DEFAULT_SCHEMA_RESOLVERS
+            .resolve(
+                &SchemaReference::new(schema_path.display().to_string())
+                    .with_format(SchemaFormat::ArrowJson),
+            )
+            .unwrap();
+        std::fs::remove_dir_all(directory).unwrap();
+        let requested = Arc::new(Schema::new(vec![
+            Field::new("id", DataType::Int64, false),
+            Field::new("name", DataType::Utf8, true),
+            Field::new("source", DataType::Utf8, false),
+        ]));
+        let options = ProjectionOptions {
+            renames: HashMap::from([("label".to_string(), "name".to_string())]),
+            defaults: HashMap::from([(
+                "source".to_string(),
+                Arc::new(StringArray::from(vec!["csv"])) as ArrayRef,
+            )]),
+            ..ProjectionOptions::default()
+        };
+        let plan = plan(&InterchangeRequest {
+            provided_format: DataFormat::Csv,
+            requested_format: DataFormat::Parquet,
+            provided_schema: provided.schema,
+            requested_schema: requested.clone(),
+            policy: SchemaPolicy::Compatible,
+            options,
+        })
+        .unwrap();
+        let csv = || Box::new(Cursor::new(b"id,label\n1,a\n2,b\n3,c\n".to_vec()));
+        let stream_options = StreamOptions {
+            batch_size: 2,
+            ..StreamOptions::default()
+        };
+
+        let stream = plan
+            .iter_batches(csv(), stream_options, CancellationToken::new())
+            .unwrap();
+        assert_eq!(stream.schema(), requested);
+        stream.cancellation_token();
+        let rows: Vec<usize> = stream.map(|batch| batch.unwrap().num_rows()).collect();
+        assert_eq!(rows, [2, 1]);
+
+        let mut parquet = Vec::new();
+        plan.convert(csv(), &mut parquet, stream_options).unwrap();
+        let decoded = DEFAULT_REGISTRY
+            .get(DataFormat::Parquet)
+            .unwrap()
+            .decode(&parquet, None)
+            .unwrap();
+        assert_eq!(decoded.schema, requested);
+        let batch = &decoded.batches[0];
+        assert_eq!(
+            batch
+                .column(1)
+                .as_any()
+                .downcast_ref::<StringArray>()
+                .unwrap(),
+            &StringArray::from(vec!["a", "b", "c"])
+        );
+        assert_eq!(
+            batch
+                .column(2)
+                .as_any()
+                .downcast_ref::<StringArray>()
+                .unwrap(),
+            &StringArray::from(vec!["csv"; 3])
+        );
     }
 }

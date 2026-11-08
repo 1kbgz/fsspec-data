@@ -8,7 +8,16 @@ import pytest
 
 import fsspec_data.confluent as confluent_module
 import fsspec_data.schema as schema_module
-from fsspec_data import DataFileSystem, SchemaRef, json_schema_to_arrow, resolve_schema
+from fsspec_data import (
+    DataFileSystem,
+    DataFormat,
+    InterchangeRequest,
+    SchemaPolicy,
+    SchemaRef,
+    SchemaResolverRegistry,
+    json_schema_to_arrow,
+    resolve_schema,
+)
 
 SOURCE_SCHEMA = pa.schema(
     [
@@ -182,6 +191,60 @@ def test_fsspec_open_resolves_referenced_schemas():
 
     assert result.schema.equals(TARGET_SCHEMA, check_metadata=False)
     assert result.to_pylist() == [{"name": "ada"}, {"name": "grace"}]
+
+
+def test_interchange_requests_resolve_references_for_direct_reads():
+    memory_fs = fsspec.filesystem("memory")
+    memory_fs.store.clear()
+    memory_fs.pipe("schemas/source.json", json.dumps(SOURCE_SCHEMA_JSON).encode())
+    requested = pa.schema(
+        [
+            pa.field("id", pa.int64(), nullable=False),
+            pa.field("label", pa.string()),
+            pa.field("source", pa.string(), nullable=False),
+        ]
+    )
+    plan = InterchangeRequest(
+        DataFormat.CSV,
+        DataFormat.PARQUET,
+        SchemaRef("memory://schemas/source.json", format="arrow-json"),
+        requested,
+        SchemaPolicy.COMPATIBLE,
+        renames={"name": "label"},
+        defaults={"source": "csv"},
+    ).plan()
+
+    assert plan.provided_schema.equals(SOURCE_SCHEMA)
+    assert plan.provided_schema_provenance == schema_module.SchemaProvenance(
+        source="memory://schemas/source.json", format="arrow-json", provider="fsspec"
+    )
+    assert plan.requested_schema_provenance is not None
+    assert plan.requested_schema_provenance.provider == "inline"
+    source = b"id,name\n1,ada\n2,grace\n3,linus\n"
+    assert [batch.num_rows for batch in plan.iter_batches(io.BytesIO(source), batch_size=2)] == [2, 1]
+    result = pq.read_table(io.BytesIO(plan.convert(source)))
+    assert result.schema.equals(requested, check_metadata=False)
+    assert result.column("label").to_pylist() == ["ada", "grace", "linus"]
+    assert result.column("source").to_pylist() == ["csv"] * 3
+
+
+def test_interchange_requests_use_their_schema_resolvers():
+    resolvers = SchemaResolverRegistry()
+    resolvers.register(schema_module.SchemaFormat.ARROW_IPC, lambda data: SOURCE_SCHEMA)
+    resolvers.register_provider(
+        "custom",
+        lambda reference: schema_module.SchemaDocument(
+            b"", schema_module.SchemaFormat.ARROW_IPC, schema_module.SchemaProvenance(reference.url, "", "custom")
+        ),
+    )
+    arrow, exact = DataFormat.ARROW, SchemaPolicy.EXACT
+    plan = InterchangeRequest(arrow, arrow, "custom://source", "custom://target", exact, schema_resolvers=resolvers).plan()
+    assert plan.requested_schema.equals(SOURCE_SCHEMA)
+    assert plan.requested_schema_provenance is not None
+    assert plan.requested_schema_provenance.source == "custom://target"
+
+    with pytest.raises(ValueError, match="require provided and requested schemas"):
+        InterchangeRequest(arrow, arrow, SOURCE_SCHEMA, None, exact).plan()
 
 
 def test_fsspec_open_resolves_json_schemas():
