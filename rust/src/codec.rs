@@ -7,7 +7,7 @@ use arrow::csv::reader::Format as CsvFormat;
 use arrow::csv::{
     ReaderBuilder as CsvReaderBuilder, Writer as CsvWriter, WriterBuilder as CsvWriterBuilder,
 };
-use arrow::datatypes::SchemaRef;
+use arrow::datatypes::{Schema, SchemaRef};
 use arrow::ipc::reader::StreamReader;
 use arrow::ipc::writer::StreamWriter;
 use arrow::json::reader::infer_json_schema;
@@ -608,8 +608,13 @@ impl Codec for JsonLinesCodec {
         max_records: Option<usize>,
         truncated: bool,
     ) -> Result<SchemaRef> {
-        let (schema, _) = infer_json_schema(complete_records(sample, truncated), max_records)?;
-        Ok(Arc::new(schema))
+        let records = complete_records(sample, truncated);
+        let (schema, _) = infer_json_schema(records, max_records)?;
+        let fields = crate::json_schema::record_keys(records, max_records)
+            .iter()
+            .filter_map(|key| schema.field_with_name(key).ok().cloned())
+            .collect::<Vec<_>>();
+        Ok(Arc::new(Schema::new(fields)))
     }
 
     fn start_writer<'a>(
@@ -1058,6 +1063,21 @@ mod tests {
                 .fields()
                 .len(),
             0
+        );
+        let ordered = jsonl
+            .infer_schema(
+                b"{\"z\": 1}\n{\"a\": 2, \"z\": 3}\n{\"m\": 4}\n",
+                Some(2),
+                false,
+            )
+            .unwrap();
+        assert_eq!(
+            ordered
+                .fields()
+                .iter()
+                .map(|field| field.name().as_str())
+                .collect::<Vec<_>>(),
+            ["z", "a"]
         );
         assert!(jsonl.infer_schema(b"[1]\n", None, false).is_err());
 

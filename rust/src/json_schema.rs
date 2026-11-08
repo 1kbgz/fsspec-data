@@ -58,6 +58,23 @@ impl Json {
     }
 }
 
+/// Top-level keys of JSON records in order of first appearance, reading at most
+/// `max_records` records.
+pub(crate) fn record_keys(records: &[u8], max_records: Option<usize>) -> Vec<String> {
+    let mut keys: Vec<String> = Vec::new();
+    let stream = serde_json::Deserializer::from_slice(records).into_iter::<Json>();
+    for record in stream.take(max_records.unwrap_or(usize::MAX)).flatten() {
+        if let Json::Object(entries) = record {
+            for (key, _) in entries {
+                if !keys.contains(&key) {
+                    keys.push(key);
+                }
+            }
+        }
+    }
+    keys
+}
+
 fn get<'a>(object: &'a Object, key: &str) -> Option<&'a Json> {
     object
         .iter()
