@@ -5,14 +5,14 @@ use std::sync::{Arc, LazyLock};
 
 use arrow::datatypes::{DataType, Field, IntervalUnit, Schema, SchemaRef, TimeUnit};
 use arrow::ipc::reader::StreamReader;
-use fsspec_rs::{FileSystem, LocalFs};
+use fsspec_rs::{url_to_fs, FsOptions};
 use serde_json::Value;
 
 use crate::json_schema::json_schema_to_arrow;
 use crate::{avro_arrow_schema, InterchangeError, Result};
 
 /// A filesystem shared between schema references, resolvers, and converters.
-pub type SharedFileSystem = Arc<dyn FileSystem + Send + Sync>;
+pub use fsspec_rs::SharedFileSystem;
 
 /// Decodes a schema document into an Arrow schema.
 pub type SchemaDecoder = Arc<dyn Fn(&[u8]) -> Result<SchemaRef> + Send + Sync>;
@@ -65,8 +65,10 @@ impl SchemaFormat {
 /// A schema stored apart from the data it describes.
 ///
 /// `filesystem` reads `url` with its own credentials. Without one, the resolver uses the
-/// filesystem registered for the URL protocol. `options` configure a schema provider, such
-/// as a registry URL and credentials, and are omitted from `Debug` output.
+/// filesystem registered on the resolver for the URL protocol, or else opens the URL through
+/// the fsspec-rs filesystem registry with `options` as storage options. For a provider
+/// protocol, `options` configure the provider instead, such as a registry URL and
+/// credentials. Options are omitted from `Debug` output.
 #[derive(Clone)]
 pub struct SchemaReference {
     pub url: String,
@@ -157,8 +159,9 @@ where
 /// Resolves schema references to Arrow schemas before planning.
 ///
 /// A reference is fetched by the provider registered for its protocol, or else read through
-/// its own filesystem or the filesystem registered for its protocol. The document is then
-/// decoded by the decoder registered for its format.
+/// its own filesystem, the filesystem registered here for its protocol, or the fsspec-rs
+/// filesystem registry ([`fsspec_rs::url_to_fs`]). The document is then decoded by the
+/// decoder registered for its format.
 pub struct SchemaResolverRegistry {
     decoders: HashMap<SchemaFormat, SchemaDecoder>,
     providers: HashMap<String, Arc<dyn SchemaProvider>>,
@@ -166,17 +169,14 @@ pub struct SchemaResolverRegistry {
 }
 
 impl Default for SchemaResolverRegistry {
-    /// Decoders for every [`SchemaFormat`], local files, and the Confluent provider when the
-    /// `confluent` feature is enabled.
+    /// Decoders for every [`SchemaFormat`] and the Confluent provider when the `confluent`
+    /// feature is enabled.
     fn default() -> Self {
         let mut registry = Self::empty();
         registry.register_decoder(SchemaFormat::ArrowIpc, decode_arrow_ipc);
         registry.register_decoder(SchemaFormat::ArrowJson, decode_arrow_json);
         registry.register_decoder(SchemaFormat::JsonSchema, decode_json_schema);
         registry.register_decoder(SchemaFormat::Avro, decode_avro);
-        let local: SharedFileSystem = Arc::new(LocalFs::new());
-        registry.register_filesystem("file", local.clone());
-        registry.register_filesystem("local", local);
         #[cfg(feature = "confluent")]
         registry.register_provider("confluent", crate::confluent::ConfluentProvider);
         registry
@@ -243,16 +243,26 @@ impl SchemaResolverRegistry {
             Some(format) => format,
             None => SchemaFormat::from_url(&reference.url)?,
         };
-        let filesystem = reference
+        let (filesystem, path) = match reference
             .filesystem
             .as_ref()
             .or_else(|| self.filesystems.get(protocol))
-            .ok_or_else(|| {
-                schema_error(format!(
-                    "no filesystem is registered for {protocol:?}; give the reference a filesystem"
-                ))
-            })?;
-        let data = filesystem.cat_file(&filesystem.strip_protocol(&reference.url), None, None)?;
+        {
+            Some(filesystem) => (
+                filesystem.clone(),
+                filesystem.strip_protocol(&reference.url),
+            ),
+            None => {
+                let options: FsOptions = reference.options.clone().into_iter().collect();
+                url_to_fs(&reference.url, &options).map_err(|error| {
+                    schema_error(format!(
+                        "cannot open schema reference {:?}: {error}; give the reference a filesystem",
+                        reference.url
+                    ))
+                })?
+            }
+        };
+        let data = filesystem.cat_file(&path, None, None)?;
         Ok(SchemaDocument {
             data,
             format,
@@ -387,7 +397,9 @@ mod tests {
     use std::sync::Mutex;
 
     use arrow::ipc::writer::StreamWriter;
-    use fsspec_rs::{FileInfo, FsError, FsFile, FsResult, OpenMode, OpenOptions};
+    use fsspec_rs::{
+        register_filesystem, FileInfo, FileSystem, FsError, FsFile, FsResult, OpenMode, OpenOptions,
+    };
 
     use super::*;
 
@@ -511,6 +523,43 @@ mod tests {
     }
 
     #[test]
+    fn references_open_through_the_fsspec_rs_registry() {
+        let schemas = MemoryFs::new(&[("bucket/people.arrowschema", ipc_schema(&people()))]);
+        let options = Arc::new(Mutex::new(Vec::new()));
+        let (filesystem, seen) = (schemas.clone(), options.clone());
+        register_filesystem(
+            "schema-registry-test",
+            move |path: &str, options: &FsOptions| {
+                seen.lock()
+                    .unwrap()
+                    .push((path.to_string(), options.clone()));
+                Ok(filesystem.clone() as SharedFileSystem)
+            },
+        );
+
+        let resolved = SchemaResolverRegistry::default()
+            .resolve(
+                &SchemaReference::new("schema-registry-test://bucket/people.arrowschema")
+                    .with_option("token", "abc"),
+            )
+            .unwrap();
+
+        assert_eq!(resolved.schema.as_ref(), &people());
+        assert_eq!(resolved.provenance.provider, "fsspec");
+        assert_eq!(
+            *options.lock().unwrap(),
+            [(
+                "bucket/people.arrowschema".to_string(),
+                FsOptions::from([("token".to_string(), "abc".to_string())])
+            )]
+        );
+        assert_eq!(
+            *schemas.reads.lock().unwrap(),
+            ["bucket/people.arrowschema"]
+        );
+    }
+
+    #[test]
     fn providers_supply_documents_for_their_protocol() {
         let mut registry = SchemaResolverRegistry::default();
         registry.register_provider("registry", |reference: &SchemaReference| {
@@ -553,8 +602,8 @@ mod tests {
         let cases = [
             (SchemaReference::new("people.json"), "cannot be inferred"),
             (
-                SchemaReference::new("s3://bucket/people.avsc"),
-                "no filesystem is registered for \"s3\"",
+                SchemaReference::new("nosuch://bucket/people.avsc"),
+                "no filesystem registered for protocol: nosuch",
             ),
         ];
         for (reference, message) in cases {
