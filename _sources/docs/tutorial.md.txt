@@ -5,7 +5,7 @@ integer identifiers. We will create a conversion plan and consume its output in 
 
 ## Install fsspec-data
 
-Use Python 3.10 or newer and install the package:
+Use Python 3.11 or newer and install the package:
 
 ```console
 python -m pip install fsspec-data
