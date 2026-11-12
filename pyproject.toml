@@ -14,7 +14,7 @@ description = "Arrow interchange planning for the fsspec data ecosystem"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 version = "0.6.0"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 keywords = ["arrow", "data", "fsspec", "interchange"]
 
 classifiers = [
@@ -101,7 +101,7 @@ search = 'version = "{current_version}"'
 replace = 'version = "{new_version}"'
 
 [tool.cibuildwheel]
-build = "cp310-*"
+build = "cp311-*"
 test-command = "pytest -vvv {project}/fsspec_data/tests"
 test-extras = "develop"
 
