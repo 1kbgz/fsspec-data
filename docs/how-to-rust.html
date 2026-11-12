@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/fonts/fuma-fonts.css?v=c2892c73" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/custom.css?v=88c24c6a" />
     <script src="../_static/documentation_options.js?v=1dd76d02"></script>
@@ -21,7 +21,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script data-searchlite-index="searchlite-index.json" defer="defer" src="../_static/searchlite.js?v=a5320898"></script>
     <script defer="defer" src="../_static/fuma.js?v=9c325f6c"></script>
     <script src="../_static/js/custom.js?v=956e5d78"></script>
@@ -356,8 +356,11 @@ to each bounded batch. <code class="docutils literal notranslate"><span class="p
 </section>
 <section id="resolve-schema-references">
 <h2>Resolve schema references<a class="headerlink" href="#resolve-schema-references" title="Link to this heading">¶</a></h2>
-<p>Resolve both schemas before building the request. Each reference can carry its own
-filesystem, so the schemas and the data can use different backends and credentials:</p>
+<p>Resolve both schemas before building the request. A reference without a filesystem opens
+its URL through the fsspec-rs filesystem registry (<code class="docutils literal notranslate"><span class="pre">fsspec_rs::url_to_fs</span></code>), with the
+reference’s options as storage options, so bare paths, <code class="docutils literal notranslate"><span class="pre">file://</span></code>, <code class="docutils literal notranslate"><span class="pre">s3://</span></code>, and any protocol
+the application registers work. Each reference can also carry its own filesystem, so the
+schemas and the data can use different backends and credentials:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">use</span><span class="w"> </span><span class="n">std</span><span class="p">::</span><span class="n">sync</span><span class="p">::</span><span class="n">Arc</span><span class="p">;</span>
 
 <span class="k">use</span><span class="w"> </span><span class="n">fsspec_data</span><span class="p">::{</span>

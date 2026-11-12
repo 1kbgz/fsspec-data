@@ -68,8 +68,11 @@ CSV and JSONL sources are decoded with the plan's provided schema.
 
 ## Resolve schema references
 
-Resolve both schemas before building the request. Each reference can carry its own
-filesystem, so the schemas and the data can use different backends and credentials:
+Resolve both schemas before building the request. A reference without a filesystem opens
+its URL through the fsspec-rs filesystem registry (`fsspec_rs::url_to_fs`), with the
+reference's options as storage options, so bare paths, `file://`, `s3://`, and any protocol
+the application registers work. Each reference can also carry its own filesystem, so the
+schemas and the data can use different backends and credentials:
 
 ```rust
 use std::sync::Arc;
