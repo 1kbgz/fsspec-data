@@ -1,11 +1,7 @@
 [build-system]
 requires = [
     "hatchling",
-<<<<<<< before updating
-    "hatch-rs>=0.2.1",
-=======
     "hatch-rs>=0.6.1",
->>>>>>> after updating
 ]
 build-backend = "hatchling.build"
 
@@ -50,12 +46,8 @@ develop = [
     "check-dist",
     "cibuildwheel",
     "codespell",
-<<<<<<< before updating
-=======
-    "hatch-rs>=0.6.1",
->>>>>>> after updating
     "hatchling",
-    "hatch-rs",
+    "hatch-rs>=0.6.1",
     "mdformat",
     "mdformat-myst",
     "mdformat-tables>=1",
