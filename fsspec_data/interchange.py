@@ -22,6 +22,26 @@ class DataFormat(str, Enum):
     JSONL = "jsonl"
     AVRO = "avro"
 
+    @classmethod
+    def from_path(cls, path: str) -> DataFormat | None:
+        """The format named by a path's suffix, such as ``.parquet`` or ``.ndjson``."""
+        name = path.rsplit("/", 1)[-1]
+        if "." not in name:
+            return None
+        return _SUFFIX_FORMATS.get(name.rsplit(".", 1)[-1].lower())
+
+
+_SUFFIX_FORMATS = {
+    "arrow": DataFormat.ARROW,
+    "ipc": DataFormat.ARROW,
+    "parquet": DataFormat.PARQUET,
+    "pq": DataFormat.PARQUET,
+    "csv": DataFormat.CSV,
+    "jsonl": DataFormat.JSONL,
+    "ndjson": DataFormat.JSONL,
+    "avro": DataFormat.AVRO,
+}
+
 
 class SchemaPolicy(str, Enum):
     EXACT = "exact"
