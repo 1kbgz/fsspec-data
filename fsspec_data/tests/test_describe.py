@@ -109,3 +109,26 @@ def test_a_catalog_backend_describes_metadata_at_every_level():
     assert rows(catalog.scan(curves.path)) == 3
     with pytest.raises(FacetNotSupportedError):
         catalog.open_raw(curves.path)
+
+
+def test_facets_a_source_does_not_implement_raise_facet_not_supported():
+    class Bare(DataSource):
+        def describe(self, path):
+            return Node(path, [])
+
+    source = Bare()
+    assert source.describe("x").facets == frozenset()
+    calls = [
+        (Facet.CHILDREN, source.children),
+        (Facet.TABLE, source.schema),
+        (Facet.TABLE, source.scan),
+        (Facet.RAW, source.open_raw),
+        (Facet.METADATA, source.metadata),
+    ]
+    for facet, call in calls:
+        with pytest.raises(FacetNotSupportedError) as error:
+            call("x")
+        assert error.value.facet is facet
+        assert str(error.value) == f"x has no {facet.value} facet"
+    with pytest.raises(NotImplementedError):
+        DataSource().describe("x")
