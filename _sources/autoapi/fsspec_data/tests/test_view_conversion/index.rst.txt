@@ -1,0 +1,71 @@
+fsspec_data.tests.test_view_conversion
+======================================
+
+.. py:module:: fsspec_data.tests.test_view_conversion
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_view_conversion.SCHEMA
+   fsspec_data.tests.test_view_conversion.SCHEMA_OPTIONS
+   fsspec_data.tests.test_view_conversion.ROWS
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_view_conversion.memory_fs
+   fsspec_data.tests.test_view_conversion.test_a_single_file_converts_with_a_provided_schema
+   fsspec_data.tests.test_view_conversion.test_a_single_file_converts_to_avro
+   fsspec_data.tests.test_view_conversion.test_conversion_streams_from_the_source_and_honors_limits
+   fsspec_data.tests.test_view_conversion.test_conversion_streams_batches_into_spooled_output
+   fsspec_data.tests.test_view_conversion.test_fsspec_urls_name_the_rendered_file_and_the_source
+   fsspec_data.tests.test_view_conversion.test_requested_schemas_project_embedded_schemas
+   fsspec_data.tests.test_view_conversion.test_conversions_replace_the_native_file_of_the_same_format
+   fsspec_data.tests.test_view_conversion.test_provided_schemas_must_match_embedded_schemas
+   fsspec_data.tests.test_view_conversion.test_converted_output_rolls_over_at_spool_limit
+   fsspec_data.tests.test_view_conversion.test_unmapped_names_are_not_found
+   fsspec_data.tests.test_view_conversion.test_schema_options_accept_a_field_sequence
+   fsspec_data.tests.test_view_conversion.test_invalid_schema_options_are_rejected
+
+
+Module Contents
+---------------
+
+.. py:data:: SCHEMA
+
+.. py:data:: SCHEMA_OPTIONS
+
+.. py:data:: ROWS
+
+.. py:function:: memory_fs()
+
+.. py:function:: test_a_single_file_converts_with_a_provided_schema(memory_fs)
+
+.. py:function:: test_a_single_file_converts_to_avro(memory_fs)
+
+.. py:function:: test_conversion_streams_from_the_source_and_honors_limits(memory_fs, monkeypatch)
+
+.. py:function:: test_conversion_streams_batches_into_spooled_output(memory_fs, monkeypatch)
+
+.. py:function:: test_fsspec_urls_name_the_rendered_file_and_the_source(memory_fs)
+
+.. py:function:: test_requested_schemas_project_embedded_schemas(memory_fs)
+
+.. py:function:: test_conversions_replace_the_native_file_of_the_same_format(memory_fs)
+
+.. py:function:: test_provided_schemas_must_match_embedded_schemas(memory_fs)
+
+.. py:function:: test_converted_output_rolls_over_at_spool_limit(memory_fs)
+
+.. py:function:: test_unmapped_names_are_not_found(memory_fs)
+
+.. py:function:: test_schema_options_accept_a_field_sequence(memory_fs)
+
+.. py:function:: test_invalid_schema_options_are_rejected(memory_fs, schema, error, message)
+

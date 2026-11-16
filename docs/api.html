@@ -191,11 +191,6 @@
     </a>
   </li>
   <li class="fd-tree-item">
-    <a class="fd-link" href="../autoapi/fsspec_data/filesystem/index.html">
-      <span class="fd-link-text">fsspec_data.filesystem</span>
-    </a>
-  </li>
-  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/interchange/index.html">
       <span class="fd-link-text">fsspec_data.interchange</span>
     </a>
@@ -241,11 +236,6 @@
     </a>
   </li>
   <li class="fd-tree-item">
-    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_filesystem/index.html">
-      <span class="fd-link-text">fsspec_data.tests.test_filesystem</span>
-    </a>
-  </li>
-  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_schema/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_schema</span>
     </a>
@@ -253,6 +243,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_view/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_view</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_view_conversion/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_view_conversion</span>
     </a>
   </li>
 </ul>
@@ -295,9 +290,6 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg><span>On this page</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg>
     </button>
     <div id="fd-toc-mobile" hidden><ul class="fd-toc-list">
-  <li class="fd-toc-item" data-depth="1">
-    <a href="#datafilesystem">DataFileSystem</a>
-  </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#dataviewfilesystem">DataViewFileSystem</a>
   </li>
@@ -409,51 +401,6 @@
       <div class="fd-prose">
   <section class="tex2jax_ignore mathjax_ignore" id="interchange-api-reference">
 <h1>Interchange API reference<a class="headerlink" href="#interchange-api-reference" title="Link to this heading">¶</a></h1>
-<section id="datafilesystem">
-<h2><code class="docutils literal notranslate"><span class="pre">DataFileSystem</span></code><a class="headerlink" href="#datafilesystem" title="Link to this heading">¶</a></h2>
-<p>Read-only chained filesystem registered as the <code class="docutils literal notranslate"><span class="pre">fsspec-data</span></code> protocol. The outer path names
-the requested representation; <code class="docutils literal notranslate"><span class="pre">fo</span></code> names the source object on the target filesystem.</p>
-<p>Constructor parameters:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">fo:</span> <span class="pre">str</span></code>: source object path or URL.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">target_protocol:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: protocol used to construct the target filesystem.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">target_options:</span> <span class="pre">dict</span> <span class="pre">|</span> <span class="pre">None</span></code>: options passed to the target filesystem.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">fs:</span> <span class="pre">AbstractFileSystem</span> <span class="pre">|</span> <span class="pre">None</span></code>: existing target filesystem. Mutually exclusive with
-<code class="docutils literal notranslate"><span class="pre">target_protocol</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">provided_format:</span> <span class="pre">DataFormat</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: source format. Inferred from <code class="docutils literal notranslate"><span class="pre">fo</span></code> when omitted.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">requested_format:</span> <span class="pre">DataFormat</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code>: output format. Inferred from the opened path
-when omitted.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">provided_schema</span></code>: source <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code>, nested schema options, or schema reference.
-Required for CSV and JSONL.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">requested_schema</span></code>: output <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code>, nested schema options, or schema reference.
-Defaults to the source schema.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">schema_policy:</span> <span class="pre">SchemaPolicy</span> <span class="pre">|</span> <span class="pre">str</span></code>: reconciliation policy. Defaults to <code class="docutils literal notranslate"><span class="pre">exact</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">renames</span></code>, <code class="docutils literal notranslate"><span class="pre">defaults</span></code>, <code class="docutils literal notranslate"><span class="pre">drop</span></code>, <code class="docutils literal notranslate"><span class="pre">casts</span></code>: field operations passed to
-<a class="reference internal" href="#plan_schemaprovided_schema-requested_schema-policy--renamesnone-defaultsnone-dropnone-castsnone"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">plan_schema</span></code></span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">batch_size:</span> <span class="pre">int</span></code>: maximum rows per decoded batch. Defaults to <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">row_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: maximum decoded rows.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">byte_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: maximum cumulative Arrow array memory in decoded batches.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">spool_max_size:</span> <span class="pre">int</span></code>: converted bytes retained in memory before the seekable output rolls
-over to a temporary file. Defaults to 8 MiB.</p></li>
-</ul>
-<p>Nested schema options have a <code class="docutils literal notranslate"><span class="pre">fields</span></code> list. Each field has <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">type</span></code>, and optional
-<code class="docutils literal notranslate"><span class="pre">nullable</span></code> keys. String types use PyArrow aliases such as <code class="docutils literal notranslate"><span class="pre">int64</span></code>, <code class="docutils literal notranslate"><span class="pre">string</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">timestamp[ms]</span></code>.</p>
-<p>Schema references can be <code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code> values, URL strings, or mappings with <code class="docutils literal notranslate"><span class="pre">url</span></code>,
-optional <code class="docutils literal notranslate"><span class="pre">format</span></code>, and optional <code class="docutils literal notranslate"><span class="pre">storage_options</span></code>. Their options apply only to the
-schema source. Supported formats, registry options, and JSON Schema restrictions
-are listed in <a class="reference internal" href="resources.html"><span class="std std-doc">Schema and converter reference</span></a>.</p>
-<p>After conversion starts, <code class="docutils literal notranslate"><span class="pre">provided_schema_provenance</span></code> and <code class="docutils literal notranslate"><span class="pre">requested_schema_provenance</span></code>
-describe resolved schema sources without exposing storage options.</p>
-<p>Recognized suffixes are <code class="docutils literal notranslate"><span class="pre">.arrow</span></code> and <code class="docutils literal notranslate"><span class="pre">.ipc</span></code> for Arrow IPC streams, <code class="docutils literal notranslate"><span class="pre">.parquet</span></code> and <code class="docutils literal notranslate"><span class="pre">.pq</span></code> for
-Parquet, <code class="docutils literal notranslate"><span class="pre">.csv</span></code> for CSV, <code class="docutils literal notranslate"><span class="pre">.jsonl</span></code> and <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code> for line-delimited JSON, and <code class="docutils literal notranslate"><span class="pre">.avro</span></code> for
-Avro object container files.</p>
-<p><code class="docutils literal notranslate"><span class="pre">open</span></code> accepts read mode and returns a seekable spooled file. Conversion reads from the source incrementally and finishes encoding output before
-returning the file. Row limits and cancellation may stop source reads before EOF.
-<code class="docutils literal notranslate"><span class="pre">info()</span></code> can trigger conversion to determine output size.</p>
-<p>See <a class="reference internal" href="how-to-chain-filesystems.html"><span class="std std-doc">How to convert a file through an fsspec chain</span></a> for usage.</p>
-<p>Schema values and resolver registries are described in <a class="reference internal" href="resources.html"><span class="std std-doc">Schema and converter reference</span></a>.</p>
-</section>
 <section id="dataviewfilesystem">
 <h2><code class="docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code><a class="headerlink" href="#dataviewfilesystem" title="Link to this heading">¶</a></h2>
 <p>Read-only view of a <a class="reference internal" href="#data-sources"><span class="xref myst">data source</span></a> registered as the <code class="docutils literal notranslate"><span class="pre">dataview</span></code> protocol. It
@@ -462,16 +409,36 @@ rows and metadata. Open a view with an outer path and the wrapped URL, such as
 <code class="docutils literal notranslate"><span class="pre">dataview://orders.parquet::s3://bucket/data</span></code>, or construct it directly.</p>
 <p>Constructor parameters:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">fo:</span> <span class="pre">str</span></code>: the root of the view on the wrapped filesystem.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fo:</span> <span class="pre">str</span></code>: the root of the view on the wrapped filesystem: a directory, or a single
+object whose renderings make up the view.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">target_protocol:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code> and <code class="docutils literal notranslate"><span class="pre">target_options:</span> <span class="pre">dict</span> <span class="pre">|</span> <span class="pre">None</span></code>: build the wrapped
 filesystem.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fs:</span> <span class="pre">AbstractFileSystem</span> <span class="pre">|</span> <span class="pre">None</span></code>: an existing wrapped filesystem. If it is a <code class="docutils literal notranslate"><span class="pre">DataSource</span></code>,
 the view uses its <code class="docutils literal notranslate"><span class="pre">describe</span></code>; otherwise it wraps it in <code class="docutils literal notranslate"><span class="pre">FileDataSource</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">source:</span> <span class="pre">DataSource</span> <span class="pre">|</span> <span class="pre">None</span></code>: a data source to view directly instead of a filesystem.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">mapping</span></code>: the forms to show for each facet. Defaults to <code class="docutils literal notranslate"><span class="pre">DEFAULT_MAPPING</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provided_schema</span></code>: the schema to decode CSV and JSONL sources with instead of inferring
+one, and to check self-describing sources against: a <code class="docutils literal notranslate"><span class="pre">pyarrow.Schema</span></code>, nested schema
+options, or a schema reference.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">requested_schema</span></code>: the output schema, in the same forms. Defaults to the source schema.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schema_policy:</span> <span class="pre">SchemaPolicy</span> <span class="pre">|</span> <span class="pre">str</span></code>: reconciliation policy. Defaults to <code class="docutils literal notranslate"><span class="pre">exact</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">renames</span></code>, <code class="docutils literal notranslate"><span class="pre">defaults</span></code>, <code class="docutils literal notranslate"><span class="pre">drop</span></code>, <code class="docutils literal notranslate"><span class="pre">casts</span></code>: field operations passed to
+<a class="reference internal" href="#plan_schemaprovided_schema-requested_schema-policy--renamesnone-defaultsnone-dropnone-castsnone"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">plan_schema</span></code></span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">batch_size:</span> <span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">row_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">byte_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: limits on the
+batches read from each table. <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">spool_max_size:</span> <span class="pre">int</span></code>: rendered bytes kept in memory before spilling to a temporary file.
 Defaults to 8 MiB.</p></li>
 </ul>
+<p>The schema options apply to every table the view converts, and a table’s schema file shows
+the converted schema. <code class="docutils literal notranslate"><span class="pre">converts</span></code> is true when any schema option is set. With any of them set, a conversion to the source’s own format replaces
+the native file of the same name. After a table is converted, <code class="docutils literal notranslate"><span class="pre">provided_schema_provenance</span></code>
+and <code class="docutils literal notranslate"><span class="pre">requested_schema_provenance</span></code> describe the resolved schema sources without exposing
+storage options.</p>
+<p>Nested schema options have a <code class="docutils literal notranslate"><span class="pre">fields</span></code> list. Each field has <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">type</span></code>, and optional
+<code class="docutils literal notranslate"><span class="pre">nullable</span></code> keys. String types use PyArrow aliases such as <code class="docutils literal notranslate"><span class="pre">int64</span></code>, <code class="docutils literal notranslate"><span class="pre">string</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">timestamp[ms]</span></code>. Schema references can be <code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code> values, URL strings, or mappings with
+<code class="docutils literal notranslate"><span class="pre">url</span></code>, optional <code class="docutils literal notranslate"><span class="pre">format</span></code>, and optional <code class="docutils literal notranslate"><span class="pre">storage_options</span></code>; see
+<a class="reference internal" href="resources.html"><span class="std std-doc">Schema and converter reference</span></a>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">fs</span></code>, <code class="docutils literal notranslate"><span class="pre">target_protocol</span></code>, and <code class="docutils literal notranslate"><span class="pre">source</span></code> are mutually exclusive.</p>
 <p><code class="docutils literal notranslate"><span class="pre">DEFAULT_MAPPING</span></code> is
 <code class="docutils literal notranslate"><span class="pre">{&quot;table&quot;:</span> <span class="pre">[&quot;raw&quot;,</span> <span class="pre">&quot;parquet&quot;],</span> <span class="pre">&quot;raw&quot;:</span> <span class="pre">[&quot;raw&quot;],</span> <span class="pre">&quot;metadata&quot;:</span> <span class="pre">[&quot;json&quot;],</span> <span class="pre">&quot;schema&quot;:</span> <span class="pre">[&quot;json&quot;],</span> <span class="pre">&quot;index&quot;:</span> <span class="pre">[&quot;json&quot;]}</span></code>.
@@ -759,7 +726,7 @@ to. Python exposes it through the <code class="docutils literal notranslate"><sp
 <code class="docutils literal notranslate"><span class="pre">DEFAULT_SCHEMA_RESOLVERS</span></code> is used when it is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 <p>Schema references are <code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code> values, URL strings, or mappings with <code class="docutils literal notranslate"><span class="pre">url</span></code>, <code class="docutils literal notranslate"><span class="pre">format</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">storage_options</span></code>, as accepted by <code class="docutils literal notranslate"><span class="pre">DataFileSystem</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">storage_options</span></code>, as accepted by <code class="docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code>.</p>
 <section id="plan">
 <h3><code class="docutils literal notranslate"><span class="pre">plan()</span></code><a class="headerlink" href="#plan" title="Link to this heading">¶</a></h3>
 <p>Resolves schema references, validates registered source and target codecs, and returns
@@ -937,9 +904,6 @@ anything else.</p>
       <path class="fd-toc-track" fill="none" />
       <path class="fd-toc-thumb" fill="none" />
     </svg><ul class="fd-toc-list">
-  <li class="fd-toc-item" data-depth="1">
-    <a href="#datafilesystem">DataFileSystem</a>
-  </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#dataviewfilesystem">DataViewFileSystem</a>
   </li>

@@ -191,11 +191,6 @@
     </a>
   </li>
   <li class="fd-tree-item">
-    <a class="fd-link" href="../autoapi/fsspec_data/filesystem/index.html">
-      <span class="fd-link-text">fsspec_data.filesystem</span>
-    </a>
-  </li>
-  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/interchange/index.html">
       <span class="fd-link-text">fsspec_data.interchange</span>
     </a>
@@ -241,11 +236,6 @@
     </a>
   </li>
   <li class="fd-tree-item">
-    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_filesystem/index.html">
-      <span class="fd-link-text">fsspec_data.tests.test_filesystem</span>
-    </a>
-  </li>
-  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_schema/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_schema</span>
     </a>
@@ -253,6 +243,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_view/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_view</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_view_conversion/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_view_conversion</span>
     </a>
   </li>
 </ul>
@@ -314,7 +309,7 @@
   <section class="tex2jax_ignore mathjax_ignore" id="how-to-resolve-schemas-from-files-and-registries">
 <h1>How to resolve schemas from files and registries<a class="headerlink" href="#how-to-resolve-schemas-from-files-and-registries" title="Link to this heading">¶</a></h1>
 <p>Use separate schema references when data, source schema, and requested schema live
-in different locations. Pass references to <code class="docutils literal notranslate"><span class="pre">DataFileSystem</span></code> through
+in different locations. Pass references to <code class="docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code> through
 <code class="docutils literal notranslate"><span class="pre">provided_schema</span></code> or <code class="docutils literal notranslate"><span class="pre">requested_schema</span></code>.</p>
 <section id="read-a-schema-file">
 <h2>Read a schema file<a class="headerlink" href="#read-a-schema-file" title="Link to this heading">¶</a></h2>
@@ -351,7 +346,7 @@ schema bytes or an Arrow IPC stream.</p>
     <span class="s2">"storage_options"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"profile"</span><span class="p">:</span> <span class="s2">"output-schema-reader"</span><span class="p">},</span>
 <span class="p">}</span>
 <span class="k">with</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
-    <span class="s2">"fsspec-data://orders.parquet::s3://input-data/orders.csv"</span><span class="p">,</span>
+    <span class="s2">"dataview://orders.parquet::s3://input-data/orders.csv"</span><span class="p">,</span>
     <span class="s2">"rb"</span><span class="p">,</span>
     <span class="n">provided_schema</span><span class="o">=</span><span class="n">provided_schema</span><span class="p">,</span>
     <span class="n">requested_schema</span><span class="o">=</span><span class="n">requested_schema</span><span class="p">,</span>

@@ -191,11 +191,6 @@
     </a>
   </li>
   <li class="fd-tree-item">
-    <a class="fd-link" href="../autoapi/fsspec_data/filesystem/index.html">
-      <span class="fd-link-text">fsspec_data.filesystem</span>
-    </a>
-  </li>
-  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/interchange/index.html">
       <span class="fd-link-text">fsspec_data.interchange</span>
     </a>
@@ -241,11 +236,6 @@
     </a>
   </li>
   <li class="fd-tree-item">
-    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_filesystem/index.html">
-      <span class="fd-link-text">fsspec_data.tests.test_filesystem</span>
-    </a>
-  </li>
-  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_schema/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_schema</span>
     </a>
@@ -253,6 +243,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_view/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_view</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_view_conversion/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_view_conversion</span>
     </a>
   </li>
 </ul>
@@ -316,8 +311,10 @@
       <div class="fd-prose">
   <section class="tex2jax_ignore mathjax_ignore" id="how-to-convert-a-file-through-an-fsspec-chain">
 <h1>How to convert a file through an fsspec chain<a class="headerlink" href="#how-to-convert-a-file-through-an-fsspec-chain" title="Link to this heading">¶</a></h1>
-<p>Place the requested representation on the left and the source object on the right.
-CSV and JSONL input require a schema; Arrow IPC and Parquet carry their own.</p>
+<p>Open a <code class="docutils literal notranslate"><span class="pre">dataview</span></code> URL with the file you want on the left and its source on the right. The
+source can be a single object or a directory. Arrow IPC and Parquet carry their own schema;
+CSV and JSONL schemas are inferred from the start of the file unless you pass
+<code class="docutils literal notranslate"><span class="pre">provided_schema</span></code>.</p>
 <section id="convert-csv-to-parquet">
 <h2>Convert CSV to Parquet<a class="headerlink" href="#convert-csv-to-parquet" title="Link to this heading">¶</a></h2>
 <p>Create source bytes on an in-memory filesystem and open the converted view:</p>
@@ -334,7 +331,7 @@ CSV and JSONL input require a schema; Arrow IPC and Parquet carry their own.</p>
         <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"nullable"</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
     <span class="p">]</span>
 <span class="p">}</span>
-<span class="n">url</span> <span class="o">=</span> <span class="s2">"fsspec-data://orders.parquet::memory://orders.csv"</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">"dataview://orders.parquet::memory://orders.csv"</span>
 <span class="k">with</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">,</span> <span class="n">provided_schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">orders</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">orders</span><span class="o">.</span><span class="n">to_pylist</span><span class="p">())</span>
@@ -390,16 +387,17 @@ names; defaults fill requested fields that have no source; <code class="docutils
 </section>
 <section id="keep-backend-options-scoped">
 <h2>Keep backend options scoped<a class="headerlink" href="#keep-backend-options-scoped" title="Link to this heading">¶</a></h2>
-<p>For a database source, pass connection settings under its protocol:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">"fsspec-data://orders.parquet::db+duckdb:///main/orders.arrow"</span>
+<p>For a database source, view a schema directory and pass connection settings under the
+database’s protocol:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">"dataview://orders.parquet::db+duckdb:///main"</span>
 <span class="k">with</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">"db+duckdb"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"database"</span><span class="p">:</span> <span class="s2">"warehouse.duckdb"</span><span class="p">}})</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">orders</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Use <code class="docutils literal notranslate"><span class="pre">provided_format</span></code> or <code class="docutils literal notranslate"><span class="pre">requested_format</span></code> when a filename lacks a recognized
-suffix. To load schemas independently of the data, follow
-<a class="reference internal" href="how-to-resolve-schemas.html"><span class="std std-doc">How to resolve schemas from files and registries</span></a>.
-See <a class="reference internal" href="api.html"><span class="std std-doc">DataFileSystem reference</span></a> for limits and buffering.</p>
+<p>The schema options apply to every table the view converts. To load schemas independently
+of the data, follow
+<a class="reference internal" href="how-to-resolve-schemas.html"><span class="std std-doc">How to resolve schemas from files and registries</span></a>. See the
+<a class="reference internal" href="api.html#dataviewfilesystem"><span class="std std-ref"><code class="docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code> reference</span></a> for limits and buffering.</p>
 </section>
 </section>
 

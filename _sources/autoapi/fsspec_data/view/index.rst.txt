@@ -73,7 +73,7 @@ Module Contents
 
 
 
-.. py:class:: DataViewFileSystem(fo: str = '', target_protocol: str | None = None, target_options: dict[str, Any] | None = None, fs: fsspec.AbstractFileSystem | None = None, source: fsspec_data.describe.DataSource | None = None, mapping: collections.abc.Mapping[str, collections.abc.Sequence[str]] | None = None, spool_max_size: int = 8 * 1024 * 1024, **kwargs: Any)
+.. py:class:: DataViewFileSystem(fo: str = '', target_protocol: str | None = None, target_options: dict[str, Any] | None = None, fs: fsspec.AbstractFileSystem | None = None, source: fsspec_data.describe.DataSource | None = None, mapping: collections.abc.Mapping[str, collections.abc.Sequence[str]] | None = None, provided_schema: fsspec_data.schema.SchemaInput = None, requested_schema: fsspec_data.schema.SchemaInput = None, schema_policy: fsspec_data.interchange.SchemaPolicy | str = SchemaPolicy.EXACT, renames: collections.abc.Mapping[str, str] | None = None, defaults: collections.abc.Mapping[str, Any] | None = None, drop: collections.abc.Sequence[str] | None = None, casts: collections.abc.Mapping[str, str] | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, spool_max_size: int = 8 * 1024 * 1024, **kwargs: Any)
 
    Bases: :py:obj:`fsspec.implementations.chained.ChainedFileSystem`
 
@@ -141,6 +141,66 @@ Module Contents
 
 
    .. py:attribute:: mapping
+
+
+   .. py:attribute:: provided_schema
+      :value: None
+
+
+
+   .. py:attribute:: requested_schema
+      :value: None
+
+
+
+   .. py:attribute:: schema_policy
+
+
+   .. py:attribute:: renames
+      :value: None
+
+
+
+   .. py:attribute:: defaults
+      :value: None
+
+
+
+   .. py:attribute:: drop
+      :value: None
+
+
+
+   .. py:attribute:: casts
+      :value: None
+
+
+
+   .. py:attribute:: batch_size
+      :value: 1024
+
+
+
+   .. py:attribute:: row_limit
+      :value: None
+
+
+
+   .. py:attribute:: byte_limit
+      :value: None
+
+
+
+   .. py:attribute:: provided_schema_provenance
+      :type:  fsspec_data.schema.SchemaProvenance | None
+      :value: None
+
+
+
+   .. py:attribute:: requested_schema_provenance
+      :type:  fsspec_data.schema.SchemaProvenance | None
+      :value: None
+
 
 
    .. py:attribute:: spool_max_size
@@ -265,6 +325,20 @@ Module Contents
 
 
    .. py:method:: _entry_for(node: fsspec_data.describe.Node, name: str, facet: str, form: str) -> ViewEntry
+
+
+   .. py:property:: converts
+      :type: bool
+
+
+      Whether the view applies schema options to the tables it renders, so their rows differ
+      from the source's.
+
+
+   .. py:method:: _rows(node: fsspec_data.describe.Node) -> tuple[pyarrow.Schema, Any]
+
+      The schema and batches a table renders, after the view's schema options.
+
 
 
    .. py:method:: _render(entry: ViewEntry, output) -> None
