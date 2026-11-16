@@ -20,6 +20,7 @@ Submodules
    /autoapi/fsspec_data/json_schema/index
    /autoapi/fsspec_data/schema/index
    /autoapi/fsspec_data/tests/index
+   /autoapi/fsspec_data/view/index
    /autoapi/fsspec_data/xarray_zarr/index
 
 
@@ -32,6 +33,7 @@ Attributes
    fsspec_data.DEFAULT_CONVERTERS
    fsspec_data.DEFAULT_REGISTRY
    fsspec_data.DEFAULT_SCHEMA_RESOLVERS
+   fsspec_data.DEFAULT_MAPPING
    fsspec_data.__version__
 
 
@@ -73,6 +75,8 @@ Classes
    fsspec_data.SchemaProvenance
    fsspec_data.SchemaRef
    fsspec_data.SchemaResolverRegistry
+   fsspec_data.DataViewFileSystem
+   fsspec_data.ViewEntry
 
 
 Functions
@@ -986,6 +990,230 @@ Package Contents
 
 
 .. py:function:: resolve_schema(value: pyarrow.Schema | SchemaRef | None, registry: SchemaResolverRegistry | None = None) -> ResolvedSchema | None
+
+.. py:data:: DEFAULT_MAPPING
+   :type:  dict[str, list[str]]
+
+.. py:class:: DataViewFileSystem(fo: str = '', target_protocol: str | None = None, target_options: dict[str, Any] | None = None, fs: fsspec.AbstractFileSystem | None = None, source: fsspec_data.describe.DataSource | None = None, mapping: collections.abc.Mapping[str, collections.abc.Sequence[str]] | None = None, spool_max_size: int = 8 * 1024 * 1024, **kwargs: Any)
+
+   Bases: :py:obj:`fsspec.implementations.chained.ChainedFileSystem`
+
+
+   Read-only view of a data source, rendering each node's facets as files.
+
+   ``mapping`` lists the forms to show for each facet, for example
+   ``{"table": ["raw", "parquet"], "metadata": ["json"]}``; facets it leaves out are not
+   shown. A container becomes a directory, a table ``N.parquet`` (``raw`` keeps the
+   native file), metadata ``N.metadata.json``, a table's schema ``N.schema.json``, and a
+   container's index of its children ``N.json``.
+
+   Create and configure file-system instance
+
+   Instances may be cachable, so if similar enough arguments are seen
+   a new instance is not required. The token attribute exists to allow
+   implementations to cache instances if they wish.
+
+   A reasonable default should be provided if there are no arguments.
+
+   Subclasses should call this method.
+
+   :param use_listings_cache: passed to ``DirCache``, if the implementation supports
+                              directory listing caching. Pass use_listings_cache=False
+                              to disable such caching.
+   :param listings_expiry_time: passed to ``DirCache``, if the implementation supports
+                                directory listing caching. Pass use_listings_cache=False
+                                to disable such caching.
+   :param max_paths: passed to ``DirCache``, if the implementation supports
+                     directory listing caching. Pass use_listings_cache=False
+                     to disable such caching.
+   :param skip_instance_cache: If this is a cachable implementation, pass True here to force
+                               creating a new instance even if a matching instance exists, and prevent
+                               storing this instance.
+   :type skip_instance_cache: bool
+   :param asynchronous:
+   :type asynchronous: bool
+   :param loop:
+   :type loop: asyncio-compatible IOLoop or None
+
+
+   .. py:attribute:: protocol
+      :value: 'dataview'
+
+
+
+   .. py:attribute:: cachable
+      :value: False
+
+
+
+   .. py:attribute:: fs
+      :value: None
+
+
+
+   .. py:attribute:: source
+      :value: None
+
+
+
+   .. py:attribute:: root
+      :value: ''
+
+
+
+   .. py:attribute:: mapping
+
+
+   .. py:attribute:: spool_max_size
+      :value: 8388608
+
+
+
+   .. py:attribute:: _listings
+      :type:  dict[str, dict[str, ViewEntry]]
+
+
+   .. py:attribute:: _sizes
+      :type:  dict[str, int]
+
+
+   .. py:method:: resolve(path: str) -> ViewEntry
+
+      The node, facet, and form a view path renders.
+
+
+
+   .. py:method:: ls(path: str, detail: bool = True, **kwargs: Any)
+
+      List objects at path.
+
+      This should include subdirectories and files at that location. The
+      difference between a file and a directory must be clear when details
+      are requested.
+
+      The specific keys, or perhaps a FileInfo class, or similar, is TBD,
+      but must be consistent across implementations.
+      Must include:
+
+      - full path to the entry (without protocol)
+      - size of the entry, in bytes. If the value cannot be determined, will
+        be ``None``.
+      - type of entry, "file", "directory" or other
+
+      Additional information
+      may be present, appropriate to the file-system, e.g., generation,
+      checksum, etc.
+
+      May use refresh=True|False to allow use of self._ls_from_cache to
+      check for a saved listing and avoid calling the backend. This would be
+      common where listing may be expensive.
+
+      :param path:
+      :type path: str
+      :param detail: if True, gives a list of dictionaries, where each is the same as
+                     the result of ``info(path)``. If False, gives a list of paths
+                     (str).
+      :type detail: bool
+      :param kwargs: information
+      :type kwargs: may have additional backend-specific options, such as version
+
+      :returns: * *List of strings if detail is False, or list of directory information*
+                * *dicts if detail is True.*
+
+
+
+   .. py:method:: info(path: str, **kwargs: Any) -> dict[str, Any]
+
+      Give details of entry at path
+
+      Returns a single dictionary, with exactly the same information as ``ls``
+      would with ``detail=True``.
+
+      The default implementation calls ls and could be overridden by a
+      shortcut. kwargs are passed on to ```ls()``.
+
+      Some file systems might not be able to measure the file's size, in
+      which case, the returned dict will include ``'size': None``.
+
+      :returns: * **dict with keys** (*name (full path in the FS), size (in bytes), type (file,*)
+                * *directory, or something else) and other FS-specific keys.*
+
+
+
+   .. py:method:: invalidate_cache(path: str | None = None) -> None
+
+      Discard any cached directory information
+
+      :param path: If None, clear all listings cached else listings at or under given
+                   path.
+      :type path: string or None
+
+
+
+   .. py:method:: _open(path: str, mode: str = 'rb', block_size: int | None = None, autocommit: bool = True, cache_options: dict[str, Any] | None = None, **kwargs: Any)
+
+      Return raw bytes-mode file-like from the file-system
+
+
+
+   .. py:method:: _info(path: str, entry: ViewEntry) -> dict[str, Any]
+
+
+   .. py:method:: _source_dir(path: str) -> str
+
+
+   .. py:method:: _entries(source_dir: str) -> dict[str, ViewEntry]
+
+
+   .. py:method:: _unlisted(source_dir: str, name: str) -> ViewEntry | None
+
+      Resolves a name no listing returns by describing the node it would come from.
+
+
+
+   .. py:method:: _render_node(node: fsspec_data.describe.Node, base: str) -> list[ViewEntry]
+
+      The view entries for one node, named after ``base``.
+
+
+
+   .. py:method:: _entry_for(node: fsspec_data.describe.Node, name: str, facet: str, form: str) -> ViewEntry
+
+
+   .. py:method:: _render(entry: ViewEntry, output) -> None
+
+
+   .. py:method:: _index_row(node: fsspec_data.describe.Node) -> dict[str, Any]
+
+
+.. py:class:: ViewEntry
+
+   A file or directory of a data view and what it renders. ``facet`` is ``children``,
+   ``table``, ``raw``, ``metadata``, ``schema``, or ``index``; ``form`` is ``dir``, ``raw``,
+   or a format name. ``url`` is the node's URL on the wrapped filesystem, when known.
+
+
+   .. py:attribute:: name
+      :type:  str
+
+
+   .. py:attribute:: node
+      :type:  fsspec_data.describe.Node
+
+
+   .. py:attribute:: facet
+      :type:  str
+
+
+   .. py:attribute:: form
+      :type:  str
+
+
+   .. py:attribute:: url
+      :type:  str | None
+      :value: None
+
+
 
 .. py:data:: __version__
    :value: '0.6.0'

@@ -1,0 +1,95 @@
+fsspec_data.tests.test_view
+===========================
+
+.. py:module:: fsspec_data.tests.test_view
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_view.Catalog
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_view.memory
+   fsspec_data.tests.test_view.view
+   fsspec_data.tests.test_view.read
+   fsspec_data.tests.test_view.test_default_mapping_lists_native_files_conversions_and_metadata
+   fsspec_data.tests.test_view.test_rendered_files_hold_converted_rows_schemas_and_metadata
+   fsspec_data.tests.test_view.test_mapping_decides_what_appears
+   fsspec_data.tests.test_view.test_two_nodes_rendering_one_name_is_an_error
+   fsspec_data.tests.test_view.test_resolve_maps_view_paths_back_to_nodes
+   fsspec_data.tests.test_view.test_views_open_through_fsspec_urls
+   fsspec_data.tests.test_view.test_a_catalog_renders_datasets_and_metadata_at_every_level
+   fsspec_data.tests.test_view.test_views_check_arguments_paths_and_forms
+
+
+Module Contents
+---------------
+
+.. py:function:: memory()
+
+.. py:function:: view(fs, **options)
+
+.. py:function:: read(fs, path)
+
+.. py:function:: test_default_mapping_lists_native_files_conversions_and_metadata(memory)
+
+.. py:function:: test_rendered_files_hold_converted_rows_schemas_and_metadata(memory)
+
+.. py:function:: test_mapping_decides_what_appears(memory)
+
+.. py:function:: test_two_nodes_rendering_one_name_is_an_error(memory)
+
+.. py:function:: test_resolve_maps_view_paths_back_to_nodes(memory)
+
+.. py:function:: test_views_open_through_fsspec_urls(memory)
+
+.. py:class:: Catalog
+
+   Bases: :py:obj:`fsspec_data.DataSource`
+
+
+   A data catalog: ``category/team/datasets/{name}`` datasets with tags at every level.
+   ``.../datasets/archive`` exists but is never listed.
+
+
+   .. py:attribute:: tags
+      :type:  ClassVar[dict[str, dict[str, str]]]
+
+
+   .. py:attribute:: curves
+
+
+   .. py:method:: describe(path)
+
+      Describes the node at ``path``, including paths that no listing returns.
+
+
+
+   .. py:method:: children(path)
+
+      The children of a container. Encoded aliases of other nodes are left out, so a
+      view does not show the same rows twice.
+
+
+
+   .. py:method:: schema(path)
+
+
+   .. py:method:: scan(path, **options)
+
+
+   .. py:method:: metadata(path)
+
+
+.. py:function:: test_a_catalog_renders_datasets_and_metadata_at_every_level()
+
+.. py:function:: test_views_check_arguments_paths_and_forms(memory)
+

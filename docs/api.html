@@ -250,8 +250,18 @@
       <span class="fd-link-text">fsspec_data.tests.test_schema</span>
     </a>
   </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_view/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_view</span>
+    </a>
+  </li>
 </ul>
     </details>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/view/index.html">
+      <span class="fd-link-text">fsspec_data.view</span>
+    </a>
   </li>
   <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/xarray_zarr/index.html">
@@ -287,6 +297,12 @@
     <div id="fd-toc-mobile" hidden><ul class="fd-toc-list">
   <li class="fd-toc-item" data-depth="1">
     <a href="#datafilesystem">DataFileSystem</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#dataviewfilesystem">DataViewFileSystem</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#resolve-path">resolve(path)</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#dataformat">DataFormat</a>
@@ -437,6 +453,81 @@ returning the file. Row limits and cancellation may stop source reads before EOF
 <code class="docutils literal notranslate"><span class="pre">info()</span></code> can trigger conversion to determine output size.</p>
 <p>See <a class="reference internal" href="how-to-chain-filesystems.html"><span class="std std-doc">How to convert a file through an fsspec chain</span></a> for usage.</p>
 <p>Schema values and resolver registries are described in <a class="reference internal" href="resources.html"><span class="std std-doc">Schema and converter reference</span></a>.</p>
+</section>
+<section id="dataviewfilesystem">
+<h2><code class="docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code><a class="headerlink" href="#dataviewfilesystem" title="Link to this heading">¶</a></h2>
+<p>Read-only view of a <a class="reference internal" href="#data-sources"><span class="xref myst">data source</span></a> registered as the <code class="docutils literal notranslate"><span class="pre">dataview</span></code> protocol. It
+renders each node’s facets as files, so ordinary fsspec tools and mounts can read a backend’s
+rows and metadata. Open a view with an outer path and the wrapped URL, such as
+<code class="docutils literal notranslate"><span class="pre">dataview://orders.parquet::s3://bucket/data</span></code>, or construct it directly.</p>
+<p>Constructor parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fo:</span> <span class="pre">str</span></code>: the root of the view on the wrapped filesystem.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target_protocol:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code> and <code class="docutils literal notranslate"><span class="pre">target_options:</span> <span class="pre">dict</span> <span class="pre">|</span> <span class="pre">None</span></code>: build the wrapped
+filesystem.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fs:</span> <span class="pre">AbstractFileSystem</span> <span class="pre">|</span> <span class="pre">None</span></code>: an existing wrapped filesystem. If it is a <code class="docutils literal notranslate"><span class="pre">DataSource</span></code>,
+the view uses its <code class="docutils literal notranslate"><span class="pre">describe</span></code>; otherwise it wraps it in <code class="docutils literal notranslate"><span class="pre">FileDataSource</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source:</span> <span class="pre">DataSource</span> <span class="pre">|</span> <span class="pre">None</span></code>: a data source to view directly instead of a filesystem.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mapping</span></code>: the forms to show for each facet. Defaults to <code class="docutils literal notranslate"><span class="pre">DEFAULT_MAPPING</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">spool_max_size:</span> <span class="pre">int</span></code>: rendered bytes kept in memory before spilling to a temporary file.
+Defaults to 8 MiB.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">fs</span></code>, <code class="docutils literal notranslate"><span class="pre">target_protocol</span></code>, and <code class="docutils literal notranslate"><span class="pre">source</span></code> are mutually exclusive.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DEFAULT_MAPPING</span></code> is
+<code class="docutils literal notranslate"><span class="pre">{&quot;table&quot;:</span> <span class="pre">[&quot;raw&quot;,</span> <span class="pre">&quot;parquet&quot;],</span> <span class="pre">&quot;raw&quot;:</span> <span class="pre">[&quot;raw&quot;],</span> <span class="pre">&quot;metadata&quot;:</span> <span class="pre">[&quot;json&quot;],</span> <span class="pre">&quot;schema&quot;:</span> <span class="pre">[&quot;json&quot;],</span> <span class="pre">&quot;index&quot;:</span> <span class="pre">[&quot;json&quot;]}</span></code>.
+A mapping shows only the facets it names. For a node named <code class="docutils literal notranslate"><span class="pre">N</span></code> (a table’s native suffix is
+dropped, so <code class="docutils literal notranslate"><span class="pre">orders.csv</span></code> gives <code class="docutils literal notranslate"><span class="pre">orders</span></code>):</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Facet</p></th>
+<th class="head"><p>Forms</p></th>
+<th class="head"><p>Rendered as</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>children</p></td>
+<td><p>always</p></td>
+<td><p>directory <code class="docutils literal notranslate"><span class="pre">N/</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">table</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">raw</span></code>, <code class="docutils literal notranslate"><span class="pre">arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">parquet</span></code>, <code class="docutils literal notranslate"><span class="pre">csv</span></code>, <code class="docutils literal notranslate"><span class="pre">jsonl</span></code>, <code class="docutils literal notranslate"><span class="pre">avro</span></code>, <code class="docutils literal notranslate"><span class="pre">json</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">N.parquet</span></code>, …; <code class="docutils literal notranslate"><span class="pre">raw</span></code> keeps the native file</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">raw</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">raw</span></code></p></td>
+<td><p>the file unchanged, for nodes that are not tables</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">N.metadata.json</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">schema</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">N.schema.json</span></code>, for tables</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">index</span></code></p></td>
+<td><p>the table forms except <code class="docutils literal notranslate"><span class="pre">raw</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">N.json</span></code>, …, for containers that are not tables</p></td>
+</tr>
+</tbody>
+</table>
+<p>A table format equal to the node’s native format is not repeated when <code class="docutils literal notranslate"><span class="pre">raw</span></code> is listed. The
+root’s metadata and index use an empty name: <code class="docutils literal notranslate"><span class="pre">.metadata.json</span></code> and <code class="docutils literal notranslate"><span class="pre">.json</span></code>. An index has one
+row per child with its <code class="docutils literal notranslate"><span class="pre">name</span></code> and metadata. A schema file holds <code class="docutils literal notranslate"><span class="pre">fields</span></code>, each with <code class="docutils literal notranslate"><span class="pre">name</span></code>,
+PyArrow <code class="docutils literal notranslate"><span class="pre">type</span></code>, and <code class="docutils literal notranslate"><span class="pre">nullable</span></code>, the same shape a requested schema accepts. <code class="docutils literal notranslate"><span class="pre">json</span></code> forms are
+indented JSON; a table rendered as <code class="docutils literal notranslate"><span class="pre">json</span></code> is a list of row objects.</p>
+<p>Two nodes that render the same name in one directory raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when the directory is
+listed. A name that no listing returns is resolved by describing the node it would come from,
+so unlisted backend paths still open.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ls</span></code> reports <code class="docutils literal notranslate"><span class="pre">None</span></code> as the size of files that are not rendered yet; <code class="docutils literal notranslate"><span class="pre">info</span></code> renders a file to
+find its size. Listings are cached on the instance until <code class="docutils literal notranslate"><span class="pre">invalidate_cache()</span></code>; instances are
+not shared between calls.</p>
+<section id="resolve-path">
+<h3><code class="docutils literal notranslate"><span class="pre">resolve(path)</span></code><a class="headerlink" href="#resolve-path" title="Link to this heading">¶</a></h3>
+<p>Returns the <code class="docutils literal notranslate"><span class="pre">ViewEntry</span></code> a view path renders: <code class="docutils literal notranslate"><span class="pre">name</span></code>, the source <code class="docutils literal notranslate"><span class="pre">node</span></code>, <code class="docutils literal notranslate"><span class="pre">facet</span></code> (<code class="docutils literal notranslate"><span class="pre">children</span></code>,
+<code class="docutils literal notranslate"><span class="pre">table</span></code>, <code class="docutils literal notranslate"><span class="pre">raw</span></code>, <code class="docutils literal notranslate"><span class="pre">metadata</span></code>, <code class="docutils literal notranslate"><span class="pre">schema</span></code>, or <code class="docutils literal notranslate"><span class="pre">index</span></code>), <code class="docutils literal notranslate"><span class="pre">form</span></code> (<code class="docutils literal notranslate"><span class="pre">dir</span></code>, <code class="docutils literal notranslate"><span class="pre">raw</span></code>, or a format), and
+<code class="docutils literal notranslate"><span class="pre">url</span></code>, the node’s URL on the wrapped filesystem when the view wraps one.</p>
+</section>
 </section>
 <section id="dataformat">
 <h2><code class="docutils literal notranslate"><span class="pre">DataFormat</span></code><a class="headerlink" href="#dataformat" title="Link to this heading">¶</a></h2>
@@ -848,6 +939,12 @@ anything else.</p>
     </svg><ul class="fd-toc-list">
   <li class="fd-toc-item" data-depth="1">
     <a href="#datafilesystem">DataFileSystem</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#dataviewfilesystem">DataViewFileSystem</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#resolve-path">resolve(path)</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#dataformat">DataFormat</a>
