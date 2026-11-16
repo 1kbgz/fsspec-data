@@ -378,3 +378,29 @@ plan = plan_schema(
     drop=["legacy"],
 )
 ```
+
+## Rust data sources
+
+`DataSource` is the contract a backend implements so its nodes can be rendered as files.
+`describe(path)` returns a `Node` with its `path`, a set of `Facet`s, and a `native_format`
+when the node's raw bytes already encode its rows. `describe` also resolves paths that no
+listing returns.
+
+| Facet      | Method                                              | Returns                                |
+| ---------- | --------------------------------------------------- | -------------------------------------- |
+| `Children` | `children(path)`                                    | child `Node`s, without encoded aliases |
+| `Table`    | `schema(path)`, `scan(path, options, cancellation)` | Arrow schema, `DecodedStream`          |
+| `Raw`      | `open_raw(path)`                                    | a `CodecReader` over the native bytes  |
+| `Metadata` | `metadata(path)`                                    | a JSON object (`Metadata`)             |
+
+Any node may offer metadata, including directories and the root. A method for a facet the
+node does not offer returns `InterchangeError::FacetNotSupported`.
+
+`FileDataSource::new(fs)` describes any `fsspec_rs` filesystem. Directories have `Children`
+and `Metadata`. Files have `Raw` and `Metadata`, plus `Table` when `DataFormat::from_path`
+recognizes the suffix. CSV and JSONL schemas are inferred from the first `sample_size` bytes
+(1 MiB by default). Metadata holds `size` for files, `created` and `mtime` in seconds since
+the Unix epoch when known, and the filesystem's extra fields as strings.
+
+`DataFormat::from_path(path)` maps `.arrow`, `.ipc`, `.parquet`, `.pq`, `.csv`, `.jsonl`,
+`.ndjson`, and `.avro` to a format and returns `None` for anything else.

@@ -3,6 +3,7 @@ mod codec;
 #[cfg(feature = "confluent")]
 mod confluent;
 mod converter;
+mod describe;
 mod error;
 mod json_schema;
 mod plan;
@@ -19,6 +20,7 @@ pub use confluent::{
     fetch_confluent_schema, fetch_confluent_versions, ConfluentProvider, ConfluentSchemaDocument,
 };
 pub use converter::{ConversionEndpoint, Converter, ConverterRegistry};
+pub use describe::{DataSource, Facet, FileDataSource, Metadata, Node};
 pub use error::{InterchangeError, Result};
 pub use json_schema::json_schema_to_arrow;
 pub use plan::{
