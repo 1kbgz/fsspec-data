@@ -35,7 +35,7 @@ from .schema import (
 )
 from .view import DEFAULT_MAPPING, DataViewFileSystem, ViewEntry
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 __all__ = [
     "CONVERTER_ENTRY_POINT_GROUP",
