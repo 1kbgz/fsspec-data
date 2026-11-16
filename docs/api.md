@@ -52,6 +52,61 @@ See [How to convert a file through an fsspec chain](how-to-chain-filesystems.md)
 
 Schema values and resolver registries are described in [Schema and converter reference](resources.md).
 
+## `DataViewFileSystem`
+
+Read-only view of a [data source](#data-sources) registered as the `dataview` protocol. It
+renders each node's facets as files, so ordinary fsspec tools and mounts can read a backend's
+rows and metadata. Open a view with an outer path and the wrapped URL, such as
+`dataview://orders.parquet::s3://bucket/data`, or construct it directly.
+
+Constructor parameters:
+
+- `fo: str`: the root of the view on the wrapped filesystem.
+- `target_protocol: str | None` and `target_options: dict | None`: build the wrapped
+  filesystem.
+- `fs: AbstractFileSystem | None`: an existing wrapped filesystem. If it is a `DataSource`,
+  the view uses its `describe`; otherwise it wraps it in `FileDataSource`.
+- `source: DataSource | None`: a data source to view directly instead of a filesystem.
+- `mapping`: the forms to show for each facet. Defaults to `DEFAULT_MAPPING`.
+- `spool_max_size: int`: rendered bytes kept in memory before spilling to a temporary file.
+  Defaults to 8 MiB.
+
+`fs`, `target_protocol`, and `source` are mutually exclusive.
+
+`DEFAULT_MAPPING` is
+`{"table": ["raw", "parquet"], "raw": ["raw"], "metadata": ["json"], "schema": ["json"], "index": ["json"]}`.
+A mapping shows only the facets it names. For a node named `N` (a table's native suffix is
+dropped, so `orders.csv` gives `orders`):
+
+| Facet      | Forms                                                     | Rendered as                                       |
+| ---------- | --------------------------------------------------------- | ------------------------------------------------- |
+| children   | always                                                    | directory `N/`                                    |
+| `table`    | `raw`, `arrow`, `parquet`, `csv`, `jsonl`, `avro`, `json` | `N.parquet`, ...; `raw` keeps the native file     |
+| `raw`      | `raw`                                                     | the file unchanged, for nodes that are not tables |
+| `metadata` | `json`                                                    | `N.metadata.json`                                 |
+| `schema`   | `json`                                                    | `N.schema.json`, for tables                       |
+| `index`    | the table forms except `raw`                              | `N.json`, ..., for containers that are not tables |
+
+A table format equal to the node's native format is not repeated when `raw` is listed. The
+root's metadata and index use an empty name: `.metadata.json` and `.json`. An index has one
+row per child with its `name` and metadata. A schema file holds `fields`, each with `name`,
+PyArrow `type`, and `nullable`, the same shape a requested schema accepts. `json` forms are
+indented JSON; a table rendered as `json` is a list of row objects.
+
+Two nodes that render the same name in one directory raise `ValueError` when the directory is
+listed. A name that no listing returns is resolved by describing the node it would come from,
+so unlisted backend paths still open.
+
+`ls` reports `None` as the size of files that are not rendered yet; `info` renders a file to
+find its size. Listings are cached on the instance until `invalidate_cache()`; instances are
+not shared between calls.
+
+### `resolve(path)`
+
+Returns the `ViewEntry` a view path renders: `name`, the source `node`, `facet` (`children`,
+`table`, `raw`, `metadata`, `schema`, or `index`), `form` (`dir`, `raw`, or a format), and
+`url`, the node's URL on the wrapped filesystem when the view wraps one.
+
 ## `DataFormat`
 
 Identifies an interchange encoding. Values are `arrow`, `parquet`, `csv`, `jsonl`, and

@@ -33,12 +33,14 @@ from .schema import (
     SchemaResolverRegistry,
     resolve_schema,
 )
+from .view import DEFAULT_MAPPING, DataViewFileSystem, ViewEntry
 
 __version__ = "0.6.0"
 
 __all__ = [
     "CONVERTER_ENTRY_POINT_GROUP",
     "DEFAULT_CONVERTERS",
+    "DEFAULT_MAPPING",
     "DEFAULT_REGISTRY",
     "DEFAULT_SCHEMA_RESOLVERS",
     "Codec",
@@ -49,6 +51,7 @@ __all__ = [
     "DataFileSystem",
     "DataFormat",
     "DataSource",
+    "DataViewFileSystem",
     "DecodedBatchStream",
     "DecodedBatches",
     "Facet",
@@ -67,6 +70,7 @@ __all__ = [
     "SchemaProvenance",
     "SchemaRef",
     "SchemaResolverRegistry",
+    "ViewEntry",
     "__version__",
     "json_schema_to_arrow",
     "plan_schema",
