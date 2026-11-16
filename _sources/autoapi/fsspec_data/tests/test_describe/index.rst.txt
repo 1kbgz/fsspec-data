@@ -24,6 +24,7 @@ Functions
    fsspec_data.tests.test_describe.test_csv_schemas_are_inferred_from_complete_sample_records
    fsspec_data.tests.test_describe.test_data_format_from_path
    fsspec_data.tests.test_describe.test_a_catalog_backend_describes_metadata_at_every_level
+   fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported
 
 
 Module Contents
@@ -79,4 +80,6 @@ Module Contents
 
 
 .. py:function:: test_a_catalog_backend_describes_metadata_at_every_level()
+
+.. py:function:: test_facets_a_source_does_not_implement_raise_facet_not_supported()
 
