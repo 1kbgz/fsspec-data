@@ -154,3 +154,24 @@ def test_a_catalog_renders_datasets_and_metadata_at_every_level():
     assert pq.read_table(io.BytesIO(read(fs, "finance/rates/datasets/curves.parquet"))).num_rows == 3
     assert json.loads(read(fs, "finance/rates/datasets/archive.metadata.json")) == {"refresh": "never"}
     assert fs.resolve("finance/rates/datasets/curves.parquet").url is None
+
+
+def test_views_check_arguments_paths_and_forms(memory):
+    with pytest.raises(ValueError, match="only one of"):
+        DataViewFileSystem("/data", fs=memory, source=Catalog())
+    with pytest.raises(TypeError, match="must be a list"):
+        view(memory, mapping={"table": "parquet"})
+
+    fs = DataViewFileSystem("memory:///data", mapping={"table": ["json"]})
+    assert fs.resolve("").facet == "children"
+    assert fs.info("orders.json")["size"] > 0
+    assert json.loads(read(fs, "orders.json")) == [{"id": 1, "customer": "a"}, {"id": 2, "customer": "b"}]
+    with pytest.raises(IsADirectoryError):
+        fs.open("nested")
+    with pytest.raises(NotADirectoryError):
+        fs.ls("orders.json")
+
+    memory.pipe_file("/data/later.csv", b"id\n1\n")
+    assert "later.json" not in fs.ls("", detail=False)
+    fs.invalidate_cache()
+    assert "later.json" in fs.ls("", detail=False)
