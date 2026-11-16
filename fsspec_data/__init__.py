@@ -5,7 +5,6 @@ from .converters import (
     ConverterRegistry,
 )
 from .describe import DataSource, Facet, FacetNotSupportedError, FileDataSource, Node
-from .filesystem import DataFileSystem
 from .interchange import (
     DEFAULT_REGISTRY,
     Codec,
@@ -48,7 +47,6 @@ __all__ = [
     "CodecRegistry",
     "Converter",
     "ConverterRegistry",
-    "DataFileSystem",
     "DataFormat",
     "DataSource",
     "DataViewFileSystem",

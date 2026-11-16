@@ -9,8 +9,8 @@ import pytest
 import fsspec_data.confluent as confluent_module
 import fsspec_data.schema as schema_module
 from fsspec_data import (
-    DataFileSystem,
     DataFormat,
+    DataViewFileSystem,
     InterchangeRequest,
     SchemaPolicy,
     SchemaRef,
@@ -140,8 +140,8 @@ def test_data_filesystem_resolves_independent_schema_sources(monkeypatch):
     source_fs = fsspec.filesystem("memory")
     source_fs.store.clear()
     source_fs.pipe("orders.csv", b"id,name\n1,ada\n2,grace\n")
-    fs = DataFileSystem(
-        fo="orders.csv",
+    fs = DataViewFileSystem(
+        "orders.csv",
         fs=source_fs,
         provided_schema={
             "url": "memory://schemas/source.json",
@@ -176,10 +176,9 @@ def test_fsspec_open_resolves_referenced_schemas():
     memory_fs.pipe("orders.csv", b"id,name\n1,ada\n2,grace\n")
     memory_fs.pipe("schemas/source.json", json.dumps(SOURCE_SCHEMA_JSON).encode())
     memory_fs.pipe("schemas/target.arrow", TARGET_SCHEMA.serialize().to_pybytes())
-    fsspec.register_implementation("fsspec-data", DataFileSystem, clobber=True)
 
     with fsspec.open(
-        "fsspec-data://orders.parquet::memory://orders.csv",
+        "dataview://orders.parquet::memory://orders.csv",
         provided_schema={
             "url": "memory://schemas/source.json",
             "format": "arrow-json",
@@ -253,10 +252,9 @@ def test_fsspec_open_resolves_json_schemas():
     memory_fs.pipe("orders.csv", b"id,name\n1,ada\n2,grace\n")
     memory_fs.pipe("schemas/source.schema.json", json.dumps(SOURCE_JSON_SCHEMA).encode())
     memory_fs.pipe("schemas/target.schema.json", json.dumps(TARGET_JSON_SCHEMA).encode())
-    fsspec.register_implementation("fsspec-data", DataFileSystem, clobber=True)
 
     with fsspec.open(
-        "fsspec-data://orders.parquet::memory://orders.csv",
+        "dataview://orders.parquet::memory://orders.csv",
         provided_schema={
             "url": "memory://schemas/source.schema.json",
             "format": "json-schema",
@@ -397,10 +395,9 @@ def test_fsspec_open_composes_confluent_schema_with_file_schema(monkeypatch):
     memory_fs.store.clear()
     memory_fs.pipe("orders.csv", b"id,name\n1,ada\n2,grace\n")
     memory_fs.pipe("schemas/target.schema.json", json.dumps(TARGET_JSON_SCHEMA).encode())
-    fsspec.register_implementation("fsspec-data", DataFileSystem, clobber=True)
 
     with fsspec.open(
-        "fsspec-data://orders.parquet::memory://orders.csv",
+        "dataview://orders.parquet::memory://orders.csv",
         provided_schema={
             "url": "confluent://orders-value/versions/latest",
             "format": "json-schema",
@@ -505,8 +502,8 @@ def test_schema_resolution_precedes_source_read(monkeypatch):
     )
     source_fs = fsspec.filesystem("memory")
     monkeypatch.setattr(source_fs, "open", lambda *args, **kwargs: pytest.fail("source data must not be opened"))
-    fs = DataFileSystem(
-        fo="orders.csv",
+    fs = DataViewFileSystem(
+        "orders.csv",
         fs=source_fs,
         provided_schema={"url": "memory://schemas/source.json", "format": "arrow-json"},
     )
@@ -517,7 +514,7 @@ def test_schema_resolution_precedes_source_read(monkeypatch):
 
 def test_schema_reference_rejects_unknown_options():
     with pytest.raises(ValueError, match="unknown schema reference options: credentials"):
-        DataFileSystem(
+        DataViewFileSystem(
             fo="orders.csv",
             fs=fsspec.filesystem("memory"),
             provided_schema={"url": "memory://schemas/source.arrow", "credentials": {}},
@@ -543,10 +540,9 @@ def test_fsspec_open_maps_referenced_csv_schema_onto_renamed_and_added_fields():
     )
     memory_fs.pipe("schemas/source.json", json.dumps(source_schema).encode())
     memory_fs.pipe("schemas/target.arrow", target_schema.serialize().to_pybytes())
-    fsspec.register_implementation("fsspec-data", DataFileSystem, clobber=True)
 
     with fsspec.open(
-        "fsspec-data://orders.parquet::memory://orders.csv",
+        "dataview://orders.parquet::memory://orders.csv",
         provided_schema={"url": "memory://schemas/source.json", "format": "arrow-json"},
         requested_schema="memory://schemas/target.arrow",
         schema_policy="compatible",

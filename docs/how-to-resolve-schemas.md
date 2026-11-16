@@ -1,7 +1,7 @@
 # How to resolve schemas from files and registries
 
 Use separate schema references when data, source schema, and requested schema live
-in different locations. Pass references to `DataFileSystem` through
+in different locations. Pass references to `DataViewFileSystem` through
 `provided_schema` or `requested_schema`.
 
 ## Read a schema file
@@ -43,7 +43,7 @@ requested_schema = {
     "storage_options": {"profile": "output-schema-reader"},
 }
 with fsspec.open(
-    "fsspec-data://orders.parquet::s3://input-data/orders.csv",
+    "dataview://orders.parquet::s3://input-data/orders.csv",
     "rb",
     provided_schema=provided_schema,
     requested_schema=requested_schema,

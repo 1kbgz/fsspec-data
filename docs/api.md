@@ -1,57 +1,5 @@
 # Interchange API reference
 
-## `DataFileSystem`
-
-Read-only chained filesystem registered as the `fsspec-data` protocol. The outer path names
-the requested representation; `fo` names the source object on the target filesystem.
-
-Constructor parameters:
-
-- `fo: str`: source object path or URL.
-- `target_protocol: str | None`: protocol used to construct the target filesystem.
-- `target_options: dict | None`: options passed to the target filesystem.
-- `fs: AbstractFileSystem | None`: existing target filesystem. Mutually exclusive with
-  `target_protocol`.
-- `provided_format: DataFormat | str | None`: source format. Inferred from `fo` when omitted.
-- `requested_format: DataFormat | str | None`: output format. Inferred from the opened path
-  when omitted.
-- `provided_schema`: source `pyarrow.Schema`, nested schema options, or schema reference.
-  Required for CSV and JSONL.
-- `requested_schema`: output `pyarrow.Schema`, nested schema options, or schema reference.
-  Defaults to the source schema.
-- `schema_policy: SchemaPolicy | str`: reconciliation policy. Defaults to `exact`.
-- `renames`, `defaults`, `drop`, `casts`: field operations passed to
-  [`plan_schema`](#plan_schemaprovided_schema-requested_schema-policy--renamesnone-defaultsnone-dropnone-castsnone).
-- `batch_size: int`: maximum rows per decoded batch. Defaults to `1024`.
-- `row_limit: int | None`: maximum decoded rows.
-- `byte_limit: int | None`: maximum cumulative Arrow array memory in decoded batches.
-- `spool_max_size: int`: converted bytes retained in memory before the seekable output rolls
-  over to a temporary file. Defaults to 8 MiB.
-
-Nested schema options have a `fields` list. Each field has `name`, `type`, and optional
-`nullable` keys. String types use PyArrow aliases such as `int64`, `string`, and
-`timestamp[ms]`.
-
-Schema references can be `SchemaRef` values, URL strings, or mappings with `url`,
-optional `format`, and optional `storage_options`. Their options apply only to the
-schema source. Supported formats, registry options, and JSON Schema restrictions
-are listed in [Schema and converter reference](resources.md).
-
-After conversion starts, `provided_schema_provenance` and `requested_schema_provenance`
-describe resolved schema sources without exposing storage options.
-
-Recognized suffixes are `.arrow` and `.ipc` for Arrow IPC streams, `.parquet` and `.pq` for
-Parquet, `.csv` for CSV, `.jsonl` and `.ndjson` for line-delimited JSON, and `.avro` for
-Avro object container files.
-
-`open` accepts read mode and returns a seekable spooled file. Conversion reads from the source incrementally and finishes encoding output before
-returning the file. Row limits and cancellation may stop source reads before EOF.
-`info()` can trigger conversion to determine output size.
-
-See [How to convert a file through an fsspec chain](how-to-chain-filesystems.md) for usage.
-
-Schema values and resolver registries are described in [Schema and converter reference](resources.md).
-
 ## `DataViewFileSystem`
 
 Read-only view of a [data source](#data-sources) registered as the `dataview` protocol. It
@@ -61,15 +9,37 @@ rows and metadata. Open a view with an outer path and the wrapped URL, such as
 
 Constructor parameters:
 
-- `fo: str`: the root of the view on the wrapped filesystem.
+- `fo: str`: the root of the view on the wrapped filesystem: a directory, or a single
+  object whose renderings make up the view.
 - `target_protocol: str | None` and `target_options: dict | None`: build the wrapped
   filesystem.
 - `fs: AbstractFileSystem | None`: an existing wrapped filesystem. If it is a `DataSource`,
   the view uses its `describe`; otherwise it wraps it in `FileDataSource`.
 - `source: DataSource | None`: a data source to view directly instead of a filesystem.
 - `mapping`: the forms to show for each facet. Defaults to `DEFAULT_MAPPING`.
+- `provided_schema`: the schema to decode CSV and JSONL sources with instead of inferring
+  one, and to check self-describing sources against: a `pyarrow.Schema`, nested schema
+  options, or a schema reference.
+- `requested_schema`: the output schema, in the same forms. Defaults to the source schema.
+- `schema_policy: SchemaPolicy | str`: reconciliation policy. Defaults to `exact`.
+- `renames`, `defaults`, `drop`, `casts`: field operations passed to
+  [`plan_schema`](#plan_schemaprovided_schema-requested_schema-policy--renamesnone-defaultsnone-dropnone-castsnone).
+- `batch_size: int`, `row_limit: int | None`, `byte_limit: int | None`: limits on the
+  batches read from each table. `batch_size` defaults to `1024`.
 - `spool_max_size: int`: rendered bytes kept in memory before spilling to a temporary file.
   Defaults to 8 MiB.
+
+The schema options apply to every table the view converts, and a table's schema file shows
+the converted schema. With any of them set, a conversion to the source's own format replaces
+the native file of the same name. After a table is converted, `provided_schema_provenance`
+and `requested_schema_provenance` describe the resolved schema sources without exposing
+storage options.
+
+Nested schema options have a `fields` list. Each field has `name`, `type`, and optional
+`nullable` keys. String types use PyArrow aliases such as `int64`, `string`, and
+`timestamp[ms]`. Schema references can be `SchemaRef` values, URL strings, or mappings with
+`url`, optional `format`, and optional `storage_options`; see
+[Schema and converter reference](resources.md).
 
 `fs`, `target_protocol`, and `source` are mutually exclusive.
 
@@ -339,7 +309,7 @@ Attributes:
   `DEFAULT_SCHEMA_RESOLVERS` is used when it is `None`.
 
 Schema references are `SchemaRef` values, URL strings, or mappings with `url`, `format`, and
-`storage_options`, as accepted by `DataFileSystem`.
+`storage_options`, as accepted by `DataViewFileSystem`.
 
 ### `plan()`
 

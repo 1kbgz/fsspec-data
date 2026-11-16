@@ -1,7 +1,9 @@
 # How to convert a file through an fsspec chain
 
-Place the requested representation on the left and the source object on the right.
-CSV and JSONL input require a schema; Arrow IPC and Parquet carry their own.
+Open a `dataview` URL with the file you want on the left and its source on the right. The
+source can be a single object or a directory. Arrow IPC and Parquet carry their own schema;
+CSV and JSONL schemas are inferred from the start of the file unless you pass
+`provided_schema`.
 
 ## Convert CSV to Parquet
 
@@ -21,7 +23,7 @@ schema = {
         {"name": "name", "type": "string", "nullable": True},
     ]
 }
-url = "fsspec-data://orders.parquet::memory://orders.csv"
+url = "dataview://orders.parquet::memory://orders.csv"
 with fsspec.open(url, "rb", provided_schema=schema) as file:
     orders = pq.read_table(file)
 print(orders.to_pylist())
@@ -81,15 +83,16 @@ Under `compatible` and `coerce`, every provided field must appear in the output 
 
 ## Keep backend options scoped
 
-For a database source, pass connection settings under its protocol:
+For a database source, view a schema directory and pass connection settings under the
+database's protocol:
 
 ```python
-url = "fsspec-data://orders.parquet::db+duckdb:///main/orders.arrow"
+url = "dataview://orders.parquet::db+duckdb:///main"
 with fsspec.open(url, "rb", **{"db+duckdb": {"database": "warehouse.duckdb"}}) as file:
     orders = pq.read_table(file)
 ```
 
-Use `provided_format` or `requested_format` when a filename lacks a recognized
-suffix. To load schemas independently of the data, follow
-[How to resolve schemas from files and registries](how-to-resolve-schemas.md).
-See [DataFileSystem reference](api.md) for limits and buffering.
+The schema options apply to every table the view converts. To load schemas independently
+of the data, follow
+[How to resolve schemas from files and registries](how-to-resolve-schemas.md). See the
+[`DataViewFileSystem` reference](api.md#dataviewfilesystem) for limits and buffering.
