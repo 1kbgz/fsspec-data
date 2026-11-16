@@ -64,6 +64,7 @@ develop = [
 
 [project.entry-points."fsspec.specs"]
 "fsspec-data" = "fsspec_data.filesystem:DataFileSystem"
+"dataview" = "fsspec_data.view:DataViewFileSystem"
 
 [project.urls]
 Repository = "https://github.com/1kbgz/fsspec-data"
