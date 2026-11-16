@@ -30,7 +30,7 @@ Constructor parameters:
   Defaults to 8 MiB.
 
 The schema options apply to every table the view converts, and a table's schema file shows
-the converted schema. With any of them set, a conversion to the source's own format replaces
+the converted schema. `converts` is true when any schema option is set. With any of them set, a conversion to the source's own format replaces
 the native file of the same name. After a table is converted, `provided_schema_provenance`
 and `requested_schema_provenance` describe the resolved schema sources without exposing
 storage options.

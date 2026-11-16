@@ -252,7 +252,7 @@ class DataViewFileSystem(ChainedFileSystem):
             native = node.native_format.value if node.native_format is not None else None
             # The native file and a conversion to its own format share a name: with schema
             # options the conversion wins, otherwise the native file does.
-            keep_raw = "raw" in forms and node.has(Facet.RAW) and not (self._converts and native in forms)
+            keep_raw = "raw" in forms and node.has(Facet.RAW) and not (self.converts and native in forms)
             for form in forms:
                 if form == "raw":
                     if keep_raw:
@@ -271,8 +271,9 @@ class DataViewFileSystem(ChainedFileSystem):
         return ViewEntry(name, node, facet, form, url)
 
     @property
-    def _converts(self) -> bool:
-        """Whether tables go through a schema plan instead of passing through."""
+    def converts(self) -> bool:
+        """Whether the view applies schema options to the tables it renders, so their rows differ
+        from the source's."""
         return any(
             value is not None for value in (self.provided_schema, self.requested_schema, self.renames, self.defaults, self.drop, self.casts)
         ) or (self.schema_policy is not SchemaPolicy.EXACT)
@@ -290,7 +291,7 @@ class DataViewFileSystem(ChainedFileSystem):
             decoded = self.source.scan(node.path, **limits)
         if provided is not None and not decoded.schema.equals(provided.schema, check_metadata=False):
             raise ValueError("provided schema does not match the source schema")
-        if not self._converts:
+        if not self.converts:
             return decoded.schema, decoded
         plan = plan_schema(
             decoded.schema,
@@ -306,7 +307,7 @@ class DataViewFileSystem(ChainedFileSystem):
     def _render(self, entry: ViewEntry, output) -> None:
         path = entry.node.path
         native = entry.node.native_format
-        if entry.facet == "raw" or (entry.facet == "table" and native is not None and entry.form == native.value and not self._converts):
+        if entry.facet == "raw" or (entry.facet == "table" and native is not None and entry.form == native.value and not self.converts):
             with self.source.open_raw(path) as raw:
                 while chunk := raw.read(1024 * 1024):
                     output.write(chunk)
@@ -319,7 +320,7 @@ class DataViewFileSystem(ChainedFileSystem):
         elif entry.facet == "metadata":
             _write_json(self.source.metadata(path), output)
         elif entry.facet == "schema":
-            schema = self._rows(entry.node)[0] if self._converts else self.source.schema(path)
+            schema = self._rows(entry.node)[0] if self.converts else self.source.schema(path)
             _write_json({"fields": [{"name": field.name, "type": str(field.type), "nullable": field.nullable} for field in schema]}, output)
         elif entry.facet == "index":
             rows = [self._index_row(child) for child in self.source.children(path)]
