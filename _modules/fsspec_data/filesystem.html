@@ -590,6 +590,11 @@ window.runMermaid = runMermaid;</script>
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../../autoapi/fsspec_data/describe/index.html">
+      <span class="fd-link-text">fsspec_data.describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../../autoapi/fsspec_data/filesystem/index.html">
       <span class="fd-link-text">fsspec_data.filesystem</span>
     </a>
@@ -632,6 +637,11 @@ window.runMermaid = runMermaid;</script>
   <li class="fd-tree-item">
     <a class="fd-link" href="../../autoapi/fsspec_data/tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../autoapi/fsspec_data/tests/test_describe/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_describe</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -849,26 +859,13 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<span class="n">_SUFFIX_FORMATS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">".arrow"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">ARROW</span><span class="p">,</span>
-    <span class="s2">".csv"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">CSV</span><span class="p">,</span>
-    <span class="s2">".ipc"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">ARROW</span><span class="p">,</span>
-    <span class="s2">".jsonl"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">JSONL</span><span class="p">,</span>
-    <span class="s2">".ndjson"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">JSONL</span><span class="p">,</span>
-    <span class="s2">".parquet"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">PARQUET</span><span class="p">,</span>
-    <span class="s2">".pq"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">PARQUET</span><span class="p">,</span>
-    <span class="s2">".avro"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">AVRO</span><span class="p">,</span>
-<span class="p">}</span>
-
-
 <div class="viewcode-block" id="_format_from_path">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem._format_from_path">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_format_from_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFormat</span><span class="p">:</span>
-    <span class="n">suffix</span> <span class="o">=</span> <span class="s2">"."</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">"."</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="s2">"."</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">"/"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="s2">""</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_SUFFIX_FORMATS</span><span class="p">[</span><span class="n">suffix</span><span class="p">]</span>
-    <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cannot infer tabular format from path </span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span></div>
+    <span class="nb">format</span> <span class="o">=</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">from_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cannot infer tabular format from path </span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">format</span></div>
 
 </pre></div>
 

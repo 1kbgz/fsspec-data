@@ -14,6 +14,7 @@ Submodules
    /autoapi/fsspec_data/backends/index
    /autoapi/fsspec_data/confluent/index
    /autoapi/fsspec_data/converters/index
+   /autoapi/fsspec_data/describe/index
    /autoapi/fsspec_data/filesystem/index
    /autoapi/fsspec_data/interchange/index
    /autoapi/fsspec_data/json_schema/index
@@ -34,6 +35,14 @@ Attributes
    fsspec_data.__version__
 
 
+Exceptions
+----------
+
+.. autoapisummary::
+
+   fsspec_data.FacetNotSupportedError
+
+
 Classes
 -------
 
@@ -41,6 +50,10 @@ Classes
 
    fsspec_data.Converter
    fsspec_data.ConverterRegistry
+   fsspec_data.DataSource
+   fsspec_data.Facet
+   fsspec_data.FileDataSource
+   fsspec_data.Node
    fsspec_data.DataFileSystem
    fsspec_data.Codec
    fsspec_data.CodecCapabilities
@@ -132,6 +145,161 @@ Package Contents
 
 
    .. py:method:: convert(source_type: str, target_type: str, source: Any, target: Any | None = None, *, source_options: collections.abc.Mapping[str, Any] | None = None, target_options: collections.abc.Mapping[str, Any] | None = None, conversion_options: collections.abc.Mapping[str, Any] | None = None) -> Any
+
+
+.. py:class:: DataSource
+
+   A backend that describes its nodes. Methods for facets a backend never offers keep
+   their defaults, which raise ``FacetNotSupportedError``.
+
+
+   .. py:method:: describe(path: str) -> Node
+      :abstractmethod:
+
+
+      Describes the node at ``path``, including paths that no listing returns.
+
+
+
+   .. py:method:: children(path: str) -> list[Node]
+
+      The children of a container. Encoded aliases of other nodes are left out, so a
+      view does not show the same rows twice.
+
+
+
+   .. py:method:: schema(path: str) -> pyarrow.Schema
+
+
+   .. py:method:: scan(path: str, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+
+   .. py:method:: open_raw(path: str) -> BinaryIO
+
+
+   .. py:method:: metadata(path: str) -> dict[str, Any]
+
+
+.. py:class:: Facet
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Something a node offers.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: CHILDREN
+      :value: 'children'
+
+
+
+   .. py:attribute:: TABLE
+      :value: 'table'
+
+
+
+   .. py:attribute:: RAW
+      :value: 'raw'
+
+
+
+   .. py:attribute:: METADATA
+      :value: 'metadata'
+
+
+
+.. py:exception:: FacetNotSupportedError(path: str, facet: Facet)
+
+   Bases: :py:obj:`NotImplementedError`
+
+
+   Method or function hasn't been implemented yet.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: path
+
+
+   .. py:attribute:: facet
+
+
+.. py:class:: FileDataSource(fs: fsspec.AbstractFileSystem, sample_size: int = 1024 * 1024)
+
+   Bases: :py:obj:`DataSource`
+
+
+   Describes any fsspec filesystem: directories are containers, and files with a
+   recognized data suffix (``.csv``, ``.parquet``, ...) are tables whose raw bytes are their
+   native encoding. Every node has metadata from its file information. CSV and JSONL
+   schemas are inferred from the first ``sample_size`` bytes.
+
+
+   .. py:attribute:: fs
+
+
+   .. py:attribute:: sample_size
+      :value: 1048576
+
+
+
+   .. py:method:: _node(info: dict[str, Any]) -> Node
+
+
+   .. py:method:: _table_format(path: str) -> fsspec_data.interchange.DataFormat
+
+
+   .. py:method:: _decode_schema(path: str, format: fsspec_data.interchange.DataFormat) -> pyarrow.Schema | None
+
+
+   .. py:method:: describe(path: str) -> Node
+
+      Describes the node at ``path``, including paths that no listing returns.
+
+
+
+   .. py:method:: children(path: str) -> list[Node]
+
+      The children of a container. Encoded aliases of other nodes are left out, so a
+      view does not show the same rows twice.
+
+
+
+   .. py:method:: schema(path: str) -> pyarrow.Schema
+
+
+   .. py:method:: scan(path: str, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+
+   .. py:method:: open_raw(path: str) -> BinaryIO
+
+
+   .. py:method:: metadata(path: str) -> dict[str, Any]
+
+
+.. py:class:: Node(path: str, facets: collections.abc.Iterable[Facet | str], native_format: fsspec_data.interchange.DataFormat | str | None = None)
+
+   A node in a backend's namespace and the facets it offers. ``native_format`` is the
+   encoding of the raw bytes when they hold the node's rows, such as a CSV object.
+
+
+   .. py:attribute:: path
+      :type:  str
+
+
+   .. py:attribute:: facets
+      :type:  frozenset[Facet]
+
+
+   .. py:attribute:: native_format
+      :type:  fsspec_data.interchange.DataFormat | None
+      :value: None
+
+
+
+   .. py:method:: has(facet: Facet | str) -> bool
 
 
 .. py:class:: DataFileSystem(fo: str, target_protocol: str | None = None, target_options: dict[str, Any] | None = None, fs: fsspec.AbstractFileSystem | None = None, provided_format: fsspec_data.interchange.DataFormat | str | None = None, requested_format: fsspec_data.interchange.DataFormat | str | None = None, provided_schema: fsspec_data.schema.SchemaInput = None, requested_schema: fsspec_data.schema.SchemaInput = None, schema_policy: fsspec_data.interchange.SchemaPolicy | str = SchemaPolicy.EXACT, renames: collections.abc.Mapping[str, str] | None = None, defaults: collections.abc.Mapping[str, Any] | None = None, drop: collections.abc.Sequence[str] | None = None, casts: collections.abc.Mapping[str, str] | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, spool_max_size: int = 8 * 1024 * 1024, **kwargs: Any)
@@ -416,6 +584,14 @@ Package Contents
 
    .. py:attribute:: AVRO
       :value: 'avro'
+
+
+
+   .. py:method:: from_path(path: str) -> DataFormat | None
+      :classmethod:
+
+
+      The format named by a path's suffix, such as ``.parquet`` or ``.ndjson``.
 
 
 

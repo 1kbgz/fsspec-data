@@ -590,6 +590,11 @@ window.runMermaid = runMermaid;</script>
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="autoapi/fsspec_data/describe/index.html">
+      <span class="fd-link-text">fsspec_data.describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="autoapi/fsspec_data/filesystem/index.html">
       <span class="fd-link-text">fsspec_data.filesystem</span>
     </a>
@@ -632,6 +637,11 @@ window.runMermaid = runMermaid;</script>
   <li class="fd-tree-item">
     <a class="fd-link" href="autoapi/fsspec_data/tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="autoapi/fsspec_data/tests/test_describe/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_describe</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -696,6 +706,7 @@ window.runMermaid = runMermaid;</script>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
@@ -785,6 +796,12 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema._decode_json_schema">_decode_json_schema() (in module fsspec_data.schema)</a>
 </li>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource._decode_schema">_decode_schema() (fsspec_data.describe.FileDataSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource._decode_schema">(fsspec_data.FileDataSource method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema.SchemaResolverRegistry._decoders">_decoders (fsspec_data.schema.SchemaResolverRegistry attribute)</a>
 
       <ul>
@@ -797,14 +814,14 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange._ensure_pyarrow">_ensure_pyarrow() (in module fsspec_data.interchange)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.ConverterRegistry._entry_points_loaded">_entry_points_loaded (fsspec_data.ConverterRegistry attribute)</a>
 
       <ul>
         <li><a href="autoapi/fsspec_data/converters/index.html#fsspec_data.converters.ConverterRegistry._entry_points_loaded">(fsspec_data.converters.ConverterRegistry attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseBufferedFile._fetch_range">_fetch_range() (fsspec_data.backends.base.BaseBufferedFile method)</a>
 </li>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema._field_from_options">_field_from_options() (in module fsspec_data.schema)</a>
@@ -823,6 +840,12 @@ window.runMermaid = runMermaid;</script>
 
       <ul>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.DecodedBatchStream._native">(fsspec_data.interchange.DecodedBatchStream attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource._node">_node() (fsspec_data.describe.FileDataSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource._node">(fsspec_data.FileDataSource method)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/fsspec_data/converters/index.html#fsspec_data.converters._normalize_type">_normalize_type() (in module fsspec_data.converters)</a>
@@ -875,8 +898,14 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.PlannedBatchStream._source">(fsspec_data.PlannedBatchStream attribute)</a>
 </li>
       </ul></li>
-      <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem._SUFFIX_FORMATS">_SUFFIX_FORMATS (in module fsspec_data.filesystem)</a>
+      <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange._SUFFIX_FORMATS">_SUFFIX_FORMATS (in module fsspec_data.interchange)</a>
 </li>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource._table_format">_table_format() (fsspec_data.describe.FileDataSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource._table_format">(fsspec_data.FileDataSource method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/fsspec_data/json_schema/index.html#fsspec_data.json_schema._UNSUPPORTED_KEYWORDS">_UNSUPPORTED_KEYWORDS (in module fsspec_data.json_schema)</a>
 </li>
       <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangePlan._validate_input_schema">_validate_input_schema() (fsspec_data.interchange.InterchangePlan method)</a>
@@ -1009,10 +1038,30 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangeRequest.casts">(fsspec_data.InterchangeRequest attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.Catalog">Catalog (class in fsspec_data.tests.test_describe)</a>
+</li>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FieldMapping.check_nulls">check_nulls (fsspec_data.FieldMapping attribute)</a>
 
       <ul>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.FieldMapping.check_nulls">(fsspec_data.interchange.FieldMapping attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.Facet.CHILDREN">CHILDREN (fsspec_data.describe.Facet attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Facet.CHILDREN">(fsspec_data.Facet attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataSource.children">children() (fsspec_data.DataSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.DataSource.children">(fsspec_data.describe.DataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource.children">(fsspec_data.describe.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource.children">(fsspec_data.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.Catalog.children">(fsspec_data.tests.test_describe.Catalog method)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Codec">Codec (class in fsspec_data)</a>
@@ -1033,14 +1082,14 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.CodecRegistry">(class in fsspec_data.interchange)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.SchemaPolicy.COERCE">COERCE (fsspec_data.interchange.SchemaPolicy attribute)</a>
 
       <ul>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.SchemaPolicy.COERCE">(fsspec_data.SchemaPolicy attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DecodedBatchStream.collect">collect() (fsspec_data.DecodedBatchStream method)</a>
 
       <ul>
@@ -1101,6 +1150,8 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.DataFormat.CSV">(fsspec_data.interchange.DataFormat attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.Catalog.curves">curves (fsspec_data.tests.test_describe.Catalog attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -1123,6 +1174,12 @@ window.runMermaid = runMermaid;</script>
 
       <ul>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.DataFormat">(class in fsspec_data.interchange)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataSource">DataSource (class in fsspec_data)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.DataSource">(class in fsspec_data.describe)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.CodecCapabilities.decode">decode (fsspec_data.CodecCapabilities attribute)</a>
@@ -1155,14 +1212,14 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/converters/index.html#fsspec_data.converters.DEFAULT_CONVERTERS">(in module fsspec_data.converters)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DEFAULT_REGISTRY">DEFAULT_REGISTRY (in module fsspec_data)</a>
 
       <ul>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.DEFAULT_REGISTRY">(in module fsspec_data.interchange)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DEFAULT_SCHEMA_RESOLVERS">DEFAULT_SCHEMA_RESOLVERS (in module fsspec_data)</a>
 
       <ul>
@@ -1177,6 +1234,18 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangeRequest.defaults">(fsspec_data.interchange.InterchangeRequest attribute)</a>
 </li>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangeRequest.defaults">(fsspec_data.InterchangeRequest attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataSource.describe">describe() (fsspec_data.DataSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.DataSource.describe">(fsspec_data.describe.DataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource.describe">(fsspec_data.describe.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource.describe">(fsspec_data.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.Catalog.describe">(fsspec_data.tests.test_describe.Catalog method)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseBufferedFile.discard">discard() (fsspec_data.backends.base.BaseBufferedFile method)</a>
@@ -1241,6 +1310,26 @@ window.runMermaid = runMermaid;</script>
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Facet">Facet (class in fsspec_data)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.Facet">(class in fsspec_data.describe)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FacetNotSupportedError.facet">facet (fsspec_data.describe.FacetNotSupportedError attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FacetNotSupportedError.facet">(fsspec_data.FacetNotSupportedError attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FacetNotSupportedError">FacetNotSupportedError</a>, <a href="autoapi/fsspec_data/index.html#fsspec_data.FacetNotSupportedError">[1]</a>
+</li>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.Node.facets">facets (fsspec_data.describe.Node attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Node.facets">(fsspec_data.Node attribute)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/fsspec_data/confluent/index.html#fsspec_data.confluent.fetch_confluent_schema">fetch_confluent_schema() (in module fsspec_data.confluent)</a>
 </li>
       <li><a href="autoapi/fsspec_data/confluent/index.html#fsspec_data.confluent.fetch_confluent_versions">fetch_confluent_versions() (in module fsspec_data.confluent)</a>
@@ -1257,6 +1346,14 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.FieldMapping">(class in fsspec_data.interchange)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource">FileDataSource (class in fsspec_data)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource">(class in fsspec_data.describe)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.files">files() (in module fsspec_data.tests.test_describe)</a>
+</li>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.fo">fo (fsspec_data.DataFileSystem attribute)</a>
 
       <ul>
@@ -1281,9 +1378,19 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.SchemaRef.format">(fsspec_data.SchemaRef attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFormat.from_path">from_path() (fsspec_data.DataFormat class method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.DataFormat.from_path">(fsspec_data.interchange.DataFormat class method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.fs">fs (fsspec_data.DataFileSystem attribute)</a>
 
       <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource.fs">(fsspec_data.describe.FileDataSource attribute)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource.fs">(fsspec_data.FileDataSource attribute)</a>
+</li>
         <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.fs">(fsspec_data.filesystem.DataFileSystem attribute)</a>
 </li>
       </ul></li>
@@ -1308,6 +1415,8 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/backends/index.html#module-fsspec_data.backends">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     fsspec_data.backends.base
 
@@ -1322,8 +1431,6 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/backends/http/index.html#module-fsspec_data.backends.http">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     fsspec_data.backends.sqlalchemy
 
@@ -1343,6 +1450,13 @@ window.runMermaid = runMermaid;</script>
 
       <ul>
         <li><a href="autoapi/fsspec_data/converters/index.html#module-fsspec_data.converters">module</a>
+</li>
+      </ul></li>
+      <li>
+    fsspec_data.describe
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#module-fsspec_data.describe">module</a>
 </li>
       </ul></li>
       <li>
@@ -1402,6 +1516,13 @@ window.runMermaid = runMermaid;</script>
 </li>
       </ul></li>
       <li>
+    fsspec_data.tests.test_describe
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#module-fsspec_data.tests.test_describe">module</a>
+</li>
+      </ul></li>
+      <li>
     fsspec_data.tests.test_filesystem
 
       <ul>
@@ -1448,6 +1569,12 @@ window.runMermaid = runMermaid;</script>
 
       <ul>
         <li><a href="autoapi/fsspec_data/converters/index.html#fsspec_data.converters.Converter.handler">(fsspec_data.converters.Converter attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.Node.has">has() (fsspec_data.describe.Node method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Node.has">(fsspec_data.Node method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1570,6 +1697,24 @@ window.runMermaid = runMermaid;</script>
       </ul></li>
       <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.memory_fs">memory_fs() (in module fsspec_data.tests.test_filesystem)</a>
 </li>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.Facet.METADATA">METADATA (fsspec_data.describe.Facet attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Facet.METADATA">(fsspec_data.Facet attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataSource.metadata">metadata() (fsspec_data.DataSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.DataSource.metadata">(fsspec_data.describe.DataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource.metadata">(fsspec_data.describe.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource.metadata">(fsspec_data.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.Catalog.metadata">(fsspec_data.tests.test_describe.Catalog method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.mkdir">mkdir() (fsspec_data.backends.base.BaseFileSystem method)</a>
 </li>
       <li><a href="autoapi/fsspec_data/backends/base/index.html#fsspec_data.backends.base.BaseFileSystem.modified">modified() (fsspec_data.backends.base.BaseFileSystem method)</a>
@@ -1594,6 +1739,8 @@ window.runMermaid = runMermaid;</script>
 </li>
         <li><a href="autoapi/fsspec_data/converters/index.html#module-fsspec_data.converters">fsspec_data.converters</a>
 </li>
+        <li><a href="autoapi/fsspec_data/describe/index.html#module-fsspec_data.describe">fsspec_data.describe</a>
+</li>
         <li><a href="autoapi/fsspec_data/filesystem/index.html#module-fsspec_data.filesystem">fsspec_data.filesystem</a>
 </li>
         <li><a href="autoapi/fsspec_data/interchange/index.html#module-fsspec_data.interchange">fsspec_data.interchange</a>
@@ -1610,6 +1757,8 @@ window.runMermaid = runMermaid;</script>
 </li>
         <li><a href="autoapi/fsspec_data/tests/test_converters/index.html#module-fsspec_data.tests.test_converters">fsspec_data.tests.test_converters</a>
 </li>
+        <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#module-fsspec_data.tests.test_describe">fsspec_data.tests.test_describe</a>
+</li>
         <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#module-fsspec_data.tests.test_filesystem">fsspec_data.tests.test_filesystem</a>
 </li>
         <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#module-fsspec_data.tests.test_schema">fsspec_data.tests.test_schema</a>
@@ -1623,8 +1772,38 @@ window.runMermaid = runMermaid;</script>
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.Node.native_format">native_format (fsspec_data.describe.Node attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Node.native_format">(fsspec_data.Node attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Node">Node (class in fsspec_data)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.Node">(class in fsspec_data.describe)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema.normalize_schema">normalize_schema() (in module fsspec_data.schema)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataSource.open_raw">open_raw() (fsspec_data.DataSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.DataSource.open_raw">(fsspec_data.describe.DataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource.open_raw">(fsspec_data.describe.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource.open_raw">(fsspec_data.FileDataSource method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -1635,6 +1814,16 @@ window.runMermaid = runMermaid;</script>
 
       <ul>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.DataFormat.PARQUET">(fsspec_data.interchange.DataFormat attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FacetNotSupportedError.path">path (fsspec_data.describe.FacetNotSupportedError attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.Node.path">(fsspec_data.describe.Node attribute)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FacetNotSupportedError.path">(fsspec_data.FacetNotSupportedError attribute)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Node.path">(fsspec_data.Node attribute)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.InterchangeRequest.plan">plan() (fsspec_data.interchange.InterchangeRequest method)</a>
@@ -1739,6 +1928,12 @@ window.runMermaid = runMermaid;</script>
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.Facet.RAW">RAW (fsspec_data.describe.Facet attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Facet.RAW">(fsspec_data.Facet attribute)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/fsspec_data/confluent/index.html#fsspec_data.confluent.ConfluentSchemaDocument.references">references (fsspec_data.confluent.ConfluentSchemaDocument attribute)</a>
 </li>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.ConverterRegistry.register">register() (fsspec_data.ConverterRegistry method)</a>
@@ -1781,6 +1976,8 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangeRequest.requested_format">(fsspec_data.InterchangeRequest attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.requested_schema">requested_schema (fsspec_data.DataFileSystem attribute)</a>
 
       <ul>
@@ -1795,8 +1992,6 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/index.html#fsspec_data.InterchangeRequest.requested_schema">(fsspec_data.InterchangeRequest attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataFileSystem.requested_schema_provenance">requested_schema_provenance (fsspec_data.DataFileSystem attribute)</a>
 
       <ul>
@@ -1833,12 +2028,32 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/filesystem/index.html#fsspec_data.filesystem.DataFileSystem.row_limit">(fsspec_data.filesystem.DataFileSystem attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.rows">rows() (in module fsspec_data.tests.test_describe)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource.sample_size">sample_size (fsspec_data.describe.FileDataSource attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource.sample_size">(fsspec_data.FileDataSource attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataSource.scan">scan() (fsspec_data.DataSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.DataSource.scan">(fsspec_data.describe.DataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource.scan">(fsspec_data.describe.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource.scan">(fsspec_data.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.Catalog.scan">(fsspec_data.tests.test_describe.Catalog method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/fsspec_data/confluent/index.html#fsspec_data.confluent.ConfluentSchemaDocument.schema">schema (fsspec_data.confluent.ConfluentSchemaDocument attribute)</a>
 
       <ul>
@@ -1861,6 +2076,18 @@ window.runMermaid = runMermaid;</script>
       </ul></li>
       <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.SCHEMA">SCHEMA (in module fsspec_data.tests.test_filesystem)</a>
 </li>
+      <li><a href="autoapi/fsspec_data/index.html#fsspec_data.DataSource.schema">schema() (fsspec_data.DataSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.DataSource.schema">(fsspec_data.describe.DataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.FileDataSource.schema">(fsspec_data.describe.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FileDataSource.schema">(fsspec_data.FileDataSource method)</a>
+</li>
+        <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.Catalog.schema">(fsspec_data.tests.test_describe.Catalog method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema.schema_from_options">schema_from_options() (in module fsspec_data.schema)</a>
 </li>
       <li><a href="autoapi/fsspec_data/confluent/index.html#fsspec_data.confluent.ConfluentSchemaDocument.schema_id">schema_id (fsspec_data.confluent.ConfluentSchemaDocument attribute)</a>
@@ -1889,6 +2116,8 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/schema/index.html#fsspec_data.schema.SchemaDocument">(class in fsspec_data.schema)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.SchemaFormat">SchemaFormat (class in fsspec_data)</a>
 
       <ul>
@@ -1903,8 +2132,6 @@ window.runMermaid = runMermaid;</script>
         <li><a href="autoapi/fsspec_data/interchange/index.html#fsspec_data.interchange.SchemaPolicy">(class in fsspec_data.interchange)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.SchemaProvenance">SchemaProvenance (class in fsspec_data)</a>
 
       <ul>
@@ -1985,6 +2212,14 @@ window.runMermaid = runMermaid;</script>
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/fsspec_data/describe/index.html#fsspec_data.describe.Facet.TABLE">TABLE (fsspec_data.describe.Facet attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/fsspec_data/index.html#fsspec_data.Facet.TABLE">(fsspec_data.Facet attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.Catalog.tags">tags (fsspec_data.tests.test_describe.Catalog attribute)</a>
+</li>
       <li><a href="autoapi/fsspec_data/index.html#fsspec_data.FieldAddition.target_index">target_index (fsspec_data.FieldAddition attribute)</a>
 
       <ul>
@@ -2006,6 +2241,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       </ul></li>
       <li><a href="autoapi/fsspec_data/tests/conftest/index.html#fsspec_data.tests.conftest.temp">temp() (in module fsspec_data.tests.conftest)</a>
+</li>
+      <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.test_a_catalog_backend_describes_metadata_at_every_level">test_a_catalog_backend_describes_metadata_at_every_level() (in module fsspec_data.tests.test_describe)</a>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_all/index.html#fsspec_data.tests.test_all.test_arrow_codec_declares_capabilities">test_arrow_codec_declares_capabilities() (in module fsspec_data.tests.test_all)</a>
 </li>
@@ -2063,7 +2300,11 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_converters/index.html#fsspec_data.tests.test_converters.test_converter_registry_rejects_invalid_entry_point">test_converter_registry_rejects_invalid_entry_point() (in module fsspec_data.tests.test_converters)</a>
 </li>
+      <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.test_csv_schemas_are_inferred_from_complete_sample_records">test_csv_schemas_are_inferred_from_complete_sample_records() (in module fsspec_data.tests.test_describe)</a>
+</li>
       <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_data_filesystem_resolves_independent_schema_sources">test_data_filesystem_resolves_independent_schema_sources() (in module fsspec_data.tests.test_schema)</a>
+</li>
+      <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.test_data_format_from_path">test_data_format_from_path() (in module fsspec_data.tests.test_describe)</a>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_embedded_schema_can_be_projected">test_embedded_schema_can_be_projected() (in module fsspec_data.tests.test_filesystem)</a>
 </li>
@@ -2077,12 +2318,16 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_extensionless_path_requires_explicit_format">test_extensionless_path_requires_explicit_format() (in module fsspec_data.tests.test_filesystem)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.test_files_describe_directories_tables_and_other_files">test_files_describe_directories_tables_and_other_files() (in module fsspec_data.tests.test_describe)</a>
+</li>
+      <li><a href="autoapi/fsspec_data/tests/test_describe/index.html#fsspec_data.tests.test_describe.test_files_read_tables_by_native_format">test_files_read_tables_by_native_format() (in module fsspec_data.tests.test_describe)</a>
+</li>
       <li><a href="autoapi/fsspec_data/tests/test_filesystem/index.html#fsspec_data.tests.test_filesystem.test_filesystem_is_read_only">test_filesystem_is_read_only() (in module fsspec_data.tests.test_filesystem)</a>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_fsspec_open_composes_confluent_schema_with_file_schema">test_fsspec_open_composes_confluent_schema_with_file_schema() (in module fsspec_data.tests.test_schema)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_fsspec_open_maps_referenced_csv_schema_onto_renamed_and_added_fields">test_fsspec_open_maps_referenced_csv_schema_onto_renamed_and_added_fields() (in module fsspec_data.tests.test_schema)</a>
 </li>
       <li><a href="autoapi/fsspec_data/tests/test_schema/index.html#fsspec_data.tests.test_schema.test_fsspec_open_resolves_json_schemas">test_fsspec_open_resolves_json_schemas() (in module fsspec_data.tests.test_schema)</a>

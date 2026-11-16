@@ -590,6 +590,11 @@ window.runMermaid = runMermaid;</script>
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../../autoapi/fsspec_data/describe/index.html">
+      <span class="fd-link-text">fsspec_data.describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../../autoapi/fsspec_data/filesystem/index.html">
       <span class="fd-link-text">fsspec_data.filesystem</span>
     </a>
@@ -632,6 +637,11 @@ window.runMermaid = runMermaid;</script>
   <li class="fd-tree-item">
     <a class="fd-link" href="../../autoapi/fsspec_data/tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../autoapi/fsspec_data/tests/test_describe/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_describe</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -712,8 +722,31 @@ window.runMermaid = runMermaid;</script>
     <span class="n">PARQUET</span> <span class="o">=</span> <span class="s2">"parquet"</span>
     <span class="n">CSV</span> <span class="o">=</span> <span class="s2">"csv"</span>
     <span class="n">JSONL</span> <span class="o">=</span> <span class="s2">"jsonl"</span>
-    <span class="n">AVRO</span> <span class="o">=</span> <span class="s2">"avro"</span></div>
+    <span class="n">AVRO</span> <span class="o">=</span> <span class="s2">"avro"</span>
 
+<div class="viewcode-block" id="DataFormat.from_path">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data.DataFormat.from_path">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFormat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The format named by a path's suffix, such as ``.parquet`` or ``.ndjson``."""</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">"/"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">"."</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">_SUFFIX_FORMATS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">"."</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span></div>
+</div>
+
+
+
+<span class="n">_SUFFIX_FORMATS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"arrow"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">ARROW</span><span class="p">,</span>
+    <span class="s2">"ipc"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">ARROW</span><span class="p">,</span>
+    <span class="s2">"parquet"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">PARQUET</span><span class="p">,</span>
+    <span class="s2">"pq"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">PARQUET</span><span class="p">,</span>
+    <span class="s2">"csv"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">CSV</span><span class="p">,</span>
+    <span class="s2">"jsonl"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">JSONL</span><span class="p">,</span>
+    <span class="s2">"ndjson"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">JSONL</span><span class="p">,</span>
+    <span class="s2">"avro"</span><span class="p">:</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">AVRO</span><span class="p">,</span>
+<span class="p">}</span>
 
 
 <div class="viewcode-block" id="SchemaPolicy">

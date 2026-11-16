@@ -186,6 +186,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/describe/index.html">
+      <span class="fd-link-text">fsspec_data.describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/filesystem/index.html">
       <span class="fd-link-text">fsspec_data.filesystem</span>
     </a>
@@ -228,6 +233,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_describe/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_describe</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -370,6 +380,9 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#plan-schema-provided-schema-requested-schema-policy-renames-none-defaults-none-drop-none-casts-none">plan_schema(provided_schema, requested_schema, policy, *, renames=None, defaults=None, drop=None, casts=None)</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#data-sources">Data sources</a>
   </li>
 </ul>
 </div>
@@ -745,6 +758,59 @@ policy, require an unregistered or disallowed cast, or field operations conflict
 </pre></div>
 </div>
 </section>
+<section id="data-sources">
+<h2>Data sources<a class="headerlink" href="#data-sources" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">DataSource</span></code> is the contract a backend implements so its nodes can be rendered as files. It
+exists as a Python base class and a Rust trait with the same methods. <code class="docutils literal notranslate"><span class="pre">describe(path)</span></code>
+returns a <code class="docutils literal notranslate"><span class="pre">Node</span></code> with its <code class="docutils literal notranslate"><span class="pre">path</span></code>, a set of <code class="docutils literal notranslate"><span class="pre">Facet</span></code>s, and a <code class="docutils literal notranslate"><span class="pre">native_format</span></code> when the node’s raw
+bytes already encode its rows. <code class="docutils literal notranslate"><span class="pre">describe</span></code> also resolves paths that no listing returns.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Facet</p></th>
+<th class="head"><p>Method</p></th>
+<th class="head"><p>Returns</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CHILDREN</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">children(path)</span></code></p></td>
+<td><p>child <code class="docutils literal notranslate"><span class="pre">Node</span></code>s, without encoded aliases</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TABLE</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">schema(path)</span></code></p></td>
+<td><p>the Arrow schema</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">TABLE</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">scan(path,</span> <span class="pre">...)</span></code></p></td>
+<td><p>a <code class="docutils literal notranslate"><span class="pre">DecodedBatchStream</span></code> (Rust: <code class="docutils literal notranslate"><span class="pre">DecodedStream</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">RAW</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">open_raw(path)</span></code></p></td>
+<td><p>a binary file object (Rust: <code class="docutils literal notranslate"><span class="pre">CodecReader</span></code>) over native bytes</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">METADATA</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">metadata(path)</span></code></p></td>
+<td><p>a JSON-compatible mapping (Rust: <code class="docutils literal notranslate"><span class="pre">Metadata</span></code>)</p></td>
+</tr>
+</tbody>
+</table>
+<p>Any node may offer metadata, including directories and the root. A method for a facet the
+node does not offer raises <code class="docutils literal notranslate"><span class="pre">FacetNotSupportedError</span></code> (Rust: returns
+<code class="docutils literal notranslate"><span class="pre">InterchangeError::FacetNotSupported</span></code>). Rust facet names are <code class="docutils literal notranslate"><span class="pre">Children</span></code>, <code class="docutils literal notranslate"><span class="pre">Table</span></code>, <code class="docutils literal notranslate"><span class="pre">Raw</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">Metadata</span></code>. Python <code class="docutils literal notranslate"><span class="pre">scan</span></code> takes keyword arguments <code class="docutils literal notranslate"><span class="pre">batch_size</span></code>, <code class="docutils literal notranslate"><span class="pre">row_limit</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">byte_limit</span></code>; Rust <code class="docutils literal notranslate"><span class="pre">scan</span></code> takes <code class="docutils literal notranslate"><span class="pre">StreamOptions</span></code> and a <code class="docutils literal notranslate"><span class="pre">CancellationToken</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">FileDataSource(fs,</span> <span class="pre">sample_size=1048576)</span></code> describes any fsspec filesystem (Rust:
+<code class="docutils literal notranslate"><span class="pre">FileDataSource::new(fs)</span></code> over an <code class="docutils literal notranslate"><span class="pre">fsspec_rs</span></code> filesystem, with a public <code class="docutils literal notranslate"><span class="pre">sample_size</span></code> field).
+Directories have <code class="docutils literal notranslate"><span class="pre">CHILDREN</span></code> and <code class="docutils literal notranslate"><span class="pre">METADATA</span></code>. Files have <code class="docutils literal notranslate"><span class="pre">RAW</span></code> and <code class="docutils literal notranslate"><span class="pre">METADATA</span></code>, plus <code class="docutils literal notranslate"><span class="pre">TABLE</span></code> when
+<code class="docutils literal notranslate"><span class="pre">DataFormat.from_path</span></code> recognizes the suffix. CSV and JSONL schemas are inferred from the
+first <code class="docutils literal notranslate"><span class="pre">sample_size</span></code> bytes. Python metadata is the filesystem’s <code class="docutils literal notranslate"><span class="pre">info()</span></code> without <code class="docutils literal notranslate"><span class="pre">name</span></code> and
+<code class="docutils literal notranslate"><span class="pre">type</span></code>, and without <code class="docutils literal notranslate"><span class="pre">size</span></code> for directories; values that are not JSON scalars become strings.
+Rust metadata holds <code class="docutils literal notranslate"><span class="pre">size</span></code> for files, <code class="docutils literal notranslate"><span class="pre">created</span></code> and <code class="docutils literal notranslate"><span class="pre">mtime</span></code> in seconds since the Unix epoch
+when known, and the filesystem’s extra fields as strings.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DataFormat.from_path(path)</span></code> (Rust: <code class="docutils literal notranslate"><span class="pre">DataFormat::from_path</span></code>) maps <code class="docutils literal notranslate"><span class="pre">.arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">.ipc</span></code>,
+<code class="docutils literal notranslate"><span class="pre">.parquet</span></code>, <code class="docutils literal notranslate"><span class="pre">.pq</span></code>, <code class="docutils literal notranslate"><span class="pre">.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">.jsonl</span></code>, <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code>, and <code class="docutils literal notranslate"><span class="pre">.avro</span></code> to a format and returns <code class="docutils literal notranslate"><span class="pre">None</span></code> for
+anything else.</p>
+</section>
 </section>
 
 
@@ -875,6 +941,9 @@ policy, require an unregistered or disallowed cast, or field operations conflict
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#plan-schema-provided-schema-requested-schema-policy-renames-none-defaults-none-drop-none-casts-none">plan_schema(provided_schema, requested_schema, policy, *, renames=None, defaults=None, drop=None, casts=None)</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#data-sources">Data sources</a>
   </li>
 </ul>
 

@@ -4,14 +4,6 @@ fsspec_data.filesystem
 .. py:module:: fsspec_data.filesystem
 
 
-Attributes
-----------
-
-.. autoapisummary::
-
-   fsspec_data.filesystem._SUFFIX_FORMATS
-
-
 Classes
 -------
 
@@ -220,8 +212,6 @@ Module Contents
 
    .. py:method:: _convert(path: str, output) -> None
 
-
-.. py:data:: _SUFFIX_FORMATS
 
 .. py:function:: _format_from_path(path: str) -> fsspec_data.interchange.DataFormat
 

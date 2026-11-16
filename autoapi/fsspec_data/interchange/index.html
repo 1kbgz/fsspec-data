@@ -186,6 +186,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../describe/index.html">
+      <span class="fd-link-text">fsspec_data.describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../filesystem/index.html">
       <span class="fd-link-text">fsspec_data.filesystem</span>
     </a>
@@ -228,6 +233,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="../tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../tests/test_describe/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_describe</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -307,6 +317,12 @@
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.interchange.DataFormat.AVRO">DataFormat.AVRO</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.interchange.DataFormat.from_path">DataFormat.from_path()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.interchange._SUFFIX_FORMATS">_SUFFIX_FORMATS</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.interchange.SchemaPolicy">SchemaPolicy</a>
@@ -568,7 +584,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.interchange._rust" title="fsspec_data.interchange._rust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_rust</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.interchange.DEFAULT_REGISTRY" title="fsspec_data.interchange.DEFAULT_REGISTRY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_REGISTRY</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.interchange._SUFFIX_FORMATS" title="fsspec_data.interchange._SUFFIX_FORMATS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_SUFFIX_FORMATS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.interchange.DEFAULT_REGISTRY" title="fsspec_data.interchange.DEFAULT_REGISTRY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_REGISTRY</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -679,7 +698,18 @@ errors defaults to ‘strict’.</p>
 <span class="sig-name descname"><span class="pre">AVRO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'avro'</span></em><a class="headerlink" href="#fsspec_data.interchange.DataFormat.AVRO" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.interchange.DataFormat.from_path">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">DataFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/interchange.html#DataFormat.from_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.interchange.DataFormat.from_path" title="Link to this definition">¶</a></dt>
+<dd><p>The format named by a path’s suffix, such as <code class="docutils literal notranslate"><span class="pre">.parquet</span></code> or <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code>.</p>
 </dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fsspec_data.interchange._SUFFIX_FORMATS">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.interchange.</span></span><span class="sig-name descname"><span class="pre">_SUFFIX_FORMATS</span></span><a class="headerlink" href="#fsspec_data.interchange._SUFFIX_FORMATS" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="fsspec_data.interchange.SchemaPolicy">
@@ -1158,6 +1188,12 @@ provided field must be used or dropped unless <code class="docutils literal notr
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.interchange.DataFormat.AVRO">DataFormat.AVRO</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.interchange.DataFormat.from_path">DataFormat.from_path()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.interchange._SUFFIX_FORMATS">_SUFFIX_FORMATS</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.interchange.SchemaPolicy">SchemaPolicy</a>

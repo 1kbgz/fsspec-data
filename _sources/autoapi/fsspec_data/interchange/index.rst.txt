@@ -10,6 +10,7 @@ Attributes
 .. autoapisummary::
 
    fsspec_data.interchange._rust
+   fsspec_data.interchange._SUFFIX_FORMATS
    fsspec_data.interchange.DEFAULT_REGISTRY
 
 
@@ -90,6 +91,16 @@ Module Contents
       :value: 'avro'
 
 
+
+   .. py:method:: from_path(path: str) -> DataFormat | None
+      :classmethod:
+
+
+      The format named by a path's suffix, such as ``.parquet`` or ``.ndjson``.
+
+
+
+.. py:data:: _SUFFIX_FORMATS
 
 .. py:class:: SchemaPolicy
 

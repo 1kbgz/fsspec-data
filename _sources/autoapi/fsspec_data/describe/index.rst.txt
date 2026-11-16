@@ -1,0 +1,192 @@
+fsspec_data.describe
+====================
+
+.. py:module:: fsspec_data.describe
+
+.. autoapi-nested-parse::
+
+   The description contract between a backend and the data views built on it.
+
+   A backend describes nodes in its own namespace. Each node offers some facets, and a
+   consumer reads a facet through the matching ``DataSource`` method. fsspec-data renders
+   facets as files; the backend never knows which forms are requested.
+
+
+
+Exceptions
+----------
+
+.. autoapisummary::
+
+   fsspec_data.describe.FacetNotSupportedError
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.describe.Facet
+   fsspec_data.describe.Node
+   fsspec_data.describe.DataSource
+   fsspec_data.describe.FileDataSource
+
+
+Module Contents
+---------------
+
+.. py:class:: Facet
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Something a node offers.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: CHILDREN
+      :value: 'children'
+
+
+
+   .. py:attribute:: TABLE
+      :value: 'table'
+
+
+
+   .. py:attribute:: RAW
+      :value: 'raw'
+
+
+
+   .. py:attribute:: METADATA
+      :value: 'metadata'
+
+
+
+.. py:exception:: FacetNotSupportedError(path: str, facet: Facet)
+
+   Bases: :py:obj:`NotImplementedError`
+
+
+   Method or function hasn't been implemented yet.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: path
+
+
+   .. py:attribute:: facet
+
+
+.. py:class:: Node(path: str, facets: collections.abc.Iterable[Facet | str], native_format: fsspec_data.interchange.DataFormat | str | None = None)
+
+   A node in a backend's namespace and the facets it offers. ``native_format`` is the
+   encoding of the raw bytes when they hold the node's rows, such as a CSV object.
+
+
+   .. py:attribute:: path
+      :type:  str
+
+
+   .. py:attribute:: facets
+      :type:  frozenset[Facet]
+
+
+   .. py:attribute:: native_format
+      :type:  fsspec_data.interchange.DataFormat | None
+      :value: None
+
+
+
+   .. py:method:: has(facet: Facet | str) -> bool
+
+
+.. py:class:: DataSource
+
+   A backend that describes its nodes. Methods for facets a backend never offers keep
+   their defaults, which raise ``FacetNotSupportedError``.
+
+
+   .. py:method:: describe(path: str) -> Node
+      :abstractmethod:
+
+
+      Describes the node at ``path``, including paths that no listing returns.
+
+
+
+   .. py:method:: children(path: str) -> list[Node]
+
+      The children of a container. Encoded aliases of other nodes are left out, so a
+      view does not show the same rows twice.
+
+
+
+   .. py:method:: schema(path: str) -> pyarrow.Schema
+
+
+   .. py:method:: scan(path: str, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+
+   .. py:method:: open_raw(path: str) -> BinaryIO
+
+
+   .. py:method:: metadata(path: str) -> dict[str, Any]
+
+
+.. py:class:: FileDataSource(fs: fsspec.AbstractFileSystem, sample_size: int = 1024 * 1024)
+
+   Bases: :py:obj:`DataSource`
+
+
+   Describes any fsspec filesystem: directories are containers, and files with a
+   recognized data suffix (``.csv``, ``.parquet``, ...) are tables whose raw bytes are their
+   native encoding. Every node has metadata from its file information. CSV and JSONL
+   schemas are inferred from the first ``sample_size`` bytes.
+
+
+   .. py:attribute:: fs
+
+
+   .. py:attribute:: sample_size
+      :value: 1048576
+
+
+
+   .. py:method:: _node(info: dict[str, Any]) -> Node
+
+
+   .. py:method:: _table_format(path: str) -> fsspec_data.interchange.DataFormat
+
+
+   .. py:method:: _decode_schema(path: str, format: fsspec_data.interchange.DataFormat) -> pyarrow.Schema | None
+
+
+   .. py:method:: describe(path: str) -> Node
+
+      Describes the node at ``path``, including paths that no listing returns.
+
+
+
+   .. py:method:: children(path: str) -> list[Node]
+
+      The children of a container. Encoded aliases of other nodes are left out, so a
+      view does not show the same rows twice.
+
+
+
+   .. py:method:: schema(path: str) -> pyarrow.Schema
+
+
+   .. py:method:: scan(path: str, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+
+   .. py:method:: open_raw(path: str) -> BinaryIO
+
+
+   .. py:method:: metadata(path: str) -> dict[str, Any]
+
+

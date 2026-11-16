@@ -28,7 +28,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="fsspec_data.interchange" href="../interchange/index.html" />
-    <link rel="prev" title="fsspec_data.converters" href="../converters/index.html" />
+    <link rel="prev" title="fsspec_data.describe" href="../describe/index.html" />
     <script>
       (function () {
         var root = document.documentElement;
@@ -186,6 +186,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../describe/index.html">
+      <span class="fd-link-text">fsspec_data.describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link fd-current" href="#">
       <span class="fd-link-text">fsspec_data.filesystem</span>
     </a>
@@ -228,6 +233,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="../tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../tests/test_describe/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_describe</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -275,9 +285,6 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg><span>On this page</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg>
     </button>
     <div id="fd-toc-mobile" hidden><ul class="fd-toc-list">
-  <li class="fd-toc-item" data-depth="1">
-    <a href="#attributes">Attributes</a>
-  </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#classes">Classes</a>
   </li>
@@ -360,9 +367,6 @@
     <a href="#fsspec_data.filesystem.DataFileSystem._convert">DataFileSystem._convert()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
-    <a href="#fsspec_data.filesystem._SUFFIX_FORMATS">_SUFFIX_FORMATS</a>
-  </li>
-  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.filesystem._format_from_path">_format_from_path()</a>
   </li>
 </ul>
@@ -387,16 +391,6 @@
       <div class="fd-prose">
   <section id="module-fsspec_data.filesystem">
 <span id="fsspec-data-filesystem"></span><h1>fsspec_data.filesystem<a class="headerlink" href="#module-fsspec_data.filesystem" title="Link to this heading">¶</a></h1>
-<section id="attributes">
-<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.filesystem._SUFFIX_FORMATS" title="fsspec_data.filesystem._SUFFIX_FORMATS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_SUFFIX_FORMATS</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-</section>
 <section id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -621,11 +615,6 @@ the result of <code class="docutils literal notranslate"><span class="pre">info(
 
 </dd></dl>
 
-<dl class="py data">
-<dt class="sig sig-object py" id="fsspec_data.filesystem._SUFFIX_FORMATS">
-<span class="sig-prename descclassname"><span class="pre">fsspec_data.filesystem.</span></span><span class="sig-name descname"><span class="pre">_SUFFIX_FORMATS</span></span><a class="headerlink" href="#fsspec_data.filesystem._SUFFIX_FORMATS" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.filesystem._format_from_path">
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.filesystem.</span></span><span class="sig-name descname"><span class="pre">_format_from_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../interchange/index.html#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">fsspec_data.interchange.DataFormat</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/filesystem.html#_format_from_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.filesystem._format_from_path" title="Link to this definition">¶</a></dt>
@@ -637,11 +626,11 @@ the result of <code class="docutils literal notranslate"><span class="pre">info(
 
       </div>
 <nav class="fd-pagination" aria-label="Pagination">
-  <a class="fd-pagination-card fd-pagination-prev" href="../converters/index.html" title="Previous: fsspec_data.converters">
+  <a class="fd-pagination-card fd-pagination-prev" href="../describe/index.html" title="Previous: fsspec_data.describe">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m15 18-6-6 6-6"/></svg>
     <span class="fd-pagination-text">
       <span class="fd-pagination-label">Previous</span>
-      <span class="fd-pagination-title">fsspec_data.converters</span>
+      <span class="fd-pagination-title">fsspec_data.describe</span>
     </span>
   </a>
   <a class="fd-pagination-card fd-pagination-next" href="../interchange/index.html" title="Next: fsspec_data.interchange">
@@ -667,9 +656,6 @@ the result of <code class="docutils literal notranslate"><span class="pre">info(
       <path class="fd-toc-track" fill="none" />
       <path class="fd-toc-thumb" fill="none" />
     </svg><ul class="fd-toc-list">
-  <li class="fd-toc-item" data-depth="1">
-    <a href="#attributes">Attributes</a>
-  </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#classes">Classes</a>
   </li>
@@ -750,9 +736,6 @@ the result of <code class="docutils literal notranslate"><span class="pre">info(
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.filesystem.DataFileSystem._convert">DataFileSystem._convert()</a>
-  </li>
-  <li class="fd-toc-item" data-depth="2">
-    <a href="#fsspec_data.filesystem._SUFFIX_FORMATS">_SUFFIX_FORMATS</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.filesystem._format_from_path">_format_from_path()</a>

@@ -186,6 +186,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="describe/index.html">
+      <span class="fd-link-text">fsspec_data.describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="filesystem/index.html">
       <span class="fd-link-text">fsspec_data.filesystem</span>
     </a>
@@ -228,6 +233,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="tests/test_describe/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_describe</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -280,6 +290,9 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#attributes">Attributes</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#exceptions">Exceptions</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#classes">Classes</a>
@@ -340,6 +353,102 @@
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.ConverterRegistry.convert">ConverterRegistry.convert()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.DataSource">DataSource</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.describe">DataSource.describe()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.children">DataSource.children()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.schema">DataSource.schema()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.scan">DataSource.scan()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.open_raw">DataSource.open_raw()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.metadata">DataSource.metadata()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.Facet">Facet</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Facet.CHILDREN">Facet.CHILDREN</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Facet.TABLE">Facet.TABLE</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Facet.RAW">Facet.RAW</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Facet.METADATA">Facet.METADATA</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.FacetNotSupportedError">FacetNotSupportedError</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FacetNotSupportedError.path">FacetNotSupportedError.path</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FacetNotSupportedError.facet">FacetNotSupportedError.facet</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.FileDataSource">FileDataSource</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.fs">FileDataSource.fs</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.sample_size">FileDataSource.sample_size</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource._node">FileDataSource._node()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource._table_format">FileDataSource._table_format()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource._decode_schema">FileDataSource._decode_schema()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.describe">FileDataSource.describe()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.children">FileDataSource.children()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.schema">FileDataSource.schema()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.scan">FileDataSource.scan()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.open_raw">FileDataSource.open_raw()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.metadata">FileDataSource.metadata()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.Node">Node</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Node.path">Node.path</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Node.facets">Node.facets</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Node.native_format">Node.native_format</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Node.has">Node.has()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.DataFileSystem">DataFileSystem</a>
@@ -475,6 +584,9 @@
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.DataFormat.AVRO">DataFormat.AVRO</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataFormat.from_path">DataFormat.from_path()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.DecodedBatches">DecodedBatches</a>
@@ -781,6 +893,7 @@
 <li class="toctree-l1"><a class="reference internal" href="backends/index.html">fsspec_data.backends</a></li>
 <li class="toctree-l1"><a class="reference internal" href="confluent/index.html">fsspec_data.confluent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="converters/index.html">fsspec_data.converters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="describe/index.html">fsspec_data.describe</a></li>
 <li class="toctree-l1"><a class="reference internal" href="filesystem/index.html">fsspec_data.filesystem</a></li>
 <li class="toctree-l1"><a class="reference internal" href="interchange/index.html">fsspec_data.interchange</a></li>
 <li class="toctree-l1"><a class="reference internal" href="json_schema/index.html">fsspec_data.json_schema</a></li>
@@ -812,6 +925,16 @@
 </tbody>
 </table>
 </section>
+<section id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.FacetNotSupportedError" title="fsspec_data.FacetNotSupportedError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FacetNotSupportedError</span></code></a></p></td>
+<td><p>Method or function hasn't been implemented yet.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -821,6 +944,18 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.ConverterRegistry" title="fsspec_data.ConverterRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConverterRegistry</span></code></a></p></td>
 <td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.DataSource" title="fsspec_data.DataSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataSource</span></code></a></p></td>
+<td><p>A backend that describes its nodes. Methods for facets a backend never offers keep</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.Facet" title="fsspec_data.Facet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Facet</span></code></a></p></td>
+<td><p>Something a node offers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.FileDataSource" title="fsspec_data.FileDataSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileDataSource</span></code></a></p></td>
+<td><p>Describes any fsspec filesystem: directories are containers, and files with a</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.Node" title="fsspec_data.Node"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Node</span></code></a></p></td>
+<td><p>A node in a backend's namespace and the facets it offers. <code class="docutils literal notranslate"><span class="pre">native_format</span></code> is the</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.DataFileSystem" title="fsspec_data.DataFileSystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFileSystem</span></code></a></p></td>
 <td><p>Read-only format and schema conversion layered over another filesystem.</p></td>
@@ -981,6 +1116,187 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.ConverterRegistry.convert">
 <span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conversion_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/converters.html#ConverterRegistry.convert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.ConverterRegistry.convert" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.DataSource">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">DataSource</span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#DataSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataSource" title="Link to this definition">¶</a></dt>
+<dd><p>A backend that describes its nodes. Methods for facets a backend never offers keep
+their defaults, which raise <code class="docutils literal notranslate"><span class="pre">FacetNotSupportedError</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataSource.describe">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.Node" title="fsspec_data.Node"><span class="pre">Node</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#DataSource.describe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataSource.describe" title="Link to this definition">¶</a></dt>
+<dd><p>Describes the node at <code class="docutils literal notranslate"><span class="pre">path</span></code>, including paths that no listing returns.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataSource.children">
+<span class="sig-name descname"><span class="pre">children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fsspec_data.Node" title="fsspec_data.Node"><span class="pre">Node</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#DataSource.children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataSource.children" title="Link to this definition">¶</a></dt>
+<dd><p>The children of a container. Encoded aliases of other nodes are left out, so a
+view does not show the same rows twice.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataSource.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Schema</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#DataSource.schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataSource.schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataSource.scan">
+<span class="sig-name descname"><span class="pre">scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.DecodedBatchStream" title="fsspec_data.interchange.DecodedBatchStream"><span class="pre">fsspec_data.interchange.DecodedBatchStream</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#DataSource.scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataSource.scan" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataSource.open_raw">
+<span class="sig-name descname"><span class="pre">open_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BinaryIO</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#DataSource.open_raw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataSource.open_raw" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataSource.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#DataSource.metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataSource.metadata" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.Facet">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">Facet</span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#Facet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.Facet" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Something a node offers.</p>
+<p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.Facet.CHILDREN">
+<span class="sig-name descname"><span class="pre">CHILDREN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'children'</span></em><a class="headerlink" href="#fsspec_data.Facet.CHILDREN" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.Facet.TABLE">
+<span class="sig-name descname"><span class="pre">TABLE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'table'</span></em><a class="headerlink" href="#fsspec_data.Facet.TABLE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.Facet.RAW">
+<span class="sig-name descname"><span class="pre">RAW</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'raw'</span></em><a class="headerlink" href="#fsspec_data.Facet.RAW" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.Facet.METADATA">
+<span class="sig-name descname"><span class="pre">METADATA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'metadata'</span></em><a class="headerlink" href="#fsspec_data.Facet.METADATA" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="fsspec_data.FacetNotSupportedError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">FacetNotSupportedError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.Facet" title="fsspec_data.Facet"><span class="pre">Facet</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FacetNotSupportedError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FacetNotSupportedError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">NotImplementedError</span></code></p>
+<p>Method or function hasn’t been implemented yet.</p>
+<p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.FacetNotSupportedError.path">
+<span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#fsspec_data.FacetNotSupportedError.path" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.FacetNotSupportedError.facet">
+<span class="sig-name descname"><span class="pre">facet</span></span><a class="headerlink" href="#fsspec_data.FacetNotSupportedError.facet" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">FileDataSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec.AbstractFileSystem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FileDataSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FileDataSource" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fsspec_data.DataSource" title="fsspec_data.DataSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataSource</span></code></a></p>
+<p>Describes any fsspec filesystem: directories are containers, and files with a
+recognized data suffix (<code class="docutils literal notranslate"><span class="pre">.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">.parquet</span></code>, …) are tables whose raw bytes are their
+native encoding. Every node has metadata from its file information. CSV and JSONL
+schemas are inferred from the first <code class="docutils literal notranslate"><span class="pre">sample_size</span></code> bytes.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource.fs">
+<span class="sig-name descname"><span class="pre">fs</span></span><a class="headerlink" href="#fsspec_data.FileDataSource.fs" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource.sample_size">
+<span class="sig-name descname"><span class="pre">sample_size</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1048576</span></em><a class="headerlink" href="#fsspec_data.FileDataSource.sample_size" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource._node">
+<span class="sig-name descname"><span class="pre">_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.Node" title="fsspec_data.Node"><span class="pre">Node</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FileDataSource._node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FileDataSource._node" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource._table_format">
+<span class="sig-name descname"><span class="pre">_table_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">fsspec_data.interchange.DataFormat</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FileDataSource._table_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FileDataSource._table_format" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource._decode_schema">
+<span class="sig-name descname"><span class="pre">_decode_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">fsspec_data.interchange.DataFormat</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FileDataSource._decode_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FileDataSource._decode_schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource.describe">
+<span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.Node" title="fsspec_data.Node"><span class="pre">Node</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FileDataSource.describe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FileDataSource.describe" title="Link to this definition">¶</a></dt>
+<dd><p>Describes the node at <code class="docutils literal notranslate"><span class="pre">path</span></code>, including paths that no listing returns.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource.children">
+<span class="sig-name descname"><span class="pre">children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fsspec_data.Node" title="fsspec_data.Node"><span class="pre">Node</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FileDataSource.children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FileDataSource.children" title="Link to this definition">¶</a></dt>
+<dd><p>The children of a container. Encoded aliases of other nodes are left out, so a
+view does not show the same rows twice.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Schema</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FileDataSource.schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FileDataSource.schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource.scan">
+<span class="sig-name descname"><span class="pre">scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.DecodedBatchStream" title="fsspec_data.interchange.DecodedBatchStream"><span class="pre">fsspec_data.interchange.DecodedBatchStream</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FileDataSource.scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FileDataSource.scan" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource.open_raw">
+<span class="sig-name descname"><span class="pre">open_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BinaryIO</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FileDataSource.open_raw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FileDataSource.open_raw" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.FileDataSource.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#FileDataSource.metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.FileDataSource.metadata" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.Node">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fsspec_data.Facet" title="fsspec_data.Facet"><span class="pre">Facet</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">native_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">fsspec_data.interchange.DataFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#Node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.Node" title="Link to this definition">¶</a></dt>
+<dd><p>A node in a backend’s namespace and the facets it offers. <code class="docutils literal notranslate"><span class="pre">native_format</span></code> is the
+encoding of the raw bytes when they hold the node’s rows, such as a CSV object.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.Node.path">
+<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fsspec_data.Node.path" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.Node.facets">
+<span class="sig-name descname"><span class="pre">facets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">frozenset</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fsspec_data.Facet" title="fsspec_data.Facet"><span class="pre">Facet</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#fsspec_data.Node.facets" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.Node.native_format">
+<span class="sig-name descname"><span class="pre">native_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="interchange/index.html#fsspec_data.interchange.DataFormat" title="fsspec_data.interchange.DataFormat"><span class="pre">fsspec_data.interchange.DataFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.Node.native_format" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.Node.has">
+<span class="sig-name descname"><span class="pre">has</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.Facet" title="fsspec_data.Facet"><span class="pre">Facet</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/describe.html#Node.has"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.Node.has" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1303,6 +1619,12 @@ errors defaults to ‘strict’.</p>
 <dt class="sig sig-object py" id="fsspec_data.DataFormat.AVRO">
 <span class="sig-name descname"><span class="pre">AVRO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'avro'</span></em><a class="headerlink" href="#fsspec_data.DataFormat.AVRO" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataFormat.from_path">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.DataFormat" title="fsspec_data.DataFormat"><span class="pre">DataFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/interchange.html#DataFormat.from_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataFormat.from_path" title="Link to this definition">¶</a></dt>
+<dd><p>The format named by a path’s suffix, such as <code class="docutils literal notranslate"><span class="pre">.parquet</span></code> or <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code>.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1846,6 +2168,9 @@ errors defaults to ‘strict’.</p>
     <a href="#attributes">Attributes</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
+    <a href="#exceptions">Exceptions</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
     <a href="#classes">Classes</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
@@ -1904,6 +2229,102 @@ errors defaults to ‘strict’.</p>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.ConverterRegistry.convert">ConverterRegistry.convert()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.DataSource">DataSource</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.describe">DataSource.describe()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.children">DataSource.children()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.schema">DataSource.schema()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.scan">DataSource.scan()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.open_raw">DataSource.open_raw()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSource.metadata">DataSource.metadata()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.Facet">Facet</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Facet.CHILDREN">Facet.CHILDREN</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Facet.TABLE">Facet.TABLE</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Facet.RAW">Facet.RAW</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Facet.METADATA">Facet.METADATA</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.FacetNotSupportedError">FacetNotSupportedError</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FacetNotSupportedError.path">FacetNotSupportedError.path</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FacetNotSupportedError.facet">FacetNotSupportedError.facet</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.FileDataSource">FileDataSource</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.fs">FileDataSource.fs</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.sample_size">FileDataSource.sample_size</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource._node">FileDataSource._node()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource._table_format">FileDataSource._table_format()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource._decode_schema">FileDataSource._decode_schema()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.describe">FileDataSource.describe()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.children">FileDataSource.children()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.schema">FileDataSource.schema()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.scan">FileDataSource.scan()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.open_raw">FileDataSource.open_raw()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.FileDataSource.metadata">FileDataSource.metadata()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.Node">Node</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Node.path">Node.path</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Node.facets">Node.facets</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Node.native_format">Node.native_format</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.Node.has">Node.has()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.DataFileSystem">DataFileSystem</a>
@@ -2039,6 +2460,9 @@ errors defaults to ‘strict’.</p>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.DataFormat.AVRO">DataFormat.AVRO</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataFormat.from_path">DataFormat.from_path()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.DecodedBatches">DecodedBatches</a>

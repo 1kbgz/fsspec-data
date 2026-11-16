@@ -378,3 +378,37 @@ plan = plan_schema(
     drop=["legacy"],
 )
 ```
+
+## Data sources
+
+`DataSource` is the contract a backend implements so its nodes can be rendered as files. It
+exists as a Python base class and a Rust trait with the same methods. `describe(path)`
+returns a `Node` with its `path`, a set of `Facet`s, and a `native_format` when the node's raw
+bytes already encode its rows. `describe` also resolves paths that no listing returns.
+
+| Facet      | Method            | Returns                                                      |
+| ---------- | ----------------- | ------------------------------------------------------------ |
+| `CHILDREN` | `children(path)`  | child `Node`s, without encoded aliases                       |
+| `TABLE`    | `schema(path)`    | the Arrow schema                                             |
+| `TABLE`    | `scan(path, ...)` | a `DecodedBatchStream` (Rust: `DecodedStream`)               |
+| `RAW`      | `open_raw(path)`  | a binary file object (Rust: `CodecReader`) over native bytes |
+| `METADATA` | `metadata(path)`  | a JSON-compatible mapping (Rust: `Metadata`)                 |
+
+Any node may offer metadata, including directories and the root. A method for a facet the
+node does not offer raises `FacetNotSupportedError` (Rust: returns
+`InterchangeError::FacetNotSupported`). Rust facet names are `Children`, `Table`, `Raw`, and
+`Metadata`. Python `scan` takes keyword arguments `batch_size`, `row_limit`, and
+`byte_limit`; Rust `scan` takes `StreamOptions` and a `CancellationToken`.
+
+`FileDataSource(fs, sample_size=1048576)` describes any fsspec filesystem (Rust:
+`FileDataSource::new(fs)` over an `fsspec_rs` filesystem, with a public `sample_size` field).
+Directories have `CHILDREN` and `METADATA`. Files have `RAW` and `METADATA`, plus `TABLE` when
+`DataFormat.from_path` recognizes the suffix. CSV and JSONL schemas are inferred from the
+first `sample_size` bytes. Python metadata is the filesystem's `info()` without `name` and
+`type`, and without `size` for directories; values that are not JSON scalars become strings.
+Rust metadata holds `size` for files, `created` and `mtime` in seconds since the Unix epoch
+when known, and the filesystem's extra fields as strings.
+
+`DataFormat.from_path(path)` (Rust: `DataFormat::from_path`) maps `.arrow`, `.ipc`,
+`.parquet`, `.pq`, `.csv`, `.jsonl`, `.ndjson`, and `.avro` to a format and returns `None` for
+anything else.
