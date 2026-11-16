@@ -144,21 +144,8 @@ class DataFileSystem(ChainedFileSystem):
             DEFAULT_REGISTRY.get(requested_format).encode_batches_to(batches, output, schema=requested_schema)
 
 
-_SUFFIX_FORMATS = {
-    ".arrow": DataFormat.ARROW,
-    ".csv": DataFormat.CSV,
-    ".ipc": DataFormat.ARROW,
-    ".jsonl": DataFormat.JSONL,
-    ".ndjson": DataFormat.JSONL,
-    ".parquet": DataFormat.PARQUET,
-    ".pq": DataFormat.PARQUET,
-    ".avro": DataFormat.AVRO,
-}
-
-
 def _format_from_path(path: str) -> DataFormat:
-    suffix = "." + path.rsplit(".", 1)[-1].lower() if "." in path.rsplit("/", 1)[-1] else ""
-    try:
-        return _SUFFIX_FORMATS[suffix]
-    except KeyError as error:
-        raise ValueError(f"cannot infer tabular format from path {path!r}") from error
+    format = DataFormat.from_path(path)
+    if format is None:
+        raise ValueError(f"cannot infer tabular format from path {path!r}")
+    return format

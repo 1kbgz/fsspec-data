@@ -115,6 +115,8 @@ pub enum InterchangeError {
         source_type: String,
         target_type: String,
     },
+    #[error("{path} has no {facet} facet")]
+    FacetNotSupported { path: String, facet: &'static str },
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error(transparent)]

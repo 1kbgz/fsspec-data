@@ -48,6 +48,20 @@ impl SchemaPolicy {
 }
 
 impl DataFormat {
+    /// The format named by a path's suffix, such as `.parquet` or `.ndjson`.
+    pub fn from_path(path: &str) -> Option<Self> {
+        let name = path.rsplit('/').next().unwrap_or(path);
+        let (_, suffix) = name.rsplit_once('.')?;
+        match suffix.to_ascii_lowercase().as_str() {
+            "arrow" | "ipc" => Some(Self::Arrow),
+            "parquet" | "pq" => Some(Self::Parquet),
+            "csv" => Some(Self::Csv),
+            "jsonl" | "ndjson" => Some(Self::JsonLines),
+            "avro" => Some(Self::Avro),
+            _ => None,
+        }
+    }
+
     pub fn parse(value: &str) -> Result<Self> {
         match value {
             "arrow" => Ok(Self::Arrow),

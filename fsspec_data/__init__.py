@@ -4,6 +4,7 @@ from .converters import (
     Converter,
     ConverterRegistry,
 )
+from .describe import DataSource, Facet, FacetNotSupportedError, FileDataSource, Node
 from .filesystem import DataFileSystem
 from .interchange import (
     DEFAULT_REGISTRY,
@@ -47,12 +48,17 @@ __all__ = [
     "ConverterRegistry",
     "DataFileSystem",
     "DataFormat",
+    "DataSource",
     "DecodedBatchStream",
     "DecodedBatches",
+    "Facet",
+    "FacetNotSupportedError",
     "FieldAddition",
     "FieldMapping",
+    "FileDataSource",
     "InterchangePlan",
     "InterchangeRequest",
+    "Node",
     "PlannedBatchStream",
     "ResolvedSchema",
     "SchemaDocument",
