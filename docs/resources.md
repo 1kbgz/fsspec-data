@@ -27,7 +27,7 @@ to.
 Accepts a PyArrow schema, `SchemaRef`, or `None`. Returns `ResolvedSchema` or
 `None`. Inline Arrow schemas have `source="inline"`, `format="arrow"`, and
 `provider="inline"`. References use `registry` or `DEFAULT_SCHEMA_RESOLVERS`.
-The public function expects an already constructed reference; `DataFileSystem`
+The public function expects an already constructed reference; `DataViewFileSystem`
 also accepts URL strings and reference mappings and normalizes them first.
 
 ### `SchemaResolverRegistry`

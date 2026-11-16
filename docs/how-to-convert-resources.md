@@ -37,7 +37,7 @@ DEFAULT_CONVERTERS.convert(
 )
 ```
 
-Use the converter API rather than `DataFileSystem.open()` for Zarr because a Zarr hierarchy
+Use the converter API rather than `DataViewFileSystem.open()` for Zarr because a Zarr hierarchy
 contains multiple metadata and chunk objects.
 
 ## Register a converter through an entry point

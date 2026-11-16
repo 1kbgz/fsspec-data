@@ -64,8 +64,8 @@ write a store, or use Arrow internally when that is appropriate. Entry-point dis
 integration packages add routes without adding their dependencies or release cadence to
 `fsspec-data`.
 
-`DataFileSystem` remains the read-only façade for single-file tabular conversion. Native
-resource conversion uses `ConverterRegistry` directly because its output may not satisfy a
+`DataViewFileSystem` is the read-only façade for tabular conversion, of one file or of a
+whole backend. Native resource conversion uses `ConverterRegistry` directly because its output may not satisfy a
 file-like `open()` contract.
 
 ## Arrow is the internal boundary
@@ -133,8 +133,8 @@ chunks can reside at different offsets. Arrow IPC, CSV, and JSONL consume reader
 sequentially, but use the same seekable reader contract so registry consumers have one input
 boundary.
 
-`DataFileSystem` opens its inner source through fsspec, applies its schema plan batch by
-batch, and writes encoded output directly into a seekable spooled file. This bounds
+`DataViewFileSystem` reads its source through fsspec or the source's `scan`, applies its
+schema plan batch by batch, and writes encoded output directly into a seekable spooled file. This bounds
 intermediate transport memory without changing the filesystem contract: `_open()` still
 completes conversion before returning the spool, and `info()` may perform a complete
 conversion to determine output size. Individual format writers may also buffer internally;

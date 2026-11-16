@@ -8,8 +8,8 @@ Convert tabular formats and reconcile Arrow schemas over fsspec.
 [![PyPI](https://img.shields.io/pypi/v/fsspec-data.svg)](https://pypi.python.org/pypi/fsspec-data)
 
 `fsspec-data` plans schema mappings and executes them over Arrow record batches.
-Codecs handle Arrow IPC, Parquet, CSV, and JSONL. A read-only chained filesystem
-exposes converted files; a separate converter registry handles resources such as
+Codecs handle Arrow IPC, Parquet, CSV, and JSONL. The read-only `dataview` filesystem
+exposes converted files, schemas, and metadata of any source; a separate converter registry handles resources such as
 Xarray datasets and Zarr stores.
 
 ## Start here
