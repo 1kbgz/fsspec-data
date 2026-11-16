@@ -1156,6 +1156,14 @@ Package Contents
 
 
 
+   .. py:method:: _view_path(path: str) -> str
+
+      ``path`` relative to the view. Paths under the root are accepted too, since fsspec
+      hands a chained URL without an outer path (``dataview::file:///data``) the wrapped
+      filesystem's path.
+
+
+
    .. py:method:: _info(path: str, entry: ViewEntry) -> dict[str, Any]
 
 
@@ -1216,6 +1224,6 @@ Package Contents
 
 
 .. py:data:: __version__
-   :value: '0.6.0'
+   :value: '0.7.0'
 
 
