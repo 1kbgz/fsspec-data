@@ -101,6 +101,10 @@ def test_views_open_through_fsspec_urls(memory):
         assert pq.read_table(file).num_rows == 2
     with fsspec.open("dataview://nested.csv::memory:///data", "rb", dataview={"mapping": {"index": ["csv"]}}) as file:
         assert file.read().startswith(b"name,size")
+    fs, path = fsspec.core.url_to_fs("dataview::memory:///data")
+    assert path == "/data"
+    assert "data/orders.parquet" in fs.ls(path, detail=False)
+    assert pq.read_table(fs.open(f"{path}/orders.parquet")).num_rows == 2
     with pytest.raises(ValueError, match="read-only"):
         view(memory).open("orders.parquet", "wb")
 

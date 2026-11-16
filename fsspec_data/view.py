@@ -90,7 +90,7 @@ class DataViewFileSystem(ChainedFileSystem):
 
     def resolve(self, path: str) -> ViewEntry:
         """The node, facet, and form a view path renders."""
-        path = self._strip_protocol(path).strip("/")
+        path = self._view_path(path)
         if not path:
             return self._entry_for(self.source.describe(self.root), "", "children", "dir")
         parent, _, name = path.rpartition("/")
@@ -105,14 +105,15 @@ class DataViewFileSystem(ChainedFileSystem):
 
     def ls(self, path: str, detail: bool = True, **kwargs: Any):
         del kwargs
-        path = self._strip_protocol(path).strip("/")
-        entries = self._entries(self._source_dir(path))
-        infos = [self._info(f"{path}/{name}" if path else name, entry) for name, entry in sorted(entries.items())]
+        # Names keep the form the caller used, relative to the view or under its root.
+        prefix = self._strip_protocol(path).strip("/")
+        entries = self._entries(self._source_dir(self._view_path(path)))
+        infos = [self._info(f"{prefix}/{name}" if prefix else name, entry) for name, entry in sorted(entries.items())]
         return infos if detail else [info["name"] for info in infos]
 
     def info(self, path: str, **kwargs: Any) -> dict[str, Any]:
         del kwargs
-        path = self._strip_protocol(path).strip("/")
+        path = self._view_path(path)
         info = self._info(path, self.resolve(path))
         if info["type"] == "file" and info["size"] is None:
             with self._open(path) as file:
@@ -135,7 +136,7 @@ class DataViewFileSystem(ChainedFileSystem):
         del block_size, autocommit, cache_options, kwargs
         if mode != "rb":
             raise ValueError("dataview is a read-only filesystem")
-        path = self._strip_protocol(path).strip("/")
+        path = self._view_path(path)
         entry = self.resolve(path)
         if entry.facet == "children":
             raise IsADirectoryError(path)
@@ -148,6 +149,16 @@ class DataViewFileSystem(ChainedFileSystem):
             file.close()
             raise
         return file
+
+    def _view_path(self, path: str) -> str:
+        """``path`` relative to the view. Paths under the root are accepted too, since fsspec
+        hands a chained URL without an outer path (``dataview::file:///data``) the wrapped
+        filesystem's path."""
+        path = self._strip_protocol(path).strip("/")
+        root = self.root.strip("/")
+        if root and (path == root or path.startswith(f"{root}/")):
+            path = path[len(root) :].strip("/")
+        return path
 
     def _info(self, path: str, entry: ViewEntry) -> dict[str, Any]:
         if entry.facet == "children":
