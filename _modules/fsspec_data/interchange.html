@@ -705,7 +705,7 @@ window.runMermaid = runMermaid;</script>
   <h1>Source code for fsspec_data.interchange</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_module</span>
@@ -786,9 +786,10 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="DecodedBatchStream">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data.DecodedBatchStream">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DecodedBatchStream</span><span class="p">:</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span><span class="p">,</span> <span class="n">native</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span><span class="p">,</span> <span class="n">native</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">on_cancel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_native</span> <span class="o">=</span> <span class="n">native</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_cancel</span> <span class="o">=</span> <span class="n">on_cancel</span>
 
 <div class="viewcode-block" id="DecodedBatchStream.__iter__">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data.DecodedBatchStream.__iter__">[docs]</a>
@@ -805,7 +806,9 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="DecodedBatchStream.cancel">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/interchange/index.html#fsspec_data.DecodedBatchStream.cancel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_cancel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_on_cancel</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="DecodedBatchStream.collect">
@@ -924,6 +927,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
         <span class="n">row_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">byte_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DecodedBatches</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_batches</span><span class="p">(</span>
             <span class="n">data</span><span class="p">,</span>
@@ -931,6 +935,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">row_limit</span><span class="o">=</span><span class="n">row_limit</span><span class="p">,</span>
             <span class="n">byte_limit</span><span class="o">=</span><span class="n">byte_limit</span><span class="p">,</span>
+            <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></div>
 
 
@@ -944,6 +949,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
         <span class="n">row_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">byte_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DecodedBatchStream</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">schema</span> <span class="o">=</span> <span class="n">_ensure_pyarrow</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
@@ -955,6 +961,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">batch_size</span><span class="p">,</span>
                 <span class="n">row_limit</span><span class="p">,</span>
                 <span class="n">byte_limit</span><span class="p">,</span>
+                <span class="n">columns</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"read"</span><span class="p">):</span>
             <span class="n">decoded_schema</span><span class="p">,</span> <span class="n">native</span> <span class="o">=</span> <span class="n">_rust</span><span class="o">.</span><span class="n">decode_reader</span><span class="p">(</span>
@@ -964,6 +971,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">batch_size</span><span class="p">,</span>
                 <span class="n">row_limit</span><span class="p">,</span>
                 <span class="n">byte_limit</span><span class="p">,</span>
+                <span class="n">columns</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"data must be bytes-like or a binary file-like object"</span><span class="p">)</span>

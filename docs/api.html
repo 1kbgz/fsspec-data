@@ -333,7 +333,7 @@
     <a href="#encode-batches-to-batches-output-schema-none">encode_batches_to(batches, output, *, schema=None)</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
-    <a href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none">iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None)</a>
+    <a href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none">iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None)</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#decode-batches">decode_batches(...)</a>
@@ -612,8 +612,8 @@ empty. All batches must match the encoding schema.</p>
 <p>Raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> for non-Arrow batches or a non-schema <code class="docutils literal notranslate"><span class="pre">schema</span></code>, <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> for missing
 or mismatched schemas, and <code class="docutils literal notranslate"><span class="pre">OSError</span></code> when the output writer fails.</p>
 </section>
-<section id="iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none">
-<h3><code class="docutils literal notranslate"><span class="pre">iter_batches(data,</span> <span class="pre">*,</span> <span class="pre">schema=None,</span> <span class="pre">batch_size=1024,</span> <span class="pre">row_limit=None,</span> <span class="pre">byte_limit=None)</span></code><a class="headerlink" href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none" title="Link to this heading">¶</a></h3>
+<section id="iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none">
+<h3><code class="docutils literal notranslate"><span class="pre">iter_batches(data,</span> <span class="pre">*,</span> <span class="pre">schema=None,</span> <span class="pre">batch_size=1024,</span> <span class="pre">row_limit=None,</span> <span class="pre">byte_limit=None,</span> <span class="pre">columns=None)</span></code><a class="headerlink" href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none" title="Link to this heading">¶</a></h3>
 <p>Returns <code class="docutils literal notranslate"><span class="pre">DecodedBatchStream</span></code>.</p>
 <p>Parameters:</p>
 <ul class="simple">
@@ -626,6 +626,12 @@ Parquet.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">byte_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: maximum cumulative Arrow array memory referenced by yielded
 batches. Exceeding it raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p></li>
 </ul>
+<p><code class="docutils literal notranslate"><span class="pre">columns:</span> <span class="pre">Sequence[str]</span> <span class="pre">|</span> <span class="pre">None</span></code> selects top-level fields by name. <code class="docutils literal notranslate"><span class="pre">None</span></code> returns all
+fields; an empty sequence returns zero-column batches with their row counts preserved.
+Requested order and duplicate names are preserved, including nested fields selected by
+their top-level name. Unknown names raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. Schema and field metadata are
+preserved. Parquet reads only the selected column chunks; other codecs project decoded
+batches. Row and byte limits apply to the projected output.</p>
 </section>
 <section id="decode-batches">
 <h3><code class="docutils literal notranslate"><span class="pre">decode_batches(...)</span></code><a class="headerlink" href="#decode-batches" title="Link to this heading">¶</a></h3>
@@ -654,6 +660,10 @@ codecs buffers the reader and calls <code class="docutils literal notranslate"><
 <code class="docutils literal notranslate"><span class="pre">Codec</span></code> implementations.</p>
 <p>Parquet decoding uses seekable range reads because file metadata and column chunks may be
 located at different offsets.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Codec::decode_reader_columns(reader,</span> <span class="pre">schema,</span> <span class="pre">columns,</span> <span class="pre">options,</span> <span class="pre">cancellation)</span></code> accepts a
+<code class="docutils literal notranslate"><span class="pre">&amp;[String]</span></code> of top-level names with the same selection semantics as Python <code class="docutils literal notranslate"><span class="pre">columns</span></code>.
+The default implementation projects decoded batches. The Parquet implementation selects
+column chunks before decoding. Existing <code class="docutils literal notranslate"><span class="pre">decode_reader</span></code> implementations remain valid.</p>
 </section>
 <section id="rust-codecwriter">
 <h2>Rust <code class="docutils literal notranslate"><span class="pre">CodecWriter</span></code><a class="headerlink" href="#rust-codecwriter" title="Link to this heading">¶</a></h2>
@@ -857,6 +867,13 @@ node does not offer raises <code class="docutils literal notranslate"><span clas
 <code class="docutils literal notranslate"><span class="pre">InterchangeError::FacetNotSupported</span></code>). Rust facet names are <code class="docutils literal notranslate"><span class="pre">Children</span></code>, <code class="docutils literal notranslate"><span class="pre">Table</span></code>, <code class="docutils literal notranslate"><span class="pre">Raw</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">Metadata</span></code>. Python <code class="docutils literal notranslate"><span class="pre">scan</span></code> takes keyword arguments <code class="docutils literal notranslate"><span class="pre">batch_size</span></code>, <code class="docutils literal notranslate"><span class="pre">row_limit</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">byte_limit</span></code>; Rust <code class="docutils literal notranslate"><span class="pre">scan</span></code> takes <code class="docutils literal notranslate"><span class="pre">StreamOptions</span></code> and a <code class="docutils literal notranslate"><span class="pre">CancellationToken</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">scan_columns(path,</span> <span class="pre">columns,</span> <span class="pre">*,</span> <span class="pre">batch_size=1024,</span> <span class="pre">row_limit=None,</span> <span class="pre">byte_limit=None)</span></code> returns
+selected top-level columns in requested order, including duplicates. Empty selections
+preserve row counts; unknown names raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. The default calls the backend’s
+existing <code class="docutils literal notranslate"><span class="pre">scan</span></code> and projects batches before enforcing output limits. <code class="docutils literal notranslate"><span class="pre">FileDataSource</span></code>
+pushes Parquet selection into decoding. Rust exposes
+<code class="docutils literal notranslate"><span class="pre">DataSource::scan_columns(path,</span> <span class="pre">columns,</span> <span class="pre">options,</span> <span class="pre">cancellation)</span></code>, where <code class="docutils literal notranslate"><span class="pre">columns</span></code> is
+<code class="docutils literal notranslate"><span class="pre">&amp;[String]</span></code>; existing <code class="docutils literal notranslate"><span class="pre">scan</span></code> and <code class="docutils literal notranslate"><span class="pre">StreamOptions</span></code> signatures are unchanged.</p>
 <p><code class="docutils literal notranslate"><span class="pre">FileDataSource(fs,</span> <span class="pre">sample_size=1048576)</span></code> describes any fsspec filesystem (Rust:
 <code class="docutils literal notranslate"><span class="pre">FileDataSource::new(fs)</span></code> over an <code class="docutils literal notranslate"><span class="pre">fsspec_rs</span></code> filesystem, with a public <code class="docutils literal notranslate"><span class="pre">sample_size</span></code> field).
 Directories have <code class="docutils literal notranslate"><span class="pre">CHILDREN</span></code> and <code class="docutils literal notranslate"><span class="pre">METADATA</span></code>. Files have <code class="docutils literal notranslate"><span class="pre">RAW</span></code> and <code class="docutils literal notranslate"><span class="pre">METADATA</span></code>, plus <code class="docutils literal notranslate"><span class="pre">TABLE</span></code> when
@@ -947,7 +964,7 @@ anything else.</p>
     <a href="#encode-batches-to-batches-output-schema-none">encode_batches_to(batches, output, *, schema=None)</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
-    <a href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none">iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None)</a>
+    <a href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none">iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None)</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#decode-batches">decode_batches(...)</a>

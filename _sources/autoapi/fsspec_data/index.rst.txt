@@ -176,6 +176,14 @@ Package Contents
    .. py:method:: scan(path: str, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
 
 
+   .. py:method:: scan_columns(path: str, columns: collections.abc.Sequence[str], *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+      Scan top-level columns in requested order, preserving duplicates and row counts.
+
+      Existing backends use batch projection. Output limits apply after projection.
+
+
+
    .. py:method:: open_raw(path: str) -> BinaryIO
 
 
@@ -275,6 +283,14 @@ Package Contents
    .. py:method:: scan(path: str, *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
 
 
+   .. py:method:: scan_columns(path: str, columns: collections.abc.Sequence[str], *, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+      Scan top-level columns in requested order, preserving duplicates and row counts.
+
+      Existing backends use batch projection. Output limits apply after projection.
+
+
+
    .. py:method:: open_raw(path: str) -> BinaryIO
 
 
@@ -330,10 +346,10 @@ Package Contents
 
 
 
-   .. py:method:: decode_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatches
+   .. py:method:: decode_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None) -> DecodedBatches
 
 
-   .. py:method:: iter_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatchStream
+   .. py:method:: iter_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None) -> DecodedBatchStream
 
 
 .. py:class:: CodecCapabilities
@@ -417,12 +433,17 @@ Package Contents
       :type:  tuple[pyarrow.RecordBatch, ...]
 
 
-.. py:class:: DecodedBatchStream(schema: pyarrow.Schema, native: Any)
+.. py:class:: DecodedBatchStream(schema: pyarrow.Schema, native: Any, *, on_cancel: collections.abc.Callable[[], None] | None = None)
 
    .. py:attribute:: schema
 
 
    .. py:attribute:: _native
+
+
+   .. py:attribute:: _on_cancel
+      :value: None
+
 
 
    .. py:method:: __iter__() -> DecodedBatchStream

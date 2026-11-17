@@ -165,12 +165,17 @@ Module Contents
       :type:  tuple[pyarrow.RecordBatch, ...]
 
 
-.. py:class:: DecodedBatchStream(schema: pyarrow.Schema, native: Any)
+.. py:class:: DecodedBatchStream(schema: pyarrow.Schema, native: Any, *, on_cancel: collections.abc.Callable[[], None] | None = None)
 
    .. py:attribute:: schema
 
 
    .. py:attribute:: _native
+
+
+   .. py:attribute:: _on_cancel
+      :value: None
+
 
 
    .. py:method:: __iter__() -> DecodedBatchStream
@@ -229,10 +234,10 @@ Module Contents
 
 
 
-   .. py:method:: decode_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatches
+   .. py:method:: decode_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None) -> DecodedBatches
 
 
-   .. py:method:: iter_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> DecodedBatchStream
+   .. py:method:: iter_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None) -> DecodedBatchStream
 
 
 .. py:class:: CodecRegistry

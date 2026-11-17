@@ -25,6 +25,12 @@ Functions
    fsspec_data.tests.test_describe.test_data_format_from_path
    fsspec_data.tests.test_describe.test_a_catalog_backend_describes_metadata_at_every_level
    fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported
+   fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns
+   fsspec_data.tests.test_describe.test_file_column_selection_order_duplicates_and_unknown_names
+   fsspec_data.tests.test_describe.test_source_column_selection_fallback_limits_and_cancellation
+   fsspec_data.tests.test_describe.test_parquet_selection_preserves_nested_columns_and_metadata
+   fsspec_data.tests.test_describe.test_codec_column_selection_bytes_and_readers
+   fsspec_data.tests.test_describe.test_column_selection_cancels_source
 
 
 Module Contents
@@ -82,4 +88,16 @@ Module Contents
 .. py:function:: test_a_catalog_backend_describes_metadata_at_every_level()
 
 .. py:function:: test_facets_a_source_does_not_implement_raise_facet_not_supported()
+
+.. py:function:: test_file_column_selection_preserves_rows_with_no_columns(files, path)
+
+.. py:function:: test_file_column_selection_order_duplicates_and_unknown_names(files)
+
+.. py:function:: test_source_column_selection_fallback_limits_and_cancellation()
+
+.. py:function:: test_parquet_selection_preserves_nested_columns_and_metadata(files)
+
+.. py:function:: test_codec_column_selection_bytes_and_readers(format, file_like)
+
+.. py:function:: test_column_selection_cancels_source(cancel_fails)
 

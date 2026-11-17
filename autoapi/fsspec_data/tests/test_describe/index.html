@@ -347,6 +347,24 @@
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported">test_facets_a_source_does_not_implement_raise_facet_not_supported()</a>
   </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns">test_file_column_selection_preserves_rows_with_no_columns()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_file_column_selection_order_duplicates_and_unknown_names">test_file_column_selection_order_duplicates_and_unknown_names()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_source_column_selection_fallback_limits_and_cancellation">test_source_column_selection_fallback_limits_and_cancellation()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_selection_preserves_nested_columns_and_metadata">test_parquet_selection_preserves_nested_columns_and_metadata()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_codec_column_selection_bytes_and_readers">test_codec_column_selection_bytes_and_readers()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_column_selection_cancels_source">test_column_selection_cancels_source()</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -409,6 +427,24 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported" title="fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_facets_a_source_does_not_implement_raise_facet_not_supported</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns" title="fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_file_column_selection_preserves_rows_with_no_columns</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_file_column_selection_order_duplicates_and_unknown_names" title="fsspec_data.tests.test_describe.test_file_column_selection_order_duplicates_and_unknown_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_file_column_selection_order_duplicates_and_unknown_names</span></code></a>(files)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_source_column_selection_fallback_limits_and_cancellation" title="fsspec_data.tests.test_describe.test_source_column_selection_fallback_limits_and_cancellation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_source_column_selection_fallback_limits_and_cancellation</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_parquet_selection_preserves_nested_columns_and_metadata" title="fsspec_data.tests.test_describe.test_parquet_selection_preserves_nested_columns_and_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_parquet_selection_preserves_nested_columns_and_metadata</span></code></a>(files)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_codec_column_selection_bytes_and_readers" title="fsspec_data.tests.test_describe.test_codec_column_selection_bytes_and_readers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_codec_column_selection_bytes_and_readers</span></code></a>(format, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_column_selection_cancels_source" title="fsspec_data.tests.test_describe.test_column_selection_cancels_source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_column_selection_cancels_source</span></code></a>(cancel_fails)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -499,6 +535,36 @@ view does not show the same rows twice.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported">
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_facets_a_source_does_not_implement_raise_facet_not_supported</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_file_column_selection_preserves_rows_with_no_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_file_column_selection_order_duplicates_and_unknown_names">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_file_column_selection_order_duplicates_and_unknown_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_file_column_selection_order_duplicates_and_unknown_names" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_source_column_selection_fallback_limits_and_cancellation">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_source_column_selection_fallback_limits_and_cancellation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_source_column_selection_fallback_limits_and_cancellation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_parquet_selection_preserves_nested_columns_and_metadata">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_parquet_selection_preserves_nested_columns_and_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_parquet_selection_preserves_nested_columns_and_metadata" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_codec_column_selection_bytes_and_readers">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_codec_column_selection_bytes_and_readers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_like</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_codec_column_selection_bytes_and_readers" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_column_selection_cancels_source">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_column_selection_cancels_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cancel_fails</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_column_selection_cancels_source" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -593,6 +659,24 @@ view does not show the same rows twice.</p>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported">test_facets_a_source_does_not_implement_raise_facet_not_supported()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns">test_file_column_selection_preserves_rows_with_no_columns()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_file_column_selection_order_duplicates_and_unknown_names">test_file_column_selection_order_duplicates_and_unknown_names()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_source_column_selection_fallback_limits_and_cancellation">test_source_column_selection_fallback_limits_and_cancellation()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_selection_preserves_nested_columns_and_metadata">test_parquet_selection_preserves_nested_columns_and_metadata()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_codec_column_selection_bytes_and_readers">test_codec_column_selection_bytes_and_readers()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_column_selection_cancels_source">test_column_selection_cancels_source()</a>
   </li>
 </ul>
 
