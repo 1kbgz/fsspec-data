@@ -102,6 +102,26 @@ pub trait DataSource: Send + Sync {
         Err(not_supported(path, Facet::Table))
     }
 
+    /// Scan selected top-level columns in requested order, including duplicates.
+    /// Existing backends inherit batch projection; file sources push it into codecs.
+    fn scan_columns(
+        &self,
+        path: &str,
+        columns: &[String],
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        let stream = self.scan(
+            path,
+            StreamOptions {
+                byte_limit: None,
+                ..options
+            },
+            cancellation.clone(),
+        )?;
+        crate::stream::project_columns(stream, columns, options, cancellation)
+    }
+
     /// The bytes of a [`Facet::Raw`] node.
     fn open_raw(&self, path: &str) -> Result<Box<dyn CodecReader>> {
         Err(not_supported(path, Facet::Raw))
@@ -212,6 +232,24 @@ impl DataSource for FileDataSource {
         DEFAULT_REGISTRY.get(format)?.decode_reader(
             self.open_raw(path)?,
             schema,
+            options,
+            cancellation,
+        )
+    }
+
+    fn scan_columns(
+        &self,
+        path: &str,
+        columns: &[String],
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        let format = self.table_format(path)?;
+        let schema = self.decode_schema(path, format)?;
+        DEFAULT_REGISTRY.get(format)?.decode_reader_columns(
+            self.open_raw(path)?,
+            schema,
+            columns,
             options,
             cancellation,
         )
@@ -430,6 +468,44 @@ mod tests {
                 _ => unreachable!(),
             }
         }
+    }
+
+    #[test]
+    fn sources_project_columns_without_changing_existing_scan_implementations() {
+        let catalog = Catalog::new();
+        let files = files();
+        let cases: [(&dyn DataSource, &str); 3] = [
+            (&catalog, "finance/rates/datasets/curves"),
+            (&files, "/data/orders.csv"),
+            (&files, "/data/nested/ids.parquet"),
+        ];
+        for (source, path) in cases {
+            let stream = source
+                .scan_columns(
+                    path,
+                    &[],
+                    StreamOptions {
+                        row_limit: Some(1),
+                        byte_limit: Some(0),
+                        ..Default::default()
+                    },
+                    CancellationToken::new(),
+                )
+                .unwrap();
+            assert!(stream.schema.fields().is_empty());
+            assert_eq!(rows(stream), 1);
+        }
+        let mut stream = catalog
+            .scan_columns(
+                "finance/rates/datasets/curves",
+                &["tenor".into(), "tenor".into()],
+                StreamOptions::default(),
+                CancellationToken::new(),
+            )
+            .unwrap();
+        let batch = stream.next().unwrap().unwrap();
+        assert_eq!(batch.num_columns(), 2);
+        assert_eq!(batch.column(0), batch.column(1));
     }
 
     #[test]

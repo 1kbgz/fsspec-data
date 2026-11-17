@@ -286,7 +286,13 @@ class DataViewFileSystem(ChainedFileSystem):
         self.provided_schema_provenance = provided.provenance if provided is not None else None
         self.requested_schema_provenance = requested.provenance if requested is not None else None
         if provided is not None and node.native_format is not None and node.has(Facet.RAW):
-            decoded = DEFAULT_REGISTRY.get(node.native_format).iter_batches(self.source.open_raw(node.path), schema=provided.schema, **limits)
+            decoded = DEFAULT_REGISTRY.get(node.native_format).iter_batches(
+                self.source.open_raw(node.path),
+                schema=provided.schema,
+                batch_size=self.batch_size,
+                row_limit=self.row_limit,
+                byte_limit=self.byte_limit,
+            )
         else:
             decoded = self.source.scan(node.path, **limits)
         if provided is not None and not decoded.schema.equals(provided.schema, check_metadata=False):

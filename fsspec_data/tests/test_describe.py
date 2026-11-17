@@ -132,3 +132,103 @@ def test_facets_a_source_does_not_implement_raise_facet_not_supported():
         assert str(error.value) == f"x has no {facet.value} facet"
     with pytest.raises(NotImplementedError):
         DataSource().describe("x")
+
+
+@pytest.mark.parametrize("path", ["/data/orders.csv", "/data/nested/ids.parquet"])
+def test_file_column_selection_preserves_rows_with_no_columns(files, path):
+    stream = files.scan_columns(path, [], batch_size=1, row_limit=1, byte_limit=0)
+    assert stream.schema.names == []
+    batches = list(stream)
+    assert [batch.num_rows for batch in batches] == [1]
+    assert batches[0].num_columns == 0
+
+
+def test_file_column_selection_order_duplicates_and_unknown_names(files):
+    stream = files.scan_columns("/data/orders.csv", ["customer", "id", "customer"])
+    assert stream.schema.names == ["customer", "id", "customer"]
+    batch = next(stream)
+    assert batch.column(0).to_pylist() == ["a", "b"]
+    assert batch.column(1).to_pylist() == [1, 2]
+    assert batch.column(2).equals(batch.column(0))
+    with pytest.raises(ValueError, match="missing"):
+        files.scan_columns("/data/orders.csv", ["missing"])
+
+
+def test_source_column_selection_fallback_limits_and_cancellation():
+    source = Catalog()
+    path = "finance/rates/datasets/curves"
+    stream = source.scan_columns(path, [], byte_limit=0, batch_size=1, row_limit=2)
+    assert [batch.num_rows for batch in stream] == [1, 1]
+    stream = source.scan_columns(path, ["tenor", "tenor"], batch_size=1)
+    assert stream.schema.names == ["tenor", "tenor"]
+    assert next(stream).column(0).to_pylist() == ["1y"]
+    stream.cancel()
+    with pytest.raises(RuntimeError, match="cancel"):
+        next(stream)
+    with pytest.raises(ValueError, match="missing"):
+        source.scan_columns(path, ["missing"])
+
+
+def test_parquet_selection_preserves_nested_columns_and_metadata(files):
+    table = pa.table({"id": [1, 2], "details": [{"name": "a", "count": 3}, {"name": "b", "count": 4}]})
+    table = table.replace_schema_metadata({b"source": b"test"})
+    buffer = io.BytesIO()
+    pq.write_table(table, buffer)
+    files.fs.pipe_file("/data/nested.parquet", buffer.getvalue())
+    stream = files.scan_columns("/data/nested.parquet", ["details", "id", "details"])
+    expected = table.select(["details", "id", "details"])
+    assert stream.schema.equals(expected.schema, check_metadata=True)
+    actual = pa.Table.from_batches(list(stream))
+    assert actual.equals(expected, check_metadata=True)
+
+
+@pytest.mark.parametrize("format", [DataFormat.ARROW, DataFormat.PARQUET])
+@pytest.mark.parametrize("file_like", [False, True])
+def test_codec_column_selection_bytes_and_readers(format, file_like):
+    from fsspec_data import DEFAULT_REGISTRY
+
+    codec = DEFAULT_REGISTRY.get(format)
+    batch = pa.record_batch({"id": [1, 2], "payload": ["x" * 1000, "y" * 1000]})
+    encoded = codec.encode_batches([batch])
+    data = io.BytesIO(encoded) if file_like else encoded
+    result = codec.decode_batches(data, columns=["id"], byte_limit=3000)
+    assert result.schema.names == ["id"]
+    assert [value for batch in result.batches for value in batch.column(0).to_pylist()] == [1, 2]
+
+
+@pytest.mark.parametrize("cancel_fails", [False, True])
+def test_column_selection_cancels_source(cancel_fails):
+    class CancellableBatches:
+        schema = Catalog.curves.schema
+
+        def __init__(self):
+            self.batches = iter(Catalog.curves.to_batches())
+            self.cancelled = False
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            return next(self.batches)
+
+        def cancel(self):
+            self.cancelled = True
+            if cancel_fails:
+                raise RuntimeError("source cancellation failed")
+
+    class CancellableCatalog(Catalog):
+        def scan(self, path, **options):
+            self.stream = CancellableBatches()
+            return self.stream
+
+    source = CancellableCatalog()
+    stream = source.scan_columns("finance/rates/datasets/curves", ["tenor"], batch_size=1)
+    assert next(stream).column(0).to_pylist() == ["1y"]
+    if cancel_fails:
+        with pytest.raises(RuntimeError, match="source cancellation failed"):
+            stream.cancel()
+    else:
+        stream.cancel()
+    assert source.stream.cancelled
+    with pytest.raises(RuntimeError, match="batch stream was cancelled"):
+        next(stream)

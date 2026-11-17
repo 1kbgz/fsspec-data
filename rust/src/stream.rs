@@ -163,6 +163,26 @@ impl Iterator for DecodedStream {
     }
 }
 
+/// Projects a decoded stream before enforcing the requested output limits.
+pub(crate) fn project_columns(
+    stream: DecodedStream,
+    columns: &[String],
+    options: StreamOptions,
+    cancellation: CancellationToken,
+) -> Result<DecodedStream> {
+    let indices = columns
+        .iter()
+        .map(|name| stream.schema.index_of(name))
+        .collect::<std::result::Result<Vec<_>, _>>()?;
+    let schema = Arc::new(stream.schema.project(&indices)?);
+    DecodedStream::new(
+        schema,
+        Box::new(stream.map(move |batch| Ok(batch?.project(&indices)?))),
+        options,
+        cancellation,
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use arrow::array::Int64Array;
