@@ -31,6 +31,11 @@ Functions
    fsspec_data.tests.test_describe.test_parquet_selection_preserves_nested_columns_and_metadata
    fsspec_data.tests.test_describe.test_codec_column_selection_bytes_and_readers
    fsspec_data.tests.test_describe.test_column_selection_cancels_source
+   fsspec_data.tests.test_describe.test_parquet_selected_scan_matches_table_slice
+   fsspec_data.tests.test_describe.test_selected_scan_preserves_existing_limits
+   fsspec_data.tests.test_describe.test_selected_scan_falls_back_to_existing_backend_signature
+   fsspec_data.tests.test_describe.test_codec_row_selection_skips_parquet_data_ranges
+   fsspec_data.tests.test_describe.test_native_row_skipping_can_be_cancelled_from_python_thread
 
 
 Module Contents
@@ -99,5 +104,15 @@ Module Contents
 
 .. py:function:: test_codec_column_selection_bytes_and_readers(format, file_like)
 
-.. py:function:: test_column_selection_cancels_source(cancel_fails)
+.. py:function:: test_column_selection_cancels_source(cancel_fails, row_offset)
+
+.. py:function:: test_parquet_selected_scan_matches_table_slice(files, row_offset, row_limit, columns)
+
+.. py:function:: test_selected_scan_preserves_existing_limits(files, path)
+
+.. py:function:: test_selected_scan_falls_back_to_existing_backend_signature()
+
+.. py:function:: test_codec_row_selection_skips_parquet_data_ranges(data_kind)
+
+.. py:function:: test_native_row_skipping_can_be_cancelled_from_python_thread()
 

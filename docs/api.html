@@ -333,7 +333,7 @@
     <a href="#encode-batches-to-batches-output-schema-none">encode_batches_to(batches, output, *, schema=None)</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
-    <a href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none">iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None)</a>
+    <a href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none-row-offset-0">iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None, row_offset=0)</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#decode-batches">decode_batches(...)</a>
@@ -612,8 +612,8 @@ empty. All batches must match the encoding schema.</p>
 <p>Raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> for non-Arrow batches or a non-schema <code class="docutils literal notranslate"><span class="pre">schema</span></code>, <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> for missing
 or mismatched schemas, and <code class="docutils literal notranslate"><span class="pre">OSError</span></code> when the output writer fails.</p>
 </section>
-<section id="iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none">
-<h3><code class="docutils literal notranslate"><span class="pre">iter_batches(data,</span> <span class="pre">*,</span> <span class="pre">schema=None,</span> <span class="pre">batch_size=1024,</span> <span class="pre">row_limit=None,</span> <span class="pre">byte_limit=None,</span> <span class="pre">columns=None)</span></code><a class="headerlink" href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none" title="Link to this heading">¶</a></h3>
+<section id="iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none-row-offset-0">
+<h3><code class="docutils literal notranslate"><span class="pre">iter_batches(data,</span> <span class="pre">*,</span> <span class="pre">schema=None,</span> <span class="pre">batch_size=1024,</span> <span class="pre">row_limit=None,</span> <span class="pre">byte_limit=None,</span> <span class="pre">columns=None,</span> <span class="pre">row_offset=0)</span></code><a class="headerlink" href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none-row-offset-0" title="Link to this heading">¶</a></h3>
 <p>Returns <code class="docutils literal notranslate"><span class="pre">DecodedBatchStream</span></code>.</p>
 <p>Parameters:</p>
 <ul class="simple">
@@ -622,6 +622,7 @@ return <code class="docutils literal notranslate"><span class="pre">bytes</span>
 <li><p><code class="docutils literal notranslate"><span class="pre">schema:</span> <span class="pre">pyarrow.Schema</span> <span class="pre">|</span> <span class="pre">None</span></code>: required for CSV and JSONL; optional for Arrow IPC and
 Parquet.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">batch_size:</span> <span class="pre">int</span></code>: maximum rows yielded in one batch. Must be greater than zero.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">row_offset:</span> <span class="pre">int</span></code>: nonnegative number of source rows to skip before applying output limits.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">row_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: maximum total rows yielded. The last batch is sliced as needed.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">byte_limit:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></code>: maximum cumulative Arrow array memory referenced by yielded
 batches. Exceeding it raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p></li>
@@ -631,7 +632,12 @@ fields; an empty sequence returns zero-column batches with their row counts pres
 Requested order and duplicate names are preserved, including nested fields selected by
 their top-level name. Unknown names raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. Schema and field metadata are
 preserved. Parquet reads only the selected column chunks; other codecs project decoded
-batches. Row and byte limits apply to the projected output.</p>
+batches. Row and byte limits apply after skipping rows and projecting columns. An offset
+at or beyond the end, or a zero row limit, returns an empty stream with its selected schema.</p>
+<p>Parquet selects only row groups intersecting the requested row interval, then applies the
+remaining offset and limit inside the decoder. Metadata is still read; excluded row groups
+and column chunks are not read. Boundary row groups may read complete column chunks. Other
+formats skip decoded rows. This selection does not include predicate or page-index pruning.</p>
 </section>
 <section id="decode-batches">
 <h3><code class="docutils literal notranslate"><span class="pre">decode_batches(...)</span></code><a class="headerlink" href="#decode-batches" title="Link to this heading">¶</a></h3>
@@ -664,6 +670,15 @@ located at different offsets.</p>
 <code class="docutils literal notranslate"><span class="pre">&amp;[String]</span></code> of top-level names with the same selection semantics as Python <code class="docutils literal notranslate"><span class="pre">columns</span></code>.
 The default implementation projects decoded batches. The Parquet implementation selects
 column chunks before decoding. Existing <code class="docutils literal notranslate"><span class="pre">decode_reader</span></code> implementations remain valid.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Codec::decode_reader_selected(reader,</span> <span class="pre">schema,</span> <span class="pre">&amp;selection,</span> <span class="pre">options,</span> <span class="pre">cancellation)</span></code> adds
+row-offset selection. <code class="docutils literal notranslate"><span class="pre">ScanSelection</span> <span class="pre">{</span> <span class="pre">columns:</span> <span class="pre">Option&lt;Vec&lt;String&gt;&gt;,</span> <span class="pre">row_offset:</span> <span class="pre">usize</span> <span class="pre">}</span></code>
+defaults to all columns and offset zero. <code class="docutils literal notranslate"><span class="pre">StreamOptions.row_limit</span></code> limits rows after the
+offset. Existing codecs inherit a fallback through <code class="docutils literal notranslate"><span class="pre">decode_reader</span></code> or
+<code class="docutils literal notranslate"><span class="pre">decode_reader_columns</span></code>; Parquet prunes row groups and applies offset/limit while decoding.
+Both existing Parquet entry points also push their row limit into the decoder.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DecodedStream::new_with_offset(schema,</span> <span class="pre">source,</span> <span class="pre">options,</span> <span class="pre">cancellation,</span> <span class="pre">row_offset)</span></code>
+skips decoded rows before enforcing output limits. Cancellation is checked while skipping;
+skipped rows do not count toward row or byte limits.</p>
 </section>
 <section id="rust-codecwriter">
 <h2>Rust <code class="docutils literal notranslate"><span class="pre">CodecWriter</span></code><a class="headerlink" href="#rust-codecwriter" title="Link to this heading">¶</a></h2>
@@ -874,6 +889,17 @@ existing <code class="docutils literal notranslate"><span class="pre">scan</span
 pushes Parquet selection into decoding. Rust exposes
 <code class="docutils literal notranslate"><span class="pre">DataSource::scan_columns(path,</span> <span class="pre">columns,</span> <span class="pre">options,</span> <span class="pre">cancellation)</span></code>, where <code class="docutils literal notranslate"><span class="pre">columns</span></code> is
 <code class="docutils literal notranslate"><span class="pre">&amp;[String]</span></code>; existing <code class="docutils literal notranslate"><span class="pre">scan</span></code> and <code class="docutils literal notranslate"><span class="pre">StreamOptions</span></code> signatures are unchanged.</p>
+<p><code class="docutils literal notranslate"><span class="pre">scan_selected(path,</span> <span class="pre">*,</span> <span class="pre">columns=None,</span> <span class="pre">row_offset=0,</span> <span class="pre">batch_size=1024,</span> <span class="pre">row_limit=None,</span> <span class="pre">byte_limit=None)</span></code> combines column selection with a zero-based row offset. The limit applies
+after the offset, and cancellation propagates to the source. Existing Python backends
+inherit a fallback through their current <code class="docutils literal notranslate"><span class="pre">scan</span></code> or <code class="docutils literal notranslate"><span class="pre">scan_columns</span></code>; they do not need to
+accept a new keyword argument. <code class="docutils literal notranslate"><span class="pre">FileDataSource</span></code> delegates selection to the codec.</p>
+<p>Rust exposes <code class="docutils literal notranslate"><span class="pre">DataSource::scan_selected(path,</span> <span class="pre">&amp;ScanSelection,</span> <span class="pre">options,</span> <span class="pre">cancellation)</span></code> with
+the same behavior and a default implementation for existing backends.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stream</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">scan_selected</span><span class="p">(</span>
+    <span class="s2">"events.parquet"</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"timestamp"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">],</span> <span class="n">row_offset</span><span class="o">=</span><span class="mi">100_000</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">1_000</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 <p><code class="docutils literal notranslate"><span class="pre">FileDataSource(fs,</span> <span class="pre">sample_size=1048576)</span></code> describes any fsspec filesystem (Rust:
 <code class="docutils literal notranslate"><span class="pre">FileDataSource::new(fs)</span></code> over an <code class="docutils literal notranslate"><span class="pre">fsspec_rs</span></code> filesystem, with a public <code class="docutils literal notranslate"><span class="pre">sample_size</span></code> field).
 Directories have <code class="docutils literal notranslate"><span class="pre">CHILDREN</span></code> and <code class="docutils literal notranslate"><span class="pre">METADATA</span></code>. Files have <code class="docutils literal notranslate"><span class="pre">RAW</span></code> and <code class="docutils literal notranslate"><span class="pre">METADATA</span></code>, plus <code class="docutils literal notranslate"><span class="pre">TABLE</span></code> when
@@ -964,7 +990,7 @@ anything else.</p>
     <a href="#encode-batches-to-batches-output-schema-none">encode_batches_to(batches, output, *, schema=None)</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
-    <a href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none">iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None)</a>
+    <a href="#iter-batches-data-schema-none-batch-size-1024-row-limit-none-byte-limit-none-columns-none-row-offset-0">iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None, row_offset=0)</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#decode-batches">decode_batches(...)</a>

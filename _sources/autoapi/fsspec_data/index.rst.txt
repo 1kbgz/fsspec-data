@@ -184,6 +184,12 @@ Package Contents
 
 
 
+   .. py:method:: scan_selected(path: str, *, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+      Select columns and skip source rows before enforcing output limits.
+
+
+
    .. py:method:: open_raw(path: str) -> BinaryIO
 
 
@@ -291,6 +297,12 @@ Package Contents
 
 
 
+   .. py:method:: scan_selected(path: str, *, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+      Select columns and skip source rows before enforcing output limits.
+
+
+
    .. py:method:: open_raw(path: str) -> BinaryIO
 
 
@@ -346,10 +358,10 @@ Package Contents
 
 
 
-   .. py:method:: decode_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None) -> DecodedBatches
+   .. py:method:: decode_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0) -> DecodedBatches
 
 
-   .. py:method:: iter_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None) -> DecodedBatchStream
+   .. py:method:: iter_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0) -> DecodedBatchStream
 
 
 .. py:class:: CodecCapabilities

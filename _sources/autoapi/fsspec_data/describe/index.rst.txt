@@ -139,6 +139,12 @@ Module Contents
 
 
 
+   .. py:method:: scan_selected(path: str, *, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+      Select columns and skip source rows before enforcing output limits.
+
+
+
    .. py:method:: open_raw(path: str) -> BinaryIO
 
 
@@ -197,6 +203,12 @@ Module Contents
       Scan top-level columns in requested order, preserving duplicates and row counts.
 
       Existing backends use batch projection. Output limits apply after projection.
+
+
+
+   .. py:method:: scan_selected(path: str, *, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+      Select columns and skip source rows before enforcing output limits.
 
 
 

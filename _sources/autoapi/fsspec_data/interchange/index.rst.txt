@@ -234,10 +234,10 @@ Module Contents
 
 
 
-   .. py:method:: decode_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None) -> DecodedBatches
+   .. py:method:: decode_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0) -> DecodedBatches
 
 
-   .. py:method:: iter_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None) -> DecodedBatchStream
+   .. py:method:: iter_batches(data: bytes | bytearray | memoryview | BinaryIO, *, schema: pyarrow.Schema | None = None, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0) -> DecodedBatchStream
 
 
 .. py:class:: CodecRegistry

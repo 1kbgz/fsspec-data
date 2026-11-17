@@ -365,6 +365,21 @@
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_describe.test_column_selection_cancels_source">test_column_selection_cancels_source()</a>
   </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_selected_scan_matches_table_slice">test_parquet_selected_scan_matches_table_slice()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_selected_scan_preserves_existing_limits">test_selected_scan_preserves_existing_limits()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_selected_scan_falls_back_to_existing_backend_signature">test_selected_scan_falls_back_to_existing_backend_signature()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_codec_row_selection_skips_parquet_data_ranges">test_codec_row_selection_skips_parquet_data_ranges()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_native_row_skipping_can_be_cancelled_from_python_thread">test_native_row_skipping_can_be_cancelled_from_python_thread()</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -444,7 +459,22 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_codec_column_selection_bytes_and_readers" title="fsspec_data.tests.test_describe.test_codec_column_selection_bytes_and_readers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_codec_column_selection_bytes_and_readers</span></code></a>(format, ...)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_column_selection_cancels_source" title="fsspec_data.tests.test_describe.test_column_selection_cancels_source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_column_selection_cancels_source</span></code></a>(cancel_fails)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_column_selection_cancels_source" title="fsspec_data.tests.test_describe.test_column_selection_cancels_source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_column_selection_cancels_source</span></code></a>(cancel_fails, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_parquet_selected_scan_matches_table_slice" title="fsspec_data.tests.test_describe.test_parquet_selected_scan_matches_table_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_parquet_selected_scan_matches_table_slice</span></code></a>(files, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_selected_scan_preserves_existing_limits" title="fsspec_data.tests.test_describe.test_selected_scan_preserves_existing_limits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_selected_scan_preserves_existing_limits</span></code></a>(files, path)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_selected_scan_falls_back_to_existing_backend_signature" title="fsspec_data.tests.test_describe.test_selected_scan_falls_back_to_existing_backend_signature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_selected_scan_falls_back_to_existing_backend_signature</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_codec_row_selection_skips_parquet_data_ranges" title="fsspec_data.tests.test_describe.test_codec_row_selection_skips_parquet_data_ranges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_codec_row_selection_skips_parquet_data_ranges</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_native_row_skipping_can_be_cancelled_from_python_thread" title="fsspec_data.tests.test_describe.test_native_row_skipping_can_be_cancelled_from_python_thread"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_native_row_skipping_can_be_cancelled_from_python_thread</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -564,7 +594,32 @@ view does not show the same rows twice.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_column_selection_cancels_source">
-<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_column_selection_cancels_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cancel_fails</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_column_selection_cancels_source" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_column_selection_cancels_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cancel_fails</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_offset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_column_selection_cancels_source" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_parquet_selected_scan_matches_table_slice">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_parquet_selected_scan_matches_table_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_parquet_selected_scan_matches_table_slice" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_selected_scan_preserves_existing_limits">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_selected_scan_preserves_existing_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_selected_scan_preserves_existing_limits" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_selected_scan_falls_back_to_existing_backend_signature">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_selected_scan_falls_back_to_existing_backend_signature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_selected_scan_falls_back_to_existing_backend_signature" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_codec_row_selection_skips_parquet_data_ranges">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_codec_row_selection_skips_parquet_data_ranges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_kind</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_codec_row_selection_skips_parquet_data_ranges" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_native_row_skipping_can_be_cancelled_from_python_thread">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_native_row_skipping_can_be_cancelled_from_python_thread</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_native_row_skipping_can_be_cancelled_from_python_thread" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -677,6 +732,21 @@ view does not show the same rows twice.</p>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_describe.test_column_selection_cancels_source">test_column_selection_cancels_source()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_selected_scan_matches_table_slice">test_parquet_selected_scan_matches_table_slice()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_selected_scan_preserves_existing_limits">test_selected_scan_preserves_existing_limits()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_selected_scan_falls_back_to_existing_backend_signature">test_selected_scan_falls_back_to_existing_backend_signature()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_codec_row_selection_skips_parquet_data_ranges">test_codec_row_selection_skips_parquet_data_ranges()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_native_row_skipping_can_be_cancelled_from_python_thread">test_native_row_skipping_can_be_cancelled_from_python_thread()</a>
   </li>
 </ul>
 

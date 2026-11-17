@@ -928,6 +928,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">row_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">byte_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">row_offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DecodedBatches</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_batches</span><span class="p">(</span>
             <span class="n">data</span><span class="p">,</span>
@@ -936,6 +937,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">row_limit</span><span class="o">=</span><span class="n">row_limit</span><span class="p">,</span>
             <span class="n">byte_limit</span><span class="o">=</span><span class="n">byte_limit</span><span class="p">,</span>
             <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+            <span class="n">row_offset</span><span class="o">=</span><span class="n">row_offset</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></div>
 
 
@@ -950,6 +952,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">row_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">byte_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">row_offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DecodedBatchStream</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">schema</span> <span class="o">=</span> <span class="n">_ensure_pyarrow</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
@@ -962,6 +965,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">row_limit</span><span class="p">,</span>
                 <span class="n">byte_limit</span><span class="p">,</span>
                 <span class="n">columns</span><span class="p">,</span>
+                <span class="n">row_offset</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"read"</span><span class="p">):</span>
             <span class="n">decoded_schema</span><span class="p">,</span> <span class="n">native</span> <span class="o">=</span> <span class="n">_rust</span><span class="o">.</span><span class="n">decode_reader</span><span class="p">(</span>
@@ -972,6 +976,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">row_limit</span><span class="p">,</span>
                 <span class="n">byte_limit</span><span class="p">,</span>
                 <span class="n">columns</span><span class="p">,</span>
+                <span class="n">row_offset</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"data must be bytes-like or a binary file-like object"</span><span class="p">)</span>

@@ -185,7 +185,7 @@ empty. All batches must match the encoding schema.
 Raises `TypeError` for non-Arrow batches or a non-schema `schema`, `ValueError` for missing
 or mismatched schemas, and `OSError` when the output writer fails.
 
-### `iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None)`
+### `iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None, row_offset=0)`
 
 Returns `DecodedBatchStream`.
 
@@ -196,6 +196,7 @@ Parameters:
 - `schema: pyarrow.Schema | None`: required for CSV and JSONL; optional for Arrow IPC and
   Parquet.
 - `batch_size: int`: maximum rows yielded in one batch. Must be greater than zero.
+- `row_offset: int`: nonnegative number of source rows to skip before applying output limits.
 - `row_limit: int | None`: maximum total rows yielded. The last batch is sliced as needed.
 - `byte_limit: int | None`: maximum cumulative Arrow array memory referenced by yielded
   batches. Exceeding it raises `ValueError`.
@@ -205,7 +206,13 @@ fields; an empty sequence returns zero-column batches with their row counts pres
 Requested order and duplicate names are preserved, including nested fields selected by
 their top-level name. Unknown names raise `ValueError`. Schema and field metadata are
 preserved. Parquet reads only the selected column chunks; other codecs project decoded
-batches. Row and byte limits apply to the projected output.
+batches. Row and byte limits apply after skipping rows and projecting columns. An offset
+at or beyond the end, or a zero row limit, returns an empty stream with its selected schema.
+
+Parquet selects only row groups intersecting the requested row interval, then applies the
+remaining offset and limit inside the decoder. Metadata is still read; excluded row groups
+and column chunks are not read. Boundary row groups may read complete column chunks. Other
+formats skip decoded rows. This selection does not include predicate or page-index pruning.
 
 ### `decode_batches(...)`
 
@@ -241,6 +248,17 @@ located at different offsets.
 `&[String]` of top-level names with the same selection semantics as Python `columns`.
 The default implementation projects decoded batches. The Parquet implementation selects
 column chunks before decoding. Existing `decode_reader` implementations remain valid.
+
+`Codec::decode_reader_selected(reader, schema, &selection, options, cancellation)` adds
+row-offset selection. `ScanSelection { columns: Option<Vec<String>>, row_offset: usize }`
+defaults to all columns and offset zero. `StreamOptions.row_limit` limits rows after the
+offset. Existing codecs inherit a fallback through `decode_reader` or
+`decode_reader_columns`; Parquet prunes row groups and applies offset/limit while decoding.
+Both existing Parquet entry points also push their row limit into the decoder.
+
+`DecodedStream::new_with_offset(schema, source, options, cancellation, row_offset)`
+skips decoded rows before enforcing output limits. Cancellation is checked while skipping;
+skipped rows do not count toward row or byte limits.
 
 ## Rust `CodecWriter`
 
@@ -444,6 +462,20 @@ existing `scan` and projects batches before enforcing output limits. `FileDataSo
 pushes Parquet selection into decoding. Rust exposes
 `DataSource::scan_columns(path, columns, options, cancellation)`, where `columns` is
 `&[String]`; existing `scan` and `StreamOptions` signatures are unchanged.
+
+`scan_selected(path, *, columns=None, row_offset=0, batch_size=1024, row_limit=None, byte_limit=None)` combines column selection with a zero-based row offset. The limit applies
+after the offset, and cancellation propagates to the source. Existing Python backends
+inherit a fallback through their current `scan` or `scan_columns`; they do not need to
+accept a new keyword argument. `FileDataSource` delegates selection to the codec.
+
+Rust exposes `DataSource::scan_selected(path, &ScanSelection, options, cancellation)` with
+the same behavior and a default implementation for existing backends.
+
+```python
+stream = source.scan_selected(
+    "events.parquet", columns=["timestamp", "value"], row_offset=100_000, row_limit=1_000
+)
+```
 
 `FileDataSource(fs, sample_size=1048576)` describes any fsspec filesystem (Rust:
 `FileDataSource::new(fs)` over an `fsspec_rs` filesystem, with a public `sample_size` field).
