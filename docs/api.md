@@ -2,9 +2,9 @@
 
 ## `DataViewFileSystem`
 
-Read-only view of a [data source](#data-sources) registered as the `dataview` protocol. It
-renders each node's facets as files, so ordinary fsspec tools and mounts can read a backend's
-rows and metadata. Open a view with an outer path and the wrapped URL, such as
+View of a [data source](#data-sources) registered as the `dataview` protocol. It renders
+each node's facets as files, so ordinary fsspec tools and mounts can read a backend's rows and
+metadata. Open a view with an outer path and the wrapped URL, such as
 `dataview://orders.parquet::s3://bucket/data`, or construct it directly.
 
 Constructor parameters:
@@ -34,6 +34,15 @@ the converted schema. `converts` is true when any schema option is set. With any
 the native file of the same name. After a table is converted, `provided_schema_provenance`
 and `requested_schema_provenance` describe the resolved schema sources without exposing
 storage options.
+
+Raw files are writable when the view has a wrapped filesystem. Opening a raw file with
+`"wb"`, `"ab"`, or `"xb"` opens the node's path on the wrapped filesystem, and `rm_file`
+removes it. A new name under a directory of the view maps to the same name under that
+directory's node, including parents the view does not list, such as a new key prefix in a
+`kafka+records` topic; the wrapped filesystem decides whether it can create them. Closing a
+written file clears the view's cached listings and sizes. Writing or removing a rendered file
+(a conversion, metadata, schema, or index) raises `PermissionError`, which a mount reports as
+"Permission denied". A view built from a `source` alone is read-only.
 
 Nested schema options have a `fields` list. Each field has `name`, `type`, and optional
 `nullable` keys. String types use PyArrow aliases such as `int64`, `string`, and
