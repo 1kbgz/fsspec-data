@@ -14,7 +14,7 @@ use serde_json::{Map, Value};
 
 use crate::{
     CancellationToken, CodecReader, DataFormat, DecodedStream, InterchangeError, Result,
-    StreamOptions, DEFAULT_REGISTRY,
+    ScanSelection, StreamOptions, DEFAULT_REGISTRY,
 };
 
 /// Metadata attached to a node.
@@ -120,6 +120,41 @@ pub trait DataSource: Send + Sync {
             cancellation.clone(),
         )?;
         crate::stream::project_columns(stream, columns, options, cancellation)
+    }
+
+    /// Select columns and skip source rows before applying output limits.
+    fn scan_selected(
+        &self,
+        path: &str,
+        selection: &ScanSelection,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        let source_options = if selection.row_offset == 0 {
+            options
+        } else {
+            StreamOptions {
+                row_limit: None,
+                byte_limit: None,
+                ..options
+            }
+        };
+        let stream = match &selection.columns {
+            Some(columns) => {
+                self.scan_columns(path, columns, source_options, cancellation.clone())?
+            }
+            None => self.scan(path, source_options, cancellation.clone())?,
+        };
+        if selection.row_offset == 0 {
+            return Ok(stream);
+        }
+        DecodedStream::new_with_offset(
+            stream.schema.clone(),
+            Box::new(stream),
+            options,
+            cancellation,
+            selection.row_offset,
+        )
     }
 
     /// The bytes of a [`Facet::Raw`] node.
@@ -250,6 +285,24 @@ impl DataSource for FileDataSource {
             self.open_raw(path)?,
             schema,
             columns,
+            options,
+            cancellation,
+        )
+    }
+
+    fn scan_selected(
+        &self,
+        path: &str,
+        selection: &ScanSelection,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        let format = self.table_format(path)?;
+        let schema = self.decode_schema(path, format)?;
+        DEFAULT_REGISTRY.get(format)?.decode_reader_selected(
+            self.open_raw(path)?,
+            schema,
+            selection,
             options,
             cancellation,
         )
@@ -532,5 +585,35 @@ mod tests {
             catalog.open_raw(&curves.path),
             Err(InterchangeError::FacetNotSupported { facet: "raw", .. })
         ));
+    }
+    #[test]
+    fn selected_scans_skip_before_limiting_with_existing_backends() {
+        let catalog = Catalog::new();
+        let files = files();
+        for (source, path) in [
+            (&catalog as &dyn DataSource, "finance/rates/datasets/curves"),
+            (&files, "/data/nested/ids.parquet"),
+            (&files, "/data/orders.csv"),
+        ] {
+            let stream = source
+                .scan_selected(
+                    path,
+                    &ScanSelection {
+                        columns: Some(vec![]),
+                        row_offset: 1,
+                    },
+                    StreamOptions {
+                        row_limit: Some(1),
+                        byte_limit: Some(0),
+                        ..Default::default()
+                    },
+                    CancellationToken::new(),
+                )
+                .unwrap();
+            let batches = stream.collect_batches().unwrap();
+            assert_eq!(batches.len(), 1);
+            assert_eq!(batches[0].num_rows(), 1);
+            assert_eq!(batches[0].num_columns(), 0);
+        }
     }
 }

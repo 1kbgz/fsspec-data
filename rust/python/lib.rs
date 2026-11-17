@@ -4,8 +4,8 @@ use std::sync::{Mutex, MutexGuard, PoisonError};
 
 use ::fsspec_data::{
     plan_schema_with as build_plan, CancellationToken, CastKind, CodecReader, CodecWriter,
-    DataFormat, DecodedStream, InterchangeError, ProjectionOptions, SchemaPolicy, StreamOptions,
-    DEFAULT_REGISTRY,
+    DataFormat, DecodedStream, InterchangeError, ProjectionOptions, ScanSelection, SchemaPolicy,
+    StreamOptions, DEFAULT_REGISTRY,
 };
 use arrow::array::{make_array, ArrayData, RecordBatch};
 use arrow::datatypes::Schema;
@@ -140,9 +140,8 @@ impl NativeBatchStream {
         slf
     }
 
-    fn __next__(&self) -> PyResult<Option<PyArrowType<RecordBatch>>> {
-        lock(&self.stream)
-            .next()
+    fn __next__(&self, py: Python<'_>) -> PyResult<Option<PyArrowType<RecordBatch>>> {
+        py.detach(|| lock(&self.stream).next())
             .transpose()
             .map(|batch| batch.map(PyArrowType))
             .map_err(to_python_error)
@@ -250,7 +249,7 @@ fn decode_batches(
 }
 
 #[pyfunction]
-#[pyo3(signature = (format, data, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None))]
+#[pyo3(signature = (format, data, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None, row_offset=0))]
 #[allow(clippy::too_many_arguments)]
 fn decode_stream(
     py: Python<'_>,
@@ -261,6 +260,7 @@ fn decode_stream(
     row_limit: Option<usize>,
     byte_limit: Option<usize>,
     columns: Option<Vec<String>>,
+    row_offset: usize,
 ) -> PyResult<(PyArrowType<Schema>, Py<NativeBatchStream>)> {
     let format = DataFormat::parse(format).map_err(to_python_error)?;
     let schema = schema.map(|schema| std::sync::Arc::new(schema.0));
@@ -272,17 +272,19 @@ fn decode_stream(
                 row_limit,
                 byte_limit,
             };
-            match columns {
-                Some(columns) => codec.decode_reader_columns(
+            if columns.is_none() && row_offset == 0 {
+                codec.decode_stream(data.to_vec(), schema, options, CancellationToken::new())
+            } else {
+                codec.decode_reader_selected(
                     Box::new(Cursor::new(data.to_vec())),
                     schema,
-                    &columns,
+                    &ScanSelection {
+                        columns,
+                        row_offset,
+                    },
                     options,
                     CancellationToken::new(),
-                ),
-                None => {
-                    codec.decode_stream(data.to_vec(), schema, options, CancellationToken::new())
-                }
+                )
             }
         })
         .map_err(to_python_error)?;
@@ -291,7 +293,7 @@ fn decode_stream(
 }
 
 #[pyfunction]
-#[pyo3(signature = (format, reader, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None))]
+#[pyo3(signature = (format, reader, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None, row_offset=0))]
 #[allow(clippy::too_many_arguments)]
 fn decode_reader(
     py: Python<'_>,
@@ -302,6 +304,7 @@ fn decode_reader(
     row_limit: Option<usize>,
     byte_limit: Option<usize>,
     columns: Option<Vec<String>>,
+    row_offset: usize,
 ) -> PyResult<(PyArrowType<Schema>, Py<NativeBatchStream>)> {
     let format = DataFormat::parse(format).map_err(to_python_error)?;
     let schema = schema.map(|schema| std::sync::Arc::new(schema.0));
@@ -314,16 +317,16 @@ fn decode_reader(
                 row_limit,
                 byte_limit,
             };
-            match columns {
-                Some(columns) => codec.decode_reader_columns(
-                    reader,
-                    schema,
-                    &columns,
-                    options,
-                    CancellationToken::new(),
-                ),
-                None => codec.decode_reader(reader, schema, options, CancellationToken::new()),
-            }
+            codec.decode_reader_selected(
+                reader,
+                schema,
+                &ScanSelection {
+                    columns,
+                    row_offset,
+                },
+                options,
+                CancellationToken::new(),
+            )
         })
         .map_err(to_python_error)?;
     let schema = PyArrowType(stream.schema.as_ref().clone());
@@ -352,27 +355,32 @@ impl Iterator for PythonBatches {
 }
 
 #[pyfunction]
-#[pyo3(signature = (schema, batches, columns, batch_size=1024, row_limit=None, byte_limit=None))]
+#[pyo3(signature = (schema, batches, columns, batch_size=1024, row_limit=None, byte_limit=None, row_offset=0))]
+#[allow(clippy::too_many_arguments)]
 fn project_batches(
     py: Python<'_>,
     schema: PyArrowType<Schema>,
     batches: Py<PyAny>,
-    columns: Vec<String>,
+    columns: Option<Vec<String>>,
     batch_size: usize,
     row_limit: Option<usize>,
     byte_limit: Option<usize>,
+    row_offset: usize,
 ) -> PyResult<(PyArrowType<Schema>, Py<NativeBatchStream>)> {
-    let indices = columns
-        .iter()
-        .map(|name| schema.0.index_of(name))
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|error| to_python_error(error.into()))?;
+    let indices = match columns {
+        Some(columns) => columns
+            .iter()
+            .map(|name| schema.0.index_of(name))
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|error| to_python_error(error.into()))?,
+        None => (0..schema.0.fields().len()).collect(),
+    };
     let schema = schema
         .0
         .project(&indices)
         .map_err(|error| to_python_error(error.into()))?;
     let source = PythonBatches { source: batches };
-    let stream = DecodedStream::new(
+    let stream = DecodedStream::new_with_offset(
         std::sync::Arc::new(schema.clone()),
         Box::new(source.map(move |batch| Ok(batch?.project(&indices)?))),
         StreamOptions {
@@ -381,6 +389,7 @@ fn project_batches(
             byte_limit,
         },
         CancellationToken::new(),
+        row_offset,
     )
     .map_err(to_python_error)?;
     Ok((

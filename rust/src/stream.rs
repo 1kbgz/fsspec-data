@@ -50,12 +50,22 @@ impl Default for StreamOptions {
     }
 }
 
+/// Selection applied before output row and byte limits.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct ScanSelection {
+    /// Top-level columns in output order, including duplicates; None selects all.
+    pub columns: Option<Vec<String>>,
+    /// Number of source rows to skip, starting from zero.
+    pub row_offset: usize,
+}
+
 pub struct DecodedStream {
     pub schema: SchemaRef,
     source: Box<dyn Iterator<Item = Result<RecordBatch>> + Send>,
     options: StreamOptions,
     cancellation: CancellationToken,
     pending: Option<(RecordBatch, usize)>,
+    rows_to_skip: usize,
     emitted_rows: usize,
     emitted_bytes: usize,
     finished: bool,
@@ -68,6 +78,18 @@ impl DecodedStream {
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<Self> {
+        Self::new_with_offset(schema, source, options, cancellation, 0)
+    }
+
+    /// Skip source rows before applying output limits. Skipped rows do not count
+    /// toward either limit; cancellation remains observable while skipping.
+    pub fn new_with_offset(
+        schema: SchemaRef,
+        source: Box<dyn Iterator<Item = Result<RecordBatch>> + Send>,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+        row_offset: usize,
+    ) -> Result<Self> {
         if options.batch_size == 0 {
             return Err(InterchangeError::InvalidBatchSize);
         }
@@ -77,6 +99,7 @@ impl DecodedStream {
             options,
             cancellation,
             pending: None,
+            rows_to_skip: row_offset,
             emitted_rows: 0,
             emitted_bytes: 0,
             finished: false,
@@ -113,7 +136,11 @@ impl Iterator for DecodedStream {
         }
 
         let (batch, offset) = loop {
-            let pending = match self.pending.take() {
+            if self.cancellation.is_cancelled() {
+                self.finished = true;
+                return Some(Err(InterchangeError::StreamCancelled));
+            }
+            let mut pending = match self.pending.take() {
                 Some(pending) => pending,
                 None => match self.source.next()? {
                     Ok(batch) => (batch, 0),
@@ -123,6 +150,9 @@ impl Iterator for DecodedStream {
                     }
                 },
             };
+            let skipped = self.rows_to_skip.min(pending.0.num_rows() - pending.1);
+            pending.1 += skipped;
+            self.rows_to_skip -= skipped;
             if pending.0.num_rows() > pending.1 {
                 break pending;
             }
@@ -251,6 +281,31 @@ mod tests {
             .unwrap_err()
             .to_string()
             .contains("cancelled"));
+        assert!(stream.next().is_none());
+    }
+    #[test]
+    fn cancellation_is_observed_while_skipping_batches() {
+        let schema = Arc::new(Schema::new(vec![Field::new("id", DataType::Int64, false)]));
+        let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(Int64Array::from(vec![1]))])
+            .unwrap();
+        let cancellation = CancellationToken::new();
+        let token = cancellation.clone();
+        let source = std::iter::from_fn(move || {
+            token.cancel();
+            Some(Ok(batch.clone()))
+        });
+        let mut stream = DecodedStream::new_with_offset(
+            schema,
+            Box::new(source),
+            StreamOptions::default(),
+            cancellation,
+            usize::MAX,
+        )
+        .unwrap();
+        assert!(matches!(
+            stream.next(),
+            Some(Err(InterchangeError::StreamCancelled))
+        ));
         assert!(stream.next().is_none());
     }
 }

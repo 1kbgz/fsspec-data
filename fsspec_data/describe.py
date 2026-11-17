@@ -98,6 +98,30 @@ class DataSource:
         schema, native = _rust.project_batches(schema, iter(source), columns, batch_size, row_limit, byte_limit)
         return DecodedBatchStream(schema, native, on_cancel=getattr(source, "cancel", None))
 
+    def scan_selected(
+        self,
+        path: str,
+        *,
+        columns: Sequence[str] | None = None,
+        row_offset: int = 0,
+        batch_size: int = 1024,
+        row_limit: int | None = None,
+        byte_limit: int | None = None,
+    ) -> DecodedBatchStream:
+        """Select columns and skip source rows before enforcing output limits."""
+        if row_offset < 0:
+            raise ValueError("row_offset must be nonnegative")
+        source_limit = row_limit if row_offset == 0 else None
+        if columns is None:
+            source = self.scan(path, batch_size=batch_size, row_limit=source_limit, byte_limit=None)
+        else:
+            source = self.scan_columns(path, columns, batch_size=batch_size, row_limit=source_limit, byte_limit=None)
+        schema = getattr(source, "schema", None)
+        if schema is None:
+            schema = self.schema(path)
+        schema, native = _rust.project_batches(schema, iter(source), None, batch_size, row_limit, byte_limit, row_offset)
+        return DecodedBatchStream(schema, native, on_cancel=getattr(source, "cancel", None))
+
     def open_raw(self, path: str) -> BinaryIO:
         raise FacetNotSupportedError(path, Facet.RAW)
 
@@ -182,6 +206,28 @@ class FileDataSource(DataSource):
             self.open_raw(path),
             schema=schema,
             columns=columns,
+            batch_size=batch_size,
+            row_limit=row_limit,
+            byte_limit=byte_limit,
+        )
+
+    def scan_selected(
+        self,
+        path: str,
+        *,
+        columns: Sequence[str] | None = None,
+        row_offset: int = 0,
+        batch_size: int = 1024,
+        row_limit: int | None = None,
+        byte_limit: int | None = None,
+    ) -> DecodedBatchStream:
+        format = self._table_format(path)
+        schema = self._decode_schema(path, format)
+        return DEFAULT_REGISTRY.get(format).iter_batches(
+            self.open_raw(path),
+            schema=schema,
+            columns=columns,
+            row_offset=row_offset,
             batch_size=batch_size,
             row_limit=row_limit,
             byte_limit=byte_limit,

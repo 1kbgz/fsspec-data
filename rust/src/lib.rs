@@ -33,4 +33,4 @@ pub use schema::{
     SchemaProvenance, SchemaProvider, SchemaReference, SchemaResolverRegistry, SharedFileSystem,
     DEFAULT_SCHEMA_RESOLVERS,
 };
-pub use stream::{CancellationToken, DecodedStream, StreamOptions};
+pub use stream::{CancellationToken, DecodedStream, ScanSelection, StreamOptions};

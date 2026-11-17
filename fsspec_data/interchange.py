@@ -168,6 +168,7 @@ class Codec:
         row_limit: int | None = None,
         byte_limit: int | None = None,
         columns: Sequence[str] | None = None,
+        row_offset: int = 0,
     ) -> DecodedBatches:
         return self.iter_batches(
             data,
@@ -176,6 +177,7 @@ class Codec:
             row_limit=row_limit,
             byte_limit=byte_limit,
             columns=columns,
+            row_offset=row_offset,
         ).collect()
 
     def iter_batches(
@@ -187,6 +189,7 @@ class Codec:
         row_limit: int | None = None,
         byte_limit: int | None = None,
         columns: Sequence[str] | None = None,
+        row_offset: int = 0,
     ) -> DecodedBatchStream:
         if schema is not None:
             schema = _ensure_pyarrow(schema)
@@ -199,6 +202,7 @@ class Codec:
                 row_limit,
                 byte_limit,
                 columns,
+                row_offset,
             )
         elif hasattr(data, "read"):
             decoded_schema, native = _rust.decode_reader(
@@ -209,6 +213,7 @@ class Codec:
                 row_limit,
                 byte_limit,
                 columns,
+                row_offset,
             )
         else:
             raise TypeError("data must be bytes-like or a binary file-like object")
