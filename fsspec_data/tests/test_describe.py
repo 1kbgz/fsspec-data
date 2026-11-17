@@ -197,7 +197,8 @@ def test_codec_column_selection_bytes_and_readers(format, file_like):
 
 
 @pytest.mark.parametrize("cancel_fails", [False, True])
-def test_column_selection_cancels_source(cancel_fails):
+@pytest.mark.parametrize("row_offset", [None, 1])
+def test_column_selection_cancels_source(cancel_fails, row_offset):
     class CancellableBatches:
         schema = Catalog.curves.schema
 
@@ -222,8 +223,11 @@ def test_column_selection_cancels_source(cancel_fails):
             return self.stream
 
     source = CancellableCatalog()
-    stream = source.scan_columns("finance/rates/datasets/curves", ["tenor"], batch_size=1)
-    assert next(stream).column(0).to_pylist() == ["1y"]
+    if row_offset is None:
+        stream = source.scan_columns("finance/rates/datasets/curves", ["tenor"], batch_size=1)
+    else:
+        stream = source.scan_selected("finance/rates/datasets/curves", columns=["tenor"], row_offset=row_offset, batch_size=1)
+    assert next(stream).column(0).to_pylist() == (["1y"] if row_offset is None else ["5y"])
     if cancel_fails:
         with pytest.raises(RuntimeError, match="source cancellation failed"):
             stream.cancel()
@@ -232,3 +236,83 @@ def test_column_selection_cancels_source(cancel_fails):
     assert source.stream.cancelled
     with pytest.raises(RuntimeError, match="batch stream was cancelled"):
         next(stream)
+
+
+@pytest.mark.parametrize("row_offset,row_limit", [(0, None), (0, 0), (1, 1), (3, 4), (4, 4), (7, 3), (11, 20), (12, None), (100, 3)])
+@pytest.mark.parametrize("columns", [None, [], ["name", "id", "name"]])
+def test_parquet_selected_scan_matches_table_slice(files, row_offset, row_limit, columns):
+    table = pa.table({"id": range(12), "name": [f"row-{row}" for row in range(12)]})
+    table = table.replace_schema_metadata({"source": "row-selection"})
+    buffer = io.BytesIO()
+    pq.write_table(table, buffer, row_group_size=4)
+    files.fs.pipe_file("/data/rows.parquet", buffer.getvalue())
+    stream = files.scan_selected("/data/rows.parquet", columns=columns, row_offset=row_offset, row_limit=row_limit, batch_size=2)
+    batches = list(stream)
+    assert all(batch.num_rows <= 2 for batch in batches)
+    actual = pa.Table.from_batches(batches, schema=stream.schema)
+    expected = table.slice(row_offset, row_limit)
+    if columns is not None:
+        expected = expected.select(columns)
+    assert actual.equals(expected, check_metadata=True)
+
+
+@pytest.mark.parametrize("path", ["/data/orders.csv", "/data/nested/ids.parquet"])
+def test_selected_scan_preserves_existing_limits(files, path):
+    original = files.scan(path).collect()
+    expected = pa.Table.from_batches(original.batches, schema=original.schema).slice(1, 1)
+    selected = files.scan_selected(path, row_offset=1, row_limit=1).collect()
+    assert pa.Table.from_batches(selected.batches, schema=selected.schema).equals(expected)
+    stream = files.scan_selected(path, row_offset=1, row_limit=1, columns=[], byte_limit=0)
+    assert rows(stream) == 1
+
+
+def test_selected_scan_falls_back_to_existing_backend_signature():
+    class ExistingCatalog(Catalog):
+        def scan(self, path, *, batch_size=1024, row_limit=None, byte_limit=None):
+            assert row_limit is None
+            assert byte_limit is None
+            return super().scan(path, batch_size=batch_size, row_limit=row_limit, byte_limit=byte_limit)
+
+    source = ExistingCatalog()
+    stream = source.scan_selected("finance/rates/datasets/curves", columns=["tenor", "tenor"], row_offset=1, row_limit=1, batch_size=1)
+    batch = next(stream)
+    assert batch.column(0).to_pylist() == ["5y"]
+    assert batch.column(1).to_pylist() == ["5y"]
+    assert list(stream) == []
+
+
+@pytest.mark.parametrize("data_kind", ["bytes", "reader"])
+def test_codec_row_selection_skips_parquet_data_ranges(data_kind):
+    from fsspec_data import DEFAULT_REGISTRY
+
+    table = pa.table({"id": range(12), "name": [f"row-{row}" for row in range(12)]})
+    buffer = io.BytesIO()
+    pq.write_table(table, buffer, row_group_size=4)
+    encoded = buffer.getvalue()
+    metadata = pq.ParquetFile(io.BytesIO(encoded)).metadata
+
+    class RecordingReader(io.BytesIO):
+        def __init__(self, data):
+            super().__init__(data)
+            self.reads = []
+
+        def read(self, size=-1):
+            start = self.tell()
+            result = super().read(size)
+            self.reads.append((start, self.tell()))
+            return result
+
+    reader = RecordingReader(encoded)
+    data = encoded if data_kind == "bytes" else reader
+    decoded = DEFAULT_REGISTRY.get("parquet").decode_batches(data, columns=["id"], row_offset=5, row_limit=2)
+    assert pa.Table.from_batches(decoded.batches, schema=decoded.schema).equals(table.slice(5, 2).select(["id"]))
+    if data_kind == "reader":
+        assert reader.reads
+        for group in range(3):
+            for column in range(2):
+                if group == 1 and column == 0:
+                    continue
+                chunk = metadata.row_group(group).column(column)
+                start = chunk.dictionary_page_offset if chunk.has_dictionary_page else chunk.data_page_offset
+                end = start + chunk.total_compressed_size
+                assert all(read_end <= start or read_start >= end for read_start, read_end in reader.reads)

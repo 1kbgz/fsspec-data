@@ -20,7 +20,8 @@ use parquet::file::reader::{ChunkReader, Length};
 
 use crate::avro::AvroCodec;
 use crate::{
-    CancellationToken, DataFormat, DecodedStream, InterchangeError, Result, StreamOptions,
+    CancellationToken, DataFormat, DecodedStream, InterchangeError, Result, ScanSelection,
+    StreamOptions,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -93,6 +94,47 @@ pub trait Codec: Send + Sync {
             cancellation.clone(),
         )?;
         crate::stream::project_columns(stream, columns, options, cancellation)
+    }
+
+    /// Select columns and a row offset before applying output limits.
+    /// Existing codecs inherit decoded-row skipping; Parquet prunes row groups.
+    fn decode_reader_selected(
+        &self,
+        reader: Box<dyn CodecReader>,
+        schema: Option<SchemaRef>,
+        selection: &ScanSelection,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        let source_options = if selection.row_offset == 0 {
+            options
+        } else {
+            StreamOptions {
+                row_limit: None,
+                byte_limit: None,
+                ..options
+            }
+        };
+        let stream = match &selection.columns {
+            Some(columns) => self.decode_reader_columns(
+                reader,
+                schema,
+                columns,
+                source_options,
+                cancellation.clone(),
+            )?,
+            None => self.decode_reader(reader, schema, source_options, cancellation.clone())?,
+        };
+        if selection.row_offset == 0 {
+            return Ok(stream);
+        }
+        DecodedStream::new_with_offset(
+            stream.schema.clone(),
+            Box::new(stream),
+            options,
+            cancellation,
+            selection.row_offset,
+        )
     }
 
     fn start_writer<'a>(
@@ -407,18 +449,14 @@ impl Codec for ParquetCodec {
     fn decode_reader(
         &self,
         reader: Box<dyn CodecReader>,
-        _schema: Option<SchemaRef>,
+        schema: Option<SchemaRef>,
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<DecodedStream> {
-        let reader = SeekableChunkReader::new(reader)?;
-        let builder =
-            ParquetRecordBatchReaderBuilder::try_new(reader)?.with_batch_size(options.batch_size);
-        let schema = builder.schema().clone();
-        let reader = builder.build()?;
-        DecodedStream::new(
+        self.decode_reader_selected(
+            reader,
             schema,
-            Box::new(reader.map(|batch| batch.map_err(InterchangeError::from))),
+            &ScanSelection::default(),
             options,
             cancellation,
         )
@@ -427,23 +465,75 @@ impl Codec for ParquetCodec {
     fn decode_reader_columns(
         &self,
         reader: Box<dyn CodecReader>,
-        _schema: Option<SchemaRef>,
+        schema: Option<SchemaRef>,
         columns: &[String],
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<DecodedStream> {
+        self.decode_reader_selected(
+            reader,
+            schema,
+            &ScanSelection {
+                columns: Some(columns.to_vec()),
+                row_offset: 0,
+            },
+            options,
+            cancellation,
+        )
+    }
+
+    fn decode_reader_selected(
+        &self,
+        reader: Box<dyn CodecReader>,
+        _schema: Option<SchemaRef>,
+        selection: &ScanSelection,
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        if options.batch_size == 0 {
+            return Err(InterchangeError::InvalidBatchSize);
+        }
         let reader = SeekableChunkReader::new(reader)?;
-        let builder = ParquetRecordBatchReaderBuilder::try_new(reader)?;
-        let indices = columns
-            .iter()
-            .map(|name| builder.schema().index_of(name))
-            .collect::<std::result::Result<Vec<_>, _>>()?;
+        let mut builder = ParquetRecordBatchReaderBuilder::try_new(reader)?;
         let metadata = builder.schema().metadata().clone();
-        let projection = ProjectionMask::roots(builder.parquet_schema(), indices);
-        let reader = builder
-            .with_projection(projection)
-            .with_batch_size(options.batch_size)
-            .build()?;
+        if let Some(columns) = &selection.columns {
+            let indices = columns
+                .iter()
+                .map(|name| builder.schema().index_of(name))
+                .collect::<std::result::Result<Vec<_>, _>>()?;
+            let projection = ProjectionMask::roots(builder.parquet_schema(), indices);
+            builder = builder.with_projection(projection);
+        }
+
+        let mut offset = selection.row_offset;
+        let mut remaining = options.row_limit.unwrap_or(usize::MAX);
+        let mut row_groups = Vec::new();
+        let mut first_group_offset = 0;
+        for (index, group) in builder.metadata().row_groups().iter().enumerate() {
+            if remaining == 0 {
+                break;
+            }
+            let rows = usize::try_from(group.num_rows())
+                .map_err(|_| ParquetError::General("row count does not fit usize".into()))?;
+            if offset >= rows {
+                offset -= rows;
+                continue;
+            }
+            if row_groups.is_empty() {
+                first_group_offset = offset;
+            }
+            row_groups.push(index);
+            remaining -= remaining.min(rows - offset);
+            offset = 0;
+        }
+        builder = builder
+            .with_row_groups(row_groups)
+            .with_offset(first_group_offset)
+            .with_batch_size(options.batch_size);
+        if let Some(limit) = options.row_limit {
+            builder = builder.with_limit(limit);
+        }
+        let reader = builder.build()?;
         let schema = Arc::new(reader.schema().as_ref().clone().with_metadata(metadata));
         let batch_schema = schema.clone();
         let stream = DecodedStream::new(
@@ -455,7 +545,15 @@ impl Codec for ParquetCodec {
             },
             cancellation.clone(),
         )?;
-        crate::stream::project_columns(stream, columns, options, cancellation)
+        match &selection.columns {
+            Some(columns) => crate::stream::project_columns(stream, columns, options, cancellation),
+            None => DecodedStream::new(
+                stream.schema.clone(),
+                Box::new(stream),
+                options,
+                cancellation,
+            ),
+        }
     }
 
     fn start_writer<'a>(
@@ -741,6 +839,7 @@ mod tests {
     struct CountingReader {
         inner: Cursor<Vec<u8>>,
         bytes_read: Arc<AtomicUsize>,
+        ranges: Arc<Mutex<Vec<std::ops::Range<u64>>>>,
     }
 
     impl CountingReader {
@@ -750,6 +849,7 @@ mod tests {
                 Self {
                     inner: Cursor::new(data),
                     bytes_read: Arc::clone(&bytes_read),
+                    ranges: Arc::default(),
                 },
                 bytes_read,
             )
@@ -758,7 +858,9 @@ mod tests {
 
     impl Read for CountingReader {
         fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+            let start = self.inner.position();
             let read = self.inner.read(buffer)?;
+            self.ranges.lock().unwrap().push(start..start + read as u64);
             self.bytes_read.fetch_add(read, Ordering::Relaxed);
             Ok(read)
         }
@@ -1304,5 +1406,235 @@ mod tests {
             error.to_string(),
             "schema inference is not supported for parquet"
         );
+    }
+    #[test]
+    fn row_selection_matches_slicing_across_codecs() {
+        let (schema, batches) = fixture();
+        let all = arrow::compute::concat_batches(&schema, &batches).unwrap();
+        for format in [
+            DataFormat::Parquet,
+            DataFormat::Arrow,
+            DataFormat::Csv,
+            DataFormat::JsonLines,
+            DataFormat::Avro,
+        ] {
+            let codec = DEFAULT_REGISTRY.get(format).unwrap();
+            let encoded = codec.encode(schema.clone(), &batches).unwrap();
+            for offset in [0, 1, 2, 3, 4, usize::MAX] {
+                for limit in [None, Some(0), Some(1), Some(2), Some(usize::MAX)] {
+                    for columns in [
+                        None,
+                        Some(vec![]),
+                        Some(vec!["name".into(), "id".into(), "name".into()]),
+                    ] {
+                        let stream = codec
+                            .decode_reader_selected(
+                                Box::new(Cursor::new(encoded.clone())),
+                                Some(schema.clone()),
+                                &ScanSelection {
+                                    columns: columns.clone(),
+                                    row_offset: offset,
+                                },
+                                StreamOptions {
+                                    batch_size: 1,
+                                    row_limit: limit,
+                                    byte_limit: None,
+                                },
+                                CancellationToken::new(),
+                            )
+                            .unwrap();
+                        let output_schema = stream.schema.clone();
+                        let actual = stream.collect_batches().unwrap();
+                        assert!(actual.iter().all(|batch| batch.num_rows() <= 1));
+                        let actual =
+                            arrow::compute::concat_batches(&output_schema, &actual).unwrap();
+                        let start = offset.min(all.num_rows());
+                        let length = limit.unwrap_or(usize::MAX).min(all.num_rows() - start);
+                        let mut expected = all.slice(start, length);
+                        if let Some(columns) = columns {
+                            let indices = columns
+                                .iter()
+                                .map(|name| schema.index_of(name).unwrap())
+                                .collect::<Vec<_>>();
+                            expected = expected.project(&indices).unwrap();
+                        }
+                        assert_eq!(
+                            actual, expected,
+                            "{format:?}, offset={offset}, limit={limit:?}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn parquet_row_selection_reads_only_overlapping_groups_and_columns() {
+        let schema = Arc::new(Schema::new_with_metadata(
+            vec![
+                Field::new("id", DataType::Int64, false),
+                Field::new("name", DataType::Utf8, false),
+            ],
+            HashMap::from([("source".into(), "row-selection".into())]),
+        ));
+        let batches = (0..4)
+            .map(|group| {
+                RecordBatch::try_new(
+                    schema.clone(),
+                    vec![
+                        Arc::new(Int64Array::from_iter_values(group * 100..(group + 1) * 100)),
+                        Arc::new(StringArray::from_iter_values(
+                            (0..100).map(|row| format!("group-{group}-row-{row}")),
+                        )),
+                    ],
+                )
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
+        let encoded = ParquetCodec.encode(schema.clone(), &batches).unwrap();
+        let metadata = ParquetRecordBatchReaderBuilder::try_new(Bytes::from(encoded.clone()))
+            .unwrap()
+            .metadata()
+            .clone();
+        assert_eq!(metadata.num_row_groups(), 4);
+        let all = arrow::compute::concat_batches(&schema, &batches).unwrap();
+        // Include a cross-group slice, group boundaries, empty selections and overflow-sized bounds.
+        for (offset, limit) in [
+            (0, Some(3)),
+            (100, Some(100)),
+            (190, Some(20)),
+            (395, None),
+            (0, Some(0)),
+            (400, None),
+            (usize::MAX, Some(usize::MAX)),
+        ] {
+            let (reader, bytes_read) = CountingReader::new(encoded.clone());
+            let ranges = reader.ranges.clone();
+            let stream = ParquetCodec
+                .decode_reader_selected(
+                    Box::new(reader),
+                    None,
+                    &ScanSelection {
+                        columns: Some(vec!["id".into()]),
+                        row_offset: offset,
+                    },
+                    StreamOptions {
+                        row_limit: limit,
+                        batch_size: 7,
+                        byte_limit: None,
+                    },
+                    CancellationToken::new(),
+                )
+                .unwrap();
+            assert_eq!(stream.schema.metadata(), schema.metadata());
+            let output_schema = stream.schema.clone();
+            let actual =
+                arrow::compute::concat_batches(&output_schema, &stream.collect_batches().unwrap())
+                    .unwrap();
+            let start = offset.min(400);
+            let length = limit.unwrap_or(usize::MAX).min(400 - start);
+            assert_eq!(actual, all.slice(start, length).project(&[0]).unwrap());
+            for (index, group) in metadata.row_groups().iter().enumerate() {
+                let selected =
+                    length > 0 && index * 100 < start + length && (index + 1) * 100 > start;
+                for (column_index, column) in group.columns().iter().enumerate() {
+                    if selected && column_index == 0 {
+                        continue;
+                    }
+                    let (start, length) = column.byte_range();
+                    assert!(ranges.lock().unwrap().iter().all(|read| read.end <= start || read.start >= start + length),
+                        "read excluded group {index}, column {column_index}, offset={offset}, limit={limit:?}");
+                }
+            }
+            assert!(bytes_read.load(Ordering::Relaxed) < encoded.len());
+        }
+        // Existing unselected and column-only entry points also push row limits down.
+        for columns in [false, true] {
+            let (reader, _) = CountingReader::new(encoded.clone());
+            let ranges = reader.ranges.clone();
+            let options = StreamOptions {
+                row_limit: Some(1),
+                ..Default::default()
+            };
+            let stream = if columns {
+                ParquetCodec.decode_reader_columns(
+                    Box::new(reader),
+                    None,
+                    &["id".into()],
+                    options,
+                    CancellationToken::new(),
+                )
+            } else {
+                ParquetCodec.decode_reader(
+                    Box::new(reader),
+                    None,
+                    options,
+                    CancellationToken::new(),
+                )
+            }
+            .unwrap();
+            assert_eq!(
+                stream
+                    .collect_batches()
+                    .unwrap()
+                    .iter()
+                    .map(RecordBatch::num_rows)
+                    .sum::<usize>(),
+                1
+            );
+            for group in &metadata.row_groups()[1..] {
+                for column in group.columns() {
+                    let (start, length) = column.byte_range();
+                    assert!(ranges
+                        .lock()
+                        .unwrap()
+                        .iter()
+                        .all(|read| read.end <= start || read.start >= start + length));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn row_selection_applies_byte_limits_after_skipping_and_observes_cancellation() {
+        let (schema, batches) = fixture();
+        for format in [DataFormat::Parquet, DataFormat::Arrow] {
+            let codec = DEFAULT_REGISTRY.get(format).unwrap();
+            let encoded = codec.encode(schema.clone(), &batches).unwrap();
+            let selection = ScanSelection {
+                columns: Some(vec![]),
+                row_offset: 1,
+            };
+            let options = StreamOptions {
+                batch_size: 1,
+                row_limit: Some(1),
+                byte_limit: Some(0),
+            };
+            let stream = codec
+                .decode_reader_selected(
+                    Box::new(Cursor::new(encoded.clone())),
+                    None,
+                    &selection,
+                    options,
+                    CancellationToken::new(),
+                )
+                .unwrap();
+            assert_eq!(stream.collect_batches().unwrap()[0].num_rows(), 1);
+            let mut stream = codec
+                .decode_reader_selected(
+                    Box::new(Cursor::new(encoded)),
+                    None,
+                    &selection,
+                    options,
+                    CancellationToken::new(),
+                )
+                .unwrap();
+            stream.cancellation_token().cancel();
+            assert!(matches!(
+                stream.next(),
+                Some(Err(InterchangeError::StreamCancelled))
+            ));
+            assert!(stream.next().is_none());
+        }
     }
 }
