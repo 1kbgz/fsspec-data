@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::io::{self, Read, Seek, SeekFrom, Write};
+use std::sync::{Mutex, MutexGuard, PoisonError};
 
 use ::fsspec_data::{
     plan_schema_with as build_plan, CancellationToken, CastKind, CodecReader, CodecWriter,
@@ -88,28 +89,45 @@ impl Write for PythonWriter {
     }
 }
 
-#[pyclass(unsendable)]
-struct NativeBatchStream {
-    stream: DecodedStream,
+// The state sits behind a mutex so Python may use these objects from any thread, as Polars
+// does when it advances an I/O source from its worker threads.
+fn lock<T: ?Sized>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
+    mutex.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
-#[pyclass(unsendable)]
+#[pyclass]
+struct NativeBatchStream {
+    stream: Mutex<DecodedStream>,
+    // Outside the mutex, so cancel() does not wait for a batch another thread is reading.
+    cancellation: CancellationToken,
+}
+
+impl NativeBatchStream {
+    fn new(stream: DecodedStream) -> Self {
+        Self {
+            cancellation: stream.cancellation_token(),
+            stream: Mutex::new(stream),
+        }
+    }
+}
+
+#[pyclass]
 struct NativeCodecWriter {
-    writer: Option<Box<dyn CodecWriter>>,
+    writer: Mutex<Option<Box<dyn CodecWriter>>>,
 }
 
 #[pymethods]
 impl NativeCodecWriter {
-    fn write_batch(&mut self, batch: PyArrowType<RecordBatch>) -> PyResult<()> {
-        self.writer
+    fn write_batch(&self, batch: PyArrowType<RecordBatch>) -> PyResult<()> {
+        lock(&self.writer)
             .as_mut()
             .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("codec writer is finished"))?
             .write_batch(&batch.0)
             .map_err(to_python_error)
     }
 
-    fn finish(&mut self) -> PyResult<()> {
-        if let Some(writer) = self.writer.take() {
+    fn finish(&self) -> PyResult<()> {
+        if let Some(writer) = lock(&self.writer).take() {
             writer.finish().map_err(to_python_error)?;
         }
         Ok(())
@@ -122,8 +140,8 @@ impl NativeBatchStream {
         slf
     }
 
-    fn __next__(&mut self) -> PyResult<Option<PyArrowType<RecordBatch>>> {
-        self.stream
+    fn __next__(&self) -> PyResult<Option<PyArrowType<RecordBatch>>> {
+        lock(&self.stream)
             .next()
             .transpose()
             .map(|batch| batch.map(PyArrowType))
@@ -131,7 +149,7 @@ impl NativeBatchStream {
     }
 
     fn cancel(&self) {
-        self.stream.cancellation_token().cancel();
+        self.cancellation.cancel();
     }
 }
 
@@ -207,7 +225,7 @@ fn start_codec_writer(
     Py::new(
         py,
         NativeCodecWriter {
-            writer: Some(writer),
+            writer: Mutex::new(Some(writer)),
         },
     )
 }
@@ -260,7 +278,7 @@ fn decode_stream(
         })
         .map_err(to_python_error)?;
     let schema = PyArrowType(stream.schema.as_ref().clone());
-    Ok((schema, Py::new(py, NativeBatchStream { stream })?))
+    Ok((schema, Py::new(py, NativeBatchStream::new(stream))?))
 }
 
 #[pyfunction]
@@ -293,7 +311,7 @@ fn decode_reader(
         })
         .map_err(to_python_error)?;
     let schema = PyArrowType(stream.schema.as_ref().clone());
-    Ok((schema, Py::new(py, NativeBatchStream { stream })?))
+    Ok((schema, Py::new(py, NativeBatchStream::new(stream))?))
 }
 
 #[pyfunction]

@@ -1,4 +1,5 @@
 import io
+import threading
 from typing import Any
 
 import pyarrow as pa
@@ -399,6 +400,22 @@ def test_lazy_decode_observes_cancellation():
         next(stream)
     with pytest.raises(StopIteration):
         next(stream)
+
+
+def test_streams_can_be_read_from_any_thread():
+    codec = DEFAULT_REGISTRY.get(DataFormat.CSV)
+    source = io.BytesIO(b"id\n1\n2\n3\n")
+    stream = codec.iter_batches(source, schema=pa.schema([("id", pa.int64())]), batch_size=1)
+    batches = [next(stream)]
+
+    def read_rest():
+        batches.extend(stream)
+        stream.cancel()
+
+    worker = threading.Thread(target=read_rest)
+    worker.start()
+    worker.join()
+    assert [batch.column(0).to_pylist() for batch in batches] == [[1], [2], [3]]
 
 
 def test_lazy_decode_enforces_byte_limit():
