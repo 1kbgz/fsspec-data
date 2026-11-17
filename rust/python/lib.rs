@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::io::{self, Read, Seek, SeekFrom, Write};
+use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::sync::{Mutex, MutexGuard, PoisonError};
 
 use ::fsspec_data::{
@@ -250,7 +250,8 @@ fn decode_batches(
 }
 
 #[pyfunction]
-#[pyo3(signature = (format, data, schema=None, batch_size=1024, row_limit=None, byte_limit=None))]
+#[pyo3(signature = (format, data, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None))]
+#[allow(clippy::too_many_arguments)]
 fn decode_stream(
     py: Python<'_>,
     format: &str,
@@ -259,22 +260,30 @@ fn decode_stream(
     batch_size: usize,
     row_limit: Option<usize>,
     byte_limit: Option<usize>,
+    columns: Option<Vec<String>>,
 ) -> PyResult<(PyArrowType<Schema>, Py<NativeBatchStream>)> {
     let format = DataFormat::parse(format).map_err(to_python_error)?;
     let schema = schema.map(|schema| std::sync::Arc::new(schema.0));
     let stream = DEFAULT_REGISTRY
         .get(format)
         .and_then(|codec| {
-            codec.decode_stream(
-                data.to_vec(),
-                schema,
-                StreamOptions {
-                    batch_size,
-                    row_limit,
-                    byte_limit,
-                },
-                CancellationToken::new(),
-            )
+            let options = StreamOptions {
+                batch_size,
+                row_limit,
+                byte_limit,
+            };
+            match columns {
+                Some(columns) => codec.decode_reader_columns(
+                    Box::new(Cursor::new(data.to_vec())),
+                    schema,
+                    &columns,
+                    options,
+                    CancellationToken::new(),
+                ),
+                None => {
+                    codec.decode_stream(data.to_vec(), schema, options, CancellationToken::new())
+                }
+            }
         })
         .map_err(to_python_error)?;
     let schema = PyArrowType(stream.schema.as_ref().clone());
@@ -282,7 +291,8 @@ fn decode_stream(
 }
 
 #[pyfunction]
-#[pyo3(signature = (format, reader, schema=None, batch_size=1024, row_limit=None, byte_limit=None))]
+#[pyo3(signature = (format, reader, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None))]
+#[allow(clippy::too_many_arguments)]
 fn decode_reader(
     py: Python<'_>,
     format: &str,
@@ -291,6 +301,7 @@ fn decode_reader(
     batch_size: usize,
     row_limit: Option<usize>,
     byte_limit: Option<usize>,
+    columns: Option<Vec<String>>,
 ) -> PyResult<(PyArrowType<Schema>, Py<NativeBatchStream>)> {
     let format = DataFormat::parse(format).map_err(to_python_error)?;
     let schema = schema.map(|schema| std::sync::Arc::new(schema.0));
@@ -298,20 +309,84 @@ fn decode_reader(
     let stream = DEFAULT_REGISTRY
         .get(format)
         .and_then(|codec| {
-            codec.decode_reader(
-                reader,
-                schema,
-                StreamOptions {
-                    batch_size,
-                    row_limit,
-                    byte_limit,
-                },
-                CancellationToken::new(),
-            )
+            let options = StreamOptions {
+                batch_size,
+                row_limit,
+                byte_limit,
+            };
+            match columns {
+                Some(columns) => codec.decode_reader_columns(
+                    reader,
+                    schema,
+                    &columns,
+                    options,
+                    CancellationToken::new(),
+                ),
+                None => codec.decode_reader(reader, schema, options, CancellationToken::new()),
+            }
         })
         .map_err(to_python_error)?;
     let schema = PyArrowType(stream.schema.as_ref().clone());
     Ok((schema, Py::new(py, NativeBatchStream::new(stream))?))
+}
+
+struct PythonBatches {
+    source: Py<PyAny>,
+}
+
+impl Iterator for PythonBatches {
+    type Item = ::fsspec_data::Result<RecordBatch>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        Python::attach(|py| match self.source.bind(py).call_method0("__next__") {
+            Ok(batch) => Some(
+                batch
+                    .extract::<PyArrowType<RecordBatch>>()
+                    .map(|batch| batch.0)
+                    .map_err(|error| python_io_error(error).into()),
+            ),
+            Err(error) if error.is_instance_of::<pyo3::exceptions::PyStopIteration>(py) => None,
+            Err(error) => Some(Err(python_io_error(error).into())),
+        })
+    }
+}
+
+#[pyfunction]
+#[pyo3(signature = (schema, batches, columns, batch_size=1024, row_limit=None, byte_limit=None))]
+fn project_batches(
+    py: Python<'_>,
+    schema: PyArrowType<Schema>,
+    batches: Py<PyAny>,
+    columns: Vec<String>,
+    batch_size: usize,
+    row_limit: Option<usize>,
+    byte_limit: Option<usize>,
+) -> PyResult<(PyArrowType<Schema>, Py<NativeBatchStream>)> {
+    let indices = columns
+        .iter()
+        .map(|name| schema.0.index_of(name))
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| to_python_error(error.into()))?;
+    let schema = schema
+        .0
+        .project(&indices)
+        .map_err(|error| to_python_error(error.into()))?;
+    let source = PythonBatches { source: batches };
+    let stream = DecodedStream::new(
+        std::sync::Arc::new(schema.clone()),
+        Box::new(source.map(move |batch| Ok(batch?.project(&indices)?))),
+        StreamOptions {
+            batch_size,
+            row_limit,
+            byte_limit,
+        },
+        CancellationToken::new(),
+    )
+    .map_err(to_python_error)?;
+    Ok((
+        PyArrowType(schema),
+        Py::new(py, NativeBatchStream::new(stream))?,
+    ))
 }
 
 #[pyfunction]
@@ -390,6 +465,7 @@ fn fsspec_data(m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(codec_capabilities, m)?)?;
     m.add_function(wrap_pyfunction!(decode_batches, m)?)?;
     m.add_function(wrap_pyfunction!(decode_reader, m)?)?;
+    m.add_function(wrap_pyfunction!(project_batches, m)?)?;
     m.add_function(wrap_pyfunction!(decode_stream, m)?)?;
     m.add_function(wrap_pyfunction!(encode_batches, m)?)?;
     m.add_function(wrap_pyfunction!(infer_schema, m)?)?;

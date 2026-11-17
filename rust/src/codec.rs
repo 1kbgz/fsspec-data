@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::io::{self, BufReader, Cursor, Read, Seek, SeekFrom, Write};
 use std::sync::{Arc, LazyLock, Mutex};
 
-use arrow::array::RecordBatch;
+use arrow::array::{RecordBatch, RecordBatchReader};
 use arrow::csv::reader::Format as CsvFormat;
 use arrow::csv::{
     ReaderBuilder as CsvReaderBuilder, Writer as CsvWriter, WriterBuilder as CsvWriterBuilder,
@@ -14,7 +14,7 @@ use arrow::json::reader::infer_json_schema;
 use arrow::json::{LineDelimitedWriter, ReaderBuilder as JsonReaderBuilder};
 use bytes::Bytes;
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
-use parquet::arrow::ArrowWriter;
+use parquet::arrow::{ArrowWriter, ProjectionMask};
 use parquet::errors::ParquetError;
 use parquet::file::reader::{ChunkReader, Length};
 
@@ -71,6 +71,28 @@ pub trait Codec: Send + Sync {
         let mut data = Vec::new();
         reader.read_to_end(&mut data)?;
         self.decode_stream(data, schema, options, cancellation)
+    }
+
+    /// Decode selected top-level columns, preserving requested order and duplicates.
+    /// The default projects decoded batches; codecs may push selection into decoding.
+    fn decode_reader_columns(
+        &self,
+        reader: Box<dyn CodecReader>,
+        schema: Option<SchemaRef>,
+        columns: &[String],
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        let stream = self.decode_reader(
+            reader,
+            schema,
+            StreamOptions {
+                byte_limit: None,
+                ..options
+            },
+            cancellation.clone(),
+        )?;
+        crate::stream::project_columns(stream, columns, options, cancellation)
     }
 
     fn start_writer<'a>(
@@ -400,6 +422,40 @@ impl Codec for ParquetCodec {
             options,
             cancellation,
         )
+    }
+
+    fn decode_reader_columns(
+        &self,
+        reader: Box<dyn CodecReader>,
+        _schema: Option<SchemaRef>,
+        columns: &[String],
+        options: StreamOptions,
+        cancellation: CancellationToken,
+    ) -> Result<DecodedStream> {
+        let reader = SeekableChunkReader::new(reader)?;
+        let builder = ParquetRecordBatchReaderBuilder::try_new(reader)?;
+        let indices = columns
+            .iter()
+            .map(|name| builder.schema().index_of(name))
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        let metadata = builder.schema().metadata().clone();
+        let projection = ProjectionMask::roots(builder.parquet_schema(), indices);
+        let reader = builder
+            .with_projection(projection)
+            .with_batch_size(options.batch_size)
+            .build()?;
+        let schema = Arc::new(reader.schema().as_ref().clone().with_metadata(metadata));
+        let batch_schema = schema.clone();
+        let stream = DecodedStream::new(
+            schema,
+            Box::new(reader.map(move |batch| Ok(batch?.with_schema(batch_schema.clone())?))),
+            StreamOptions {
+                byte_limit: None,
+                ..options
+            },
+            cancellation.clone(),
+        )?;
+        crate::stream::project_columns(stream, columns, options, cancellation)
     }
 
     fn start_writer<'a>(
@@ -949,6 +1005,164 @@ mod tests {
             let combined = arrow::compute::concat_batches(&schema, &decoded.batches).unwrap();
             let expected = arrow::compute::concat_batches(&schema, &batches).unwrap();
             assert_eq!(combined, expected);
+        }
+    }
+
+    #[test]
+    fn column_selection_preserves_order_duplicates_and_empty_rows() {
+        let (schema, batches) = fixture();
+        for format in [
+            DataFormat::Parquet,
+            DataFormat::Arrow,
+            DataFormat::Csv,
+            DataFormat::JsonLines,
+            DataFormat::Avro,
+        ] {
+            let codec = DEFAULT_REGISTRY.get(format).unwrap();
+            let encoded = codec.encode(schema.clone(), &batches).unwrap();
+            for indices in [vec![1, 0, 1], vec![], vec![0]] {
+                let columns: Vec<_> = indices
+                    .iter()
+                    .map(|&index| schema.field(index).name().clone())
+                    .collect();
+                let decoded = codec
+                    .decode_reader_columns(
+                        Box::new(Cursor::new(encoded.clone())),
+                        Some(schema.clone()),
+                        &columns,
+                        StreamOptions {
+                            batch_size: 1,
+                            row_limit: Some(2),
+                            byte_limit: None,
+                        },
+                        CancellationToken::new(),
+                    )
+                    .unwrap();
+                assert_eq!(
+                    decoded.schema.as_ref(),
+                    &schema.project(&indices).unwrap(),
+                    "{format:?}"
+                );
+                let projected = decoded.collect_batches().unwrap();
+                assert_eq!(
+                    projected.iter().map(RecordBatch::num_rows).sum::<usize>(),
+                    2
+                );
+                assert_eq!(
+                    projected[0],
+                    batches[0].slice(0, 1).project(&indices).unwrap()
+                );
+            }
+            assert!(codec
+                .decode_reader_columns(
+                    Box::new(Cursor::new(encoded)),
+                    Some(schema.clone()),
+                    &["missing".into()],
+                    StreamOptions::default(),
+                    CancellationToken::new()
+                )
+                .is_err());
+        }
+    }
+
+    #[test]
+    fn parquet_projection_skips_unselected_column_bytes() {
+        let schema = Arc::new(Schema::new_with_metadata(
+            vec![
+                Field::new("id", DataType::Int64, false),
+                Field::new("payload", DataType::Utf8, false),
+            ],
+            HashMap::from([("source".into(), "projection-test".into())]),
+        ));
+        let payload: Vec<_> = (0..5000)
+            .map(|index| format!("{index:08}-{}", "x".repeat(200)))
+            .collect();
+        let batch = RecordBatch::try_new(
+            schema.clone(),
+            vec![
+                Arc::new(Int64Array::from_iter_values(0..5000)),
+                Arc::new(StringArray::from(payload)),
+            ],
+        )
+        .unwrap();
+        let encoded = ParquetCodec.encode(schema.clone(), &[batch]).unwrap();
+        let (reader, all_bytes) = CountingReader::new(encoded.clone());
+        ParquetCodec
+            .decode_reader(
+                Box::new(reader),
+                None,
+                StreamOptions::default(),
+                CancellationToken::new(),
+            )
+            .unwrap()
+            .collect_batches()
+            .unwrap();
+        let (reader, selected_bytes) = CountingReader::new(encoded);
+        let stream = ParquetCodec
+            .decode_reader_columns(
+                Box::new(reader),
+                None,
+                &["id".into()],
+                StreamOptions::default(),
+                CancellationToken::new(),
+            )
+            .unwrap();
+        assert_eq!(stream.schema.metadata(), schema.metadata());
+        assert_eq!(
+            stream
+                .collect_batches()
+                .unwrap()
+                .iter()
+                .map(RecordBatch::num_rows)
+                .sum::<usize>(),
+            5000
+        );
+        assert!(selected_bytes.load(Ordering::Relaxed) < all_bytes.load(Ordering::Relaxed) / 2);
+    }
+
+    #[test]
+    fn column_selection_applies_byte_limit_after_projection_and_cancels() {
+        let (schema, batches) = fixture();
+        for format in [DataFormat::Arrow, DataFormat::Parquet] {
+            let codec = DEFAULT_REGISTRY.get(format).unwrap();
+            let encoded = codec.encode(schema.clone(), &batches).unwrap();
+            let options = StreamOptions {
+                byte_limit: Some(0),
+                ..Default::default()
+            };
+            let stream = codec
+                .decode_reader_columns(
+                    Box::new(Cursor::new(encoded.clone())),
+                    None,
+                    &[],
+                    options,
+                    CancellationToken::new(),
+                )
+                .unwrap();
+            assert_eq!(
+                stream
+                    .collect_batches()
+                    .unwrap()
+                    .iter()
+                    .map(RecordBatch::num_rows)
+                    .sum::<usize>(),
+                3
+            );
+            let cancellation = CancellationToken::new();
+            let mut stream = codec
+                .decode_reader_columns(
+                    Box::new(Cursor::new(encoded)),
+                    None,
+                    &["id".into()],
+                    StreamOptions::default(),
+                    cancellation.clone(),
+                )
+                .unwrap();
+            cancellation.cancel();
+            assert!(matches!(
+                stream.next(),
+                Some(Err(InterchangeError::StreamCancelled))
+            ));
         }
     }
 

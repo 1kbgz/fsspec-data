@@ -7,7 +7,7 @@ facets as files; the backend never knows which forms are requested.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, BinaryIO
@@ -15,7 +15,7 @@ from typing import Any, BinaryIO
 import pyarrow as pa
 from fsspec import AbstractFileSystem
 
-from .interchange import DEFAULT_REGISTRY, DataFormat, DecodedBatchStream
+from .interchange import DEFAULT_REGISTRY, DataFormat, DecodedBatchStream, _rust
 
 
 class Facet(str, Enum):
@@ -77,6 +77,26 @@ class DataSource:
         byte_limit: int | None = None,
     ) -> DecodedBatchStream:
         raise FacetNotSupportedError(path, Facet.TABLE)
+
+    def scan_columns(
+        self,
+        path: str,
+        columns: Sequence[str],
+        *,
+        batch_size: int = 1024,
+        row_limit: int | None = None,
+        byte_limit: int | None = None,
+    ) -> DecodedBatchStream:
+        """Scan top-level columns in requested order, preserving duplicates and row counts.
+
+        Existing backends use batch projection. Output limits apply after projection.
+        """
+        source = self.scan(path, batch_size=batch_size, row_limit=row_limit, byte_limit=None)
+        schema = getattr(source, "schema", None)
+        if schema is None:
+            schema = self.schema(path)
+        schema, native = _rust.project_batches(schema, iter(source), columns, batch_size, row_limit, byte_limit)
+        return DecodedBatchStream(schema, native, on_cancel=getattr(source, "cancel", None))
 
     def open_raw(self, path: str) -> BinaryIO:
         raise FacetNotSupportedError(path, Facet.RAW)
@@ -142,6 +162,26 @@ class FileDataSource(DataSource):
         return DEFAULT_REGISTRY.get(format).iter_batches(
             self.open_raw(path),
             schema=schema,
+            batch_size=batch_size,
+            row_limit=row_limit,
+            byte_limit=byte_limit,
+        )
+
+    def scan_columns(
+        self,
+        path: str,
+        columns: Sequence[str],
+        *,
+        batch_size: int = 1024,
+        row_limit: int | None = None,
+        byte_limit: int | None = None,
+    ) -> DecodedBatchStream:
+        format = self._table_format(path)
+        schema = self._decode_schema(path, format)
+        return DEFAULT_REGISTRY.get(format).iter_batches(
+            self.open_raw(path),
+            schema=schema,
+            columns=columns,
             batch_size=batch_size,
             row_limit=row_limit,
             byte_limit=byte_limit,

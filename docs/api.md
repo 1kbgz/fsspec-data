@@ -185,7 +185,7 @@ empty. All batches must match the encoding schema.
 Raises `TypeError` for non-Arrow batches or a non-schema `schema`, `ValueError` for missing
 or mismatched schemas, and `OSError` when the output writer fails.
 
-### `iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None)`
+### `iter_batches(data, *, schema=None, batch_size=1024, row_limit=None, byte_limit=None, columns=None)`
 
 Returns `DecodedBatchStream`.
 
@@ -199,6 +199,13 @@ Parameters:
 - `row_limit: int | None`: maximum total rows yielded. The last batch is sliced as needed.
 - `byte_limit: int | None`: maximum cumulative Arrow array memory referenced by yielded
   batches. Exceeding it raises `ValueError`.
+
+`columns: Sequence[str] | None` selects top-level fields by name. `None` returns all
+fields; an empty sequence returns zero-column batches with their row counts preserved.
+Requested order and duplicate names are preserved, including nested fields selected by
+their top-level name. Unknown names raise `ValueError`. Schema and field metadata are
+preserved. Parquet reads only the selected column chunks; other codecs project decoded
+batches. Row and byte limits apply to the projected output.
 
 ### `decode_batches(...)`
 
@@ -229,6 +236,11 @@ codecs buffers the reader and calls `decode_stream`, preserving compatibility wi
 
 Parquet decoding uses seekable range reads because file metadata and column chunks may be
 located at different offsets.
+
+`Codec::decode_reader_columns(reader, schema, columns, options, cancellation)` accepts a
+`&[String]` of top-level names with the same selection semantics as Python `columns`.
+The default implementation projects decoded batches. The Parquet implementation selects
+column chunks before decoding. Existing `decode_reader` implementations remain valid.
 
 ## Rust `CodecWriter`
 
@@ -424,6 +436,14 @@ node does not offer raises `FacetNotSupportedError` (Rust: returns
 `InterchangeError::FacetNotSupported`). Rust facet names are `Children`, `Table`, `Raw`, and
 `Metadata`. Python `scan` takes keyword arguments `batch_size`, `row_limit`, and
 `byte_limit`; Rust `scan` takes `StreamOptions` and a `CancellationToken`.
+
+`scan_columns(path, columns, *, batch_size=1024, row_limit=None, byte_limit=None)` returns
+selected top-level columns in requested order, including duplicates. Empty selections
+preserve row counts; unknown names raise `ValueError`. The default calls the backend's
+existing `scan` and projects batches before enforcing output limits. `FileDataSource`
+pushes Parquet selection into decoding. Rust exposes
+`DataSource::scan_columns(path, columns, options, cancellation)`, where `columns` is
+`&[String]`; existing `scan` and `StreamOptions` signatures are unchanged.
 
 `FileDataSource(fs, sample_size=1048576)` describes any fsspec filesystem (Rust:
 `FileDataSource::new(fs)` over an `fsspec_rs` filesystem, with a public `sample_size` field).

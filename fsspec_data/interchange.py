@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from enum import Enum
 from importlib import import_module
@@ -64,9 +64,10 @@ class DecodedBatches:
 
 
 class DecodedBatchStream:
-    def __init__(self, schema: pa.Schema, native: Any) -> None:
+    def __init__(self, schema: pa.Schema, native: Any, *, on_cancel: Callable[[], None] | None = None) -> None:
         self.schema = schema
         self._native = native
+        self._on_cancel = on_cancel
 
     def __iter__(self) -> DecodedBatchStream:
         return self
@@ -76,6 +77,8 @@ class DecodedBatchStream:
 
     def cancel(self) -> None:
         self._native.cancel()
+        if self._on_cancel is not None:
+            self._on_cancel()
 
     def collect(self) -> DecodedBatches:
         return DecodedBatches(self.schema, tuple(self))
@@ -164,6 +167,7 @@ class Codec:
         batch_size: int = 1024,
         row_limit: int | None = None,
         byte_limit: int | None = None,
+        columns: Sequence[str] | None = None,
     ) -> DecodedBatches:
         return self.iter_batches(
             data,
@@ -171,6 +175,7 @@ class Codec:
             batch_size=batch_size,
             row_limit=row_limit,
             byte_limit=byte_limit,
+            columns=columns,
         ).collect()
 
     def iter_batches(
@@ -181,6 +186,7 @@ class Codec:
         batch_size: int = 1024,
         row_limit: int | None = None,
         byte_limit: int | None = None,
+        columns: Sequence[str] | None = None,
     ) -> DecodedBatchStream:
         if schema is not None:
             schema = _ensure_pyarrow(schema)
@@ -192,6 +198,7 @@ class Codec:
                 batch_size,
                 row_limit,
                 byte_limit,
+                columns,
             )
         elif hasattr(data, "read"):
             decoded_schema, native = _rust.decode_reader(
@@ -201,6 +208,7 @@ class Codec:
                 batch_size,
                 row_limit,
                 byte_limit,
+                columns,
             )
         else:
             raise TypeError("data must be bytes-like or a binary file-like object")
