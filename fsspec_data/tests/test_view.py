@@ -105,8 +105,76 @@ def test_views_open_through_fsspec_urls(memory):
     assert path == "/data"
     assert "data/orders.parquet" in fs.ls(path, detail=False)
     assert pq.read_table(fs.open(f"{path}/orders.parquet")).num_rows == 2
-    with pytest.raises(ValueError, match="read-only"):
-        view(memory).open("orders.parquet", "wb")
+
+
+def test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem(memory):
+    fs = view(memory)
+    assert pq.read_table(fs.open("orders.parquet")).num_rows == 2
+    names = fs.ls("nested", detail=False)
+
+    with fs.open("orders.csv", "wb") as file:
+        file.write(b"id,customer\n3,c\n")
+    with fs.open("notes.txt", "ab") as file:
+        file.write(b" world")
+    fs.pipe_file("nested/more.csv", b"id\n9\n")
+    fs.pipe_file("new/deeper/ids.csv", b"id\n1\n")
+
+    assert memory.cat_file("/data/orders.csv") == b"id,customer\n3,c\n"
+    assert memory.cat_file("/data/notes.txt") == b"hello world"
+    assert memory.cat_file("/data/new/deeper/ids.csv") == b"id\n1\n"
+    assert pq.read_table(fs.open("orders.parquet")).to_pylist() == [{"id": 3, "customer": "c"}]
+    assert fs.ls("nested", detail=False) == sorted(
+        [*names, "nested/more.csv", "nested/more.metadata.json", "nested/more.parquet", "nested/more.schema.json"]
+    )
+
+    file = fs.open("nested/more.csv", "ab")
+    file.write(b"10\n")
+    file.close()
+    assert pq.read_table(fs.open("nested/more.parquet")).column("id").to_pylist() == [9, 10]
+
+    fs.rm_file("notes.txt")
+    assert not memory.exists("/data/notes.txt")
+    assert "notes.txt" not in fs.ls("", detail=False)
+
+
+@pytest.mark.parametrize(
+    ("path", "error"),
+    [
+        ("orders.parquet", PermissionError),
+        ("orders.metadata.json", PermissionError),
+        ("nested", IsADirectoryError),
+    ],
+)
+def test_rendered_files_and_directories_cannot_be_written(memory, path, error):
+    with pytest.raises(error):
+        view(memory).open(path, "wb")
+    with pytest.raises(error):
+        view(memory).rm_file(path)
+
+
+def test_writes_need_a_directory_and_a_filesystem(memory):
+    single = DataViewFileSystem("/data/orders.csv", fs=memory)
+    single.pipe_file("orders.csv", b"id,customer\n5,e\n")
+    assert memory.cat_file("/data/orders.csv") == b"id,customer\n5,e\n"
+    with pytest.raises(NotADirectoryError):
+        single.pipe_file("other.csv", b"id\n1\n")
+    with pytest.raises(NotADirectoryError):
+        view(memory).pipe_file("notes.txt/inside.csv", b"id\n1\n")
+    with pytest.raises(FileNotFoundError):
+        view(memory).rm_file("missing.csv")
+    with pytest.raises(PermissionError, match="read-only"):
+        DataViewFileSystem(source=Catalog()).pipe_file("research/notes.txt", b"x")
+
+
+def test_closing_a_write_follows_the_wrapped_file(memory):
+    fs = view(memory)
+    with pytest.raises(RuntimeError), fs.open("orders.csv", "wb") as file:
+        assert file.writable()
+        file.write(b"partial")
+        raise RuntimeError
+    # fsspec's memory files keep what was written when a with block fails.
+    assert memory.cat_file("/data/orders.csv") == b"partial"
+    assert fs.cat_file("orders.csv") == b"partial"
 
 
 class Catalog(DataSource):

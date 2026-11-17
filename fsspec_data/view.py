@@ -4,7 +4,7 @@ import json
 import tempfile
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Self
 
 import pyarrow as pa
 from fsspec import AbstractFileSystem, filesystem
@@ -47,13 +47,18 @@ class ViewEntry:
 
 
 class DataViewFileSystem(ChainedFileSystem):
-    """Read-only view of a data source, rendering each node's facets as files.
+    """View of a data source, rendering each node's facets as files.
 
     ``mapping`` lists the forms to show for each facet, for example
     ``{"table": ["raw", "parquet"], "metadata": ["json"]}``; facets it leaves out are not
     shown. A container becomes a directory, a table ``N.parquet`` (``raw`` keeps the
     native file), metadata ``N.metadata.json``, a table's schema ``N.schema.json``, and a
     container's index of its children ``N.json``.
+
+    Raw files pass writes and deletes to the wrapped filesystem unchanged: opening a raw
+    file, or a new name under a directory, with ``"wb"``, ``"ab"``, or ``"xb"`` writes the
+    node's path, and ``rm_file`` removes it. Writing or removing a rendered file raises
+    ``PermissionError``. A view built from a ``source`` without a filesystem is read-only.
     """
 
     protocol = "dataview"
@@ -158,7 +163,8 @@ class DataViewFileSystem(ChainedFileSystem):
     ):
         del block_size, autocommit, cache_options, kwargs
         if mode != "rb":
-            raise ValueError("dataview is a read-only filesystem")
+            fs, target = self._writable_path(path)
+            return _InvalidatingFile(fs.open(target, mode), self)
         path = self._view_path(path)
         entry = self.resolve(path)
         if entry.facet == "children":
@@ -172,6 +178,43 @@ class DataViewFileSystem(ChainedFileSystem):
             file.close()
             raise
         return file
+
+    def rm_file(self, path: str) -> None:
+        fs, target = self._writable_path(path, create=False)
+        fs.rm_file(target)
+        self.invalidate_cache()
+
+    def _writable_path(self, path: str, create: bool = True) -> tuple[AbstractFileSystem, str]:
+        """The wrapped filesystem and its path for a write or delete of ``path``: a raw file's
+        node, or with ``create``, a new name under a directory."""
+        path = self._view_path(path)
+        fs = self.fs
+        if fs is None:
+            raise PermissionError(f"{path}: a view of a data source without a filesystem is read-only")
+        try:
+            entry = self.resolve(path)
+        except FileNotFoundError:
+            if not create:
+                raise
+            # Missing parents keep their names under the nearest existing directory; the
+            # wrapped filesystem decides whether it creates them, as object stores do.
+            parent, _, name = path.rpartition("/")
+            names = [name]
+            while True:
+                try:
+                    source_dir = self._source_dir(parent)
+                    break
+                except FileNotFoundError:
+                    parent, _, missing = parent.rpartition("/")
+                    names.insert(0, missing)
+            if not self.source.describe(source_dir).has(Facet.CHILDREN):
+                raise NotADirectoryError(parent or source_dir) from None
+            return fs, "/".join([source_dir.rstrip("/"), *names])
+        if entry.facet == "children":
+            raise IsADirectoryError(path)
+        if entry.facet != "raw":
+            raise PermissionError(f"{path} renders the {entry.facet} of {entry.node.path} as {entry.form}; only raw files can be written")
+        return fs, entry.node.path
 
     def _view_path(self, path: str) -> str:
         """``path`` relative to the view. Paths under the root are accepted too, since fsspec
@@ -342,6 +385,35 @@ class DataViewFileSystem(ChainedFileSystem):
             for key, value in self.source.metadata(node.path).items():
                 row.setdefault(key, value)
         return row
+
+
+class _InvalidatingFile:
+    """A file opened for writing on the wrapped filesystem. Closing it clears the view's
+    listings, so they show what was written."""
+
+    def __init__(self, file: Any, view: DataViewFileSystem) -> None:
+        self._file = file
+        self._view = view
+
+    def close(self) -> None:
+        try:
+            self._file.close()
+        finally:
+            self._view.invalidate_cache()
+
+    def __enter__(self) -> Self:
+        self._file.__enter__()
+        return self
+
+    def __exit__(self, *exc_info: object) -> Any:
+        # The wrapped file decides whether leaving with an exception commits or discards.
+        try:
+            return self._file.__exit__(*exc_info)
+        finally:
+            self._view.invalidate_cache()
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._file, name)
 
 
 def _validate_mapping(mapping: Mapping[str, Sequence[str]]) -> dict[str, list[str]]:
