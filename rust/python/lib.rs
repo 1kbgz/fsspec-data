@@ -140,9 +140,8 @@ impl NativeBatchStream {
         slf
     }
 
-    fn __next__(&self) -> PyResult<Option<PyArrowType<RecordBatch>>> {
-        lock(&self.stream)
-            .next()
+    fn __next__(&self, py: Python<'_>) -> PyResult<Option<PyArrowType<RecordBatch>>> {
+        py.detach(|| lock(&self.stream).next())
             .transpose()
             .map(|batch| batch.map(PyArrowType))
             .map_err(to_python_error)

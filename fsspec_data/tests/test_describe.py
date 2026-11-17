@@ -316,3 +316,24 @@ def test_codec_row_selection_skips_parquet_data_ranges(data_kind):
                 start = chunk.dictionary_page_offset if chunk.has_dictionary_page else chunk.data_page_offset
                 end = start + chunk.total_compressed_size
                 assert all(read_end <= start or read_start >= end for read_start, read_end in reader.reads)
+
+
+def test_native_row_skipping_can_be_cancelled_from_python_thread():
+    import threading
+
+    from fsspec_data import DEFAULT_REGISTRY
+
+    count = 4_000_000
+    batch = pa.record_batch([pa.repeat(1, count)], names=["id"])
+    codec = DEFAULT_REGISTRY.get("arrow")
+    encoded = codec.encode_batches([batch], schema=batch.schema)
+    stream = codec.iter_batches(encoded, row_offset=count - 1, row_limit=1, batch_size=1)
+    cancel = threading.Timer(0.01, stream.cancel)
+    cancel.start()
+    try:
+        with pytest.raises(RuntimeError, match="cancelled"):
+            next(stream)
+    finally:
+        cancel.cancel()
+        cancel.join(timeout=5)
+    assert not cancel.is_alive()
