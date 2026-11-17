@@ -43,6 +43,7 @@ Functions
    fsspec_data.tests.test_all.test_lazy_decode_applies_batch_and_row_limits
    fsspec_data.tests.test_all.test_lazy_decode_reads_binary_file_without_eagerly_consuming_it
    fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation
+   fsspec_data.tests.test_all.test_streams_can_be_read_from_any_thread
    fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit
    fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size
    fsspec_data.tests.test_all.test_plan_schema_renames_adds_and_drops_fields
@@ -121,6 +122,8 @@ Module Contents
 .. py:function:: test_lazy_decode_reads_binary_file_without_eagerly_consuming_it()
 
 .. py:function:: test_lazy_decode_observes_cancellation()
+
+.. py:function:: test_streams_can_be_read_from_any_thread()
 
 .. py:function:: test_lazy_decode_enforces_byte_limit()
 

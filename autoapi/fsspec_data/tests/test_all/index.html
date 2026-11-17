@@ -399,6 +399,9 @@
     <a href="#fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation">test_lazy_decode_observes_cancellation()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_all.test_streams_can_be_read_from_any_thread">test_streams_can_be_read_from_any_thread()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit">test_lazy_decode_enforces_byte_limit()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
@@ -548,22 +551,25 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation" title="fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_lazy_decode_observes_cancellation</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit" title="fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_lazy_decode_enforces_byte_limit</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_streams_can_be_read_from_any_thread" title="fsspec_data.tests.test_all.test_streams_can_be_read_from_any_thread"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_streams_can_be_read_from_any_thread</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size" title="fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_lazy_decode_rejects_zero_batch_size</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit" title="fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_lazy_decode_enforces_byte_limit</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_plan_schema_renames_adds_and_drops_fields" title="fsspec_data.tests.test_all.test_plan_schema_renames_adds_and_drops_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_plan_schema_renames_adds_and_drops_fields</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size" title="fsspec_data.tests.test_all.test_lazy_decode_rejects_zero_batch_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_lazy_decode_rejects_zero_batch_size</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_plan_schema_requires_explicit_drop_outside_projection" title="fsspec_data.tests.test_all.test_plan_schema_requires_explicit_drop_outside_projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_plan_schema_requires_explicit_drop_outside_projection</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_plan_schema_renames_adds_and_drops_fields" title="fsspec_data.tests.test_all.test_plan_schema_renames_adds_and_drops_fields"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_plan_schema_renames_adds_and_drops_fields</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_plan_schema_cast_override_allows_lossy_cast" title="fsspec_data.tests.test_all.test_plan_schema_cast_override_allows_lossy_cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_plan_schema_cast_override_allows_lossy_cast</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_plan_schema_requires_explicit_drop_outside_projection" title="fsspec_data.tests.test_all.test_plan_schema_requires_explicit_drop_outside_projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_plan_schema_requires_explicit_drop_outside_projection</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_plan_schema_rejects_invalid_operations" title="fsspec_data.tests.test_all.test_plan_schema_rejects_invalid_operations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_plan_schema_rejects_invalid_operations</span></code></a>(options, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_plan_schema_cast_override_allows_lossy_cast" title="fsspec_data.tests.test_all.test_plan_schema_cast_override_allows_lossy_cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_plan_schema_cast_override_allows_lossy_cast</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_all.test_plan_schema_rejects_invalid_operations" title="fsspec_data.tests.test_all.test_plan_schema_rejects_invalid_operations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_plan_schema_rejects_invalid_operations</span></code></a>(options, ...)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -742,6 +748,11 @@
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_streams_can_be_read_from_any_thread">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_streams_can_be_read_from_any_thread</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_streams_can_be_read_from_any_thread" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit">
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_all.</span></span><span class="sig-name descname"><span class="pre">test_lazy_decode_enforces_byte_limit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -914,6 +925,9 @@
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_all.test_lazy_decode_observes_cancellation">test_lazy_decode_observes_cancellation()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_all.test_streams_can_be_read_from_any_thread">test_streams_can_be_read_from_any_thread()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_all.test_lazy_decode_enforces_byte_limit">test_lazy_decode_enforces_byte_limit()</a>
