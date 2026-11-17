@@ -486,6 +486,25 @@ first `sample_size` bytes. Python metadata is the filesystem's `info()` without 
 Rust metadata holds `size` for files, `created` and `mtime` in seconds since the Unix epoch
 when known, and the filesystem's extra fields as strings.
 
+Parquet scans read footer metadata by suffix, then fetch selected column chunks together
+for each selected row group. No data chunks are fetched until iteration starts. Column
+order, duplicate columns, row offsets and output limits retain their scan semantics.
+Coalescing may also fetch bytes in gaps between selected chunks. Output byte limits do
+not bound compressed row-group buffers.
+
+Rust file sources use `FileSystem::read_ranges`. Python file sources use the typed
+`read_ranges` API when available, otherwise fsspec's `cat_ranges(..., on_error="raise")`.
+With a validator from the first footer read, subsequent footer and data requests use
+`Match` against that validator. Native S3 therefore rejects object changes during a scan;
+Python preserves the filesystem's `ConflictError`, and Rust returns
+`InterchangeError::Operation`. Results already yielded before a later conflict remain
+visible to the caller. Sources without validators provide no snapshot guarantee.
+
+Fetching remains synchronous to callers. Parquet's batch-range interface delegates
+request concurrency and size limits to the filesystem. Cancellation stops subsequent
+fetches and batches; it does not interrupt a synchronous request already in progress.
+`Codec.iter_batches` with a file-like object retains its existing seekable-reader path.
+
 `DataFormat.from_path(path)` (Rust: `DataFormat::from_path`) maps `.arrow`, `.ipc`,
 `.parquet`, `.pq`, `.csv`, `.jsonl`, `.ndjson`, and `.avro` to a format and returns `None` for
 anything else.

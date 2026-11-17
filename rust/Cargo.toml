@@ -17,12 +17,16 @@ crate-type = ["rlib"]
 arrow = "60.1.0"
 arrow-avro = { version = "60.1.0", default-features = false, features = ["deflate", "snappy", "zstd"] }
 bytes = "1"
-fsspec_rs = "0.2.0"
-parquet = { version = "60.1.0", features = ["arrow"] }
+fsspec_rs = { git = "https://github.com/1kbgz/fsspec-rs", rev = "637eda9d6a6277b9e157c96a13da58036faf3f3a" }
+futures = { version = "0.3", default-features = false, features = ["std"] }
+parquet = { version = "60.1.0", features = ["arrow", "async"] }
 serde = "1"
 serde_json = "1"
 thiserror = "2"
 ureq = { version = "3", optional = true }
+
+[dev-dependencies]
+futures = { version = "0.3", features = ["executor"] }
 
 [features]
 confluent = ["dep:ureq"]

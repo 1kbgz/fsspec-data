@@ -181,15 +181,7 @@ class FileDataSource(DataSource):
         row_limit: int | None = None,
         byte_limit: int | None = None,
     ) -> DecodedBatchStream:
-        format = self._table_format(path)
-        schema = self._decode_schema(path, format)
-        return DEFAULT_REGISTRY.get(format).iter_batches(
-            self.open_raw(path),
-            schema=schema,
-            batch_size=batch_size,
-            row_limit=row_limit,
-            byte_limit=byte_limit,
-        )
+        return self.scan_selected(path, batch_size=batch_size, row_limit=row_limit, byte_limit=byte_limit)
 
     def scan_columns(
         self,
@@ -200,16 +192,7 @@ class FileDataSource(DataSource):
         row_limit: int | None = None,
         byte_limit: int | None = None,
     ) -> DecodedBatchStream:
-        format = self._table_format(path)
-        schema = self._decode_schema(path, format)
-        return DEFAULT_REGISTRY.get(format).iter_batches(
-            self.open_raw(path),
-            schema=schema,
-            columns=columns,
-            batch_size=batch_size,
-            row_limit=row_limit,
-            byte_limit=byte_limit,
-        )
+        return self.scan_selected(path, columns=columns, batch_size=batch_size, row_limit=row_limit, byte_limit=byte_limit)
 
     def scan_selected(
         self,
@@ -222,6 +205,27 @@ class FileDataSource(DataSource):
         byte_limit: int | None = None,
     ) -> DecodedBatchStream:
         format = self._table_format(path)
+        if format == DataFormat.PARQUET:
+            condition = None
+            first_read = True
+
+            def fetch(ranges):
+                nonlocal condition, first_read
+                if hasattr(self.fs, "read_ranges"):
+                    result = self.fs.read_ranges(path, ranges, condition=condition)
+                    if first_read:
+                        if result.validator is not None:
+                            from fsspec_rs import Match
+
+                            condition = Match(result.validator)
+                        first_read = False
+                    return result.data
+                starts, ends = zip(*ranges) if ranges else ([], [])
+                return self.fs.cat_ranges([path] * len(ranges), list(starts), list(ends), on_error="raise")
+
+            schema, native = _rust.decode_parquet_ranges(fetch, batch_size, row_limit, byte_limit, columns, row_offset)
+            return DecodedBatchStream(schema, native)
+
         schema = self._decode_schema(path, format)
         return DEFAULT_REGISTRY.get(format).iter_batches(
             self.open_raw(path),

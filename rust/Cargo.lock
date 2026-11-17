@@ -710,6 +710,7 @@ dependencies = [
  "arrow-avro",
  "bytes",
  "fsspec_rs",
+ "futures",
  "parquet",
  "serde",
  "serde_json",
@@ -719,15 +720,30 @@ dependencies = [
 
 [[package]]
 name = "fsspec_rs"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5594e3e3dca41de99643b2861efec07d811cd9320f67fe1f068656085517429e"
+version = "0.2.5"
+source = "git+https://github.com/1kbgz/fsspec-rs?rev=637eda9d6a6277b9e157c96a13da58036faf3f3a#637eda9d6a6277b9e157c96a13da58036faf3f3a"
 dependencies = [
  "bytes",
+ "futures-util",
  "object_store",
  "percent-encoding",
  "tokio",
  "url",
+]
+
+[[package]]
+name = "futures"
+version = "0.3.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a31d2a3fbaaeb2af2368bbdd904aa8e812d3c04a1ee10d3171f52d556e5d0a3"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "futures-executor",
+ "futures-io",
+ "futures-sink",
+ "futures-task",
+ "futures-util",
 ]
 
 [[package]]
@@ -745,6 +761,17 @@ name = "futures-core"
 version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92d699e522242e69e3003b94ecc1f960f3a5e015aa7c5d7486e65ad01dd94f5e"
+
+[[package]]
+name = "futures-executor"
+version = "0.3.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "031b47cf1a3c6cc8bc2fc76cd437f521619387907d469316e7c0bc278f1f5432"
+dependencies = [
+ "futures-core",
+ "futures-task",
+ "futures-util",
+]
 
 [[package]]
 name = "futures-io"
@@ -781,6 +808,7 @@ version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d50a92467f8ba5dd6e3ee5d4bd04d73ab2e4e1c44474a0674821dfce14b79bc"
 dependencies = [
+ "futures-channel",
  "futures-core",
  "futures-io",
  "futures-macro",
@@ -1513,6 +1541,7 @@ dependencies = [
  "bytes",
  "chrono",
  "flate2",
+ "futures",
  "half",
  "hashbrown",
  "lz4_flex",
@@ -1522,6 +1551,7 @@ dependencies = [
  "seq-macro",
  "simdutf8",
  "snap",
+ "tokio",
  "twox-hash",
  "zstd",
 ]

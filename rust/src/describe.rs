@@ -9,7 +9,7 @@ use std::io::Read;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use arrow::datatypes::SchemaRef;
-use fsspec_rs::{FileInfo, FileType, OpenMode, SharedFileSystem};
+use fsspec_rs::{Condition, FileInfo, FileType, OpenMode, RangeReadOptions, SharedFileSystem};
 use serde_json::{Map, Value};
 
 use crate::{
@@ -262,14 +262,7 @@ impl DataSource for FileDataSource {
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<DecodedStream> {
-        let format = self.table_format(path)?;
-        let schema = self.decode_schema(path, format)?;
-        DEFAULT_REGISTRY.get(format)?.decode_reader(
-            self.open_raw(path)?,
-            schema,
-            options,
-            cancellation,
-        )
+        self.scan_selected(path, &ScanSelection::default(), options, cancellation)
     }
 
     fn scan_columns(
@@ -279,12 +272,12 @@ impl DataSource for FileDataSource {
         options: StreamOptions,
         cancellation: CancellationToken,
     ) -> Result<DecodedStream> {
-        let format = self.table_format(path)?;
-        let schema = self.decode_schema(path, format)?;
-        DEFAULT_REGISTRY.get(format)?.decode_reader_columns(
-            self.open_raw(path)?,
-            schema,
-            columns,
+        self.scan_selected(
+            path,
+            &ScanSelection {
+                columns: Some(columns.to_vec()),
+                row_offset: 0,
+            },
             options,
             cancellation,
         )
@@ -298,6 +291,33 @@ impl DataSource for FileDataSource {
         cancellation: CancellationToken,
     ) -> Result<DecodedStream> {
         let format = self.table_format(path)?;
+        if format == DataFormat::Parquet {
+            let fs = self.fs.clone();
+            let path = path.to_owned();
+            let mut condition = None;
+            let mut first_read = true;
+            return crate::ParquetCodec.decode_ranges(
+                move |ranges| {
+                    let result = fs.read_ranges(
+                        &path,
+                        ranges,
+                        RangeReadOptions {
+                            condition: condition.clone(),
+                            ..Default::default()
+                        },
+                    )?;
+                    if first_read {
+                        condition = result.validator.map(Condition::Match);
+                        first_read = false;
+                    }
+                    Ok(result.data)
+                },
+                selection,
+                options,
+                cancellation,
+            );
+        }
+
         let schema = self.decode_schema(path, format)?;
         DEFAULT_REGISTRY.get(format)?.decode_reader_selected(
             self.open_raw(path)?,
