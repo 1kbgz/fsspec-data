@@ -1106,6 +1106,6 @@ Package Contents
 
 
 .. py:data:: __version__
-   :value: '0.7.0'
+   :value: '0.8.0'
 
 
