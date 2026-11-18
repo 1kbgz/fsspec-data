@@ -333,6 +333,48 @@ fn decode_reader(
     Ok((schema, Py::new(py, NativeBatchStream::new(stream))?))
 }
 
+#[pyfunction]
+#[pyo3(signature = (fetch, batch_size=1024, row_limit=None, byte_limit=None, columns=None, row_offset=0))]
+#[allow(clippy::too_many_arguments)]
+fn decode_parquet_ranges(
+    py: Python<'_>,
+    fetch: Py<PyAny>,
+    batch_size: usize,
+    row_limit: Option<usize>,
+    byte_limit: Option<usize>,
+    columns: Option<Vec<String>>,
+    row_offset: usize,
+) -> PyResult<(PyArrowType<Schema>, Py<NativeBatchStream>)> {
+    let stream = py
+        .detach(|| {
+            ::fsspec_data::ParquetCodec.decode_ranges(
+                move |ranges| {
+                    Python::attach(|py| {
+                        let ranges: Vec<_> = ranges
+                            .iter()
+                            .map(|range| (range.start, range.end))
+                            .collect();
+                        fetch.call1(py, (ranges,))?.extract::<Vec<Vec<u8>>>(py)
+                    })
+                    .map_err(|error: PyErr| InterchangeError::Io(io::Error::other(error)))
+                },
+                &ScanSelection {
+                    columns,
+                    row_offset,
+                },
+                StreamOptions {
+                    batch_size,
+                    row_limit,
+                    byte_limit,
+                },
+                CancellationToken::new(),
+            )
+        })
+        .map_err(to_python_error)?;
+    let schema = PyArrowType(stream.schema.as_ref().clone());
+    Ok((schema, Py::new(py, NativeBatchStream::new(stream))?))
+}
+
 struct PythonBatches {
     source: Py<PyAny>,
 }
@@ -463,7 +505,16 @@ fn to_python_error(error: InterchangeError) -> PyErr {
         InterchangeError::StreamCancelled => {
             pyo3::exceptions::PyRuntimeError::new_err(error.to_string())
         }
-        InterchangeError::Io(_) => pyo3::exceptions::PyOSError::new_err(error.to_string()),
+        InterchangeError::Io(error) => {
+            let message = error.to_string();
+            match error
+                .into_inner()
+                .and_then(|error| error.downcast::<PyErr>().ok())
+            {
+                Some(error) => *error,
+                None => pyo3::exceptions::PyOSError::new_err(message),
+            }
+        }
         _ => pyo3::exceptions::PyValueError::new_err(error.to_string()),
     }
 }
@@ -474,6 +525,7 @@ fn fsspec_data(m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(codec_capabilities, m)?)?;
     m.add_function(wrap_pyfunction!(decode_batches, m)?)?;
     m.add_function(wrap_pyfunction!(decode_reader, m)?)?;
+    m.add_function(wrap_pyfunction!(decode_parquet_ranges, m)?)?;
     m.add_function(wrap_pyfunction!(project_batches, m)?)?;
     m.add_function(wrap_pyfunction!(decode_stream, m)?)?;
     m.add_function(wrap_pyfunction!(encode_batches, m)?)?;

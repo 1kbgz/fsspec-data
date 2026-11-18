@@ -1,4 +1,5 @@
 import io
+from types import SimpleNamespace
 from typing import ClassVar
 
 import fsspec
@@ -132,6 +133,89 @@ def test_facets_a_source_does_not_implement_raise_facet_not_supported():
         assert str(error.value) == f"x has no {facet.value} facet"
     with pytest.raises(NotImplementedError):
         DataSource().describe("x")
+
+
+def test_parquet_scan_batches_selected_column_ranges(files, monkeypatch):
+    table = pa.table({"id": range(12), "name": [f"row-{row}" for row in range(12)], "unused": range(12)})
+    buffer = io.BytesIO()
+    pq.write_table(table, buffer, row_group_size=4)
+    files.fs.pipe_file("/data/ranges.parquet", buffer.getvalue())
+    metadata = pq.read_metadata(buffer)
+    calls = []
+    cat_ranges = files.fs.cat_ranges
+
+    def record(paths, starts, ends, **kwargs):
+        calls.append(list(zip(starts, ends)))
+        return cat_ranges(paths, starts, ends, **kwargs)
+
+    def no_open(*args, **kwargs):
+        pytest.fail("Parquet scan opened a sequential reader")
+
+    monkeypatch.setattr(files, "open_raw", no_open)
+    monkeypatch.setattr(files.fs, "cat_ranges", record)
+    stream = files.scan_selected("/data/ranges.parquet", columns=["name", "id", "name"], row_offset=5, row_limit=2)
+    assert calls and all(start < 0 for call in calls for start, _ in call)
+    calls.clear()
+    result = stream.collect()
+    assert pa.Table.from_batches(result.batches, schema=result.schema).equals(table.slice(5, 2).select(["name", "id", "name"]))
+    expected = []
+    for index in (0, 1):
+        column = metadata.row_group(1).column(index)
+        start = column.dictionary_page_offset if column.has_dictionary_page else column.data_page_offset
+        expected.append((start, start + column.total_compressed_size))
+    assert calls == [expected]
+
+
+def test_parquet_range_scan_cancel_stops_data_fetches(files, monkeypatch):
+    calls = []
+    original = files.fs.cat_ranges
+
+    def record(*args, **kwargs):
+        calls.append(args)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(files.fs, "cat_ranges", record)
+    stream = files.scan("/data/nested/ids.parquet")
+    calls.clear()
+    stream.cancel()
+    with pytest.raises(RuntimeError, match="cancelled"):
+        next(stream)
+    assert calls == []
+
+
+def test_parquet_range_scan_preserves_fetch_exception(files, monkeypatch):
+    class FetchConflict(OSError):
+        pass
+
+    stream = files.scan("/data/nested/ids.parquet")
+
+    def fail(*args, **kwargs):
+        raise FetchConflict("object changed")
+
+    monkeypatch.setattr(files.fs, "cat_ranges", fail)
+    with pytest.raises(FetchConflict, match="object changed"):
+        next(stream)
+
+
+def test_parquet_scan_uses_typed_ranges_when_available(files, monkeypatch):
+    calls = []
+    original = files.fs.cat_ranges
+
+    def read_ranges(path, ranges, *, condition):
+        assert condition is None
+        calls.append(ranges)
+        starts, ends = zip(*ranges)
+        data = original([path] * len(ranges), list(starts), list(ends), on_error="raise")
+        return SimpleNamespace(data=tuple(data), validator=None)
+
+    def no_fallback(*args, **kwargs):
+        pytest.fail("typed range reads fell back to cat_ranges")
+
+    monkeypatch.setattr(files.fs, "read_ranges", read_ranges, raising=False)
+    monkeypatch.setattr(files.fs, "cat_ranges", no_fallback)
+    assert rows(files.scan("/data/nested/ids.parquet")) == 2
+    assert calls[0] == [(-8, None)]
+    assert any(start >= 0 for ranges in calls for start, _ in ranges)
 
 
 @pytest.mark.parametrize("path", ["/data/orders.csv", "/data/nested/ids.parquet"])

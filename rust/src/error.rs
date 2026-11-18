@@ -122,6 +122,8 @@ pub enum InterchangeError {
     #[error(transparent)]
     FileSystem(#[from] fsspec_rs::FsError),
     #[error(transparent)]
+    Operation(#[from] fsspec_rs::OperationError),
+    #[error(transparent)]
     Json(#[from] serde_json::Error),
     #[error(transparent)]
     Arrow(#[from] arrow::error::ArrowError),

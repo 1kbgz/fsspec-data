@@ -6,6 +6,9 @@ mod converter;
 mod describe;
 mod error;
 mod json_schema;
+#[cfg(test)]
+mod parquet_range_tests;
+mod parquet_ranges;
 mod plan;
 mod schema;
 mod stream;

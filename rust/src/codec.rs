@@ -13,7 +13,7 @@ use arrow::ipc::writer::StreamWriter;
 use arrow::json::reader::infer_json_schema;
 use arrow::json::{LineDelimitedWriter, ReaderBuilder as JsonReaderBuilder};
 use bytes::Bytes;
-use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
+use parquet::arrow::arrow_reader::{ArrowReaderBuilder, ParquetRecordBatchReaderBuilder};
 use parquet::arrow::{ArrowWriter, ProjectionMask};
 use parquet::errors::ParquetError;
 use parquet::file::reader::{ChunkReader, Length};
@@ -410,6 +410,51 @@ impl<W: Write + Send> CodecWriter for ParquetWriter<W> {
     }
 }
 
+pub(crate) fn select_parquet<T>(
+    mut builder: ArrowReaderBuilder<T>,
+    selection: &ScanSelection,
+    options: StreamOptions,
+) -> Result<ArrowReaderBuilder<T>> {
+    if let Some(columns) = &selection.columns {
+        let indices = columns
+            .iter()
+            .map(|name| builder.schema().index_of(name))
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        let projection = ProjectionMask::roots(builder.parquet_schema(), indices);
+        builder = builder.with_projection(projection);
+    }
+
+    let mut offset = selection.row_offset;
+    let mut remaining = options.row_limit.unwrap_or(usize::MAX);
+    let mut row_groups = Vec::new();
+    let mut first_group_offset = 0;
+    for (index, group) in builder.metadata().row_groups().iter().enumerate() {
+        if remaining == 0 {
+            break;
+        }
+        let rows = usize::try_from(group.num_rows())
+            .map_err(|_| ParquetError::General("row count does not fit usize".into()))?;
+        if offset >= rows {
+            offset -= rows;
+            continue;
+        }
+        if row_groups.is_empty() {
+            first_group_offset = offset;
+        }
+        row_groups.push(index);
+        remaining -= remaining.min(rows - offset);
+        offset = 0;
+    }
+    builder = builder
+        .with_row_groups(row_groups)
+        .with_offset(first_group_offset)
+        .with_batch_size(options.batch_size);
+    if let Some(limit) = options.row_limit {
+        builder = builder.with_limit(limit);
+    }
+    Ok(builder)
+}
+
 impl Codec for ParquetCodec {
     fn format(&self) -> DataFormat {
         DataFormat::Parquet
@@ -494,45 +539,9 @@ impl Codec for ParquetCodec {
             return Err(InterchangeError::InvalidBatchSize);
         }
         let reader = SeekableChunkReader::new(reader)?;
-        let mut builder = ParquetRecordBatchReaderBuilder::try_new(reader)?;
+        let builder = ParquetRecordBatchReaderBuilder::try_new(reader)?;
         let metadata = builder.schema().metadata().clone();
-        if let Some(columns) = &selection.columns {
-            let indices = columns
-                .iter()
-                .map(|name| builder.schema().index_of(name))
-                .collect::<std::result::Result<Vec<_>, _>>()?;
-            let projection = ProjectionMask::roots(builder.parquet_schema(), indices);
-            builder = builder.with_projection(projection);
-        }
-
-        let mut offset = selection.row_offset;
-        let mut remaining = options.row_limit.unwrap_or(usize::MAX);
-        let mut row_groups = Vec::new();
-        let mut first_group_offset = 0;
-        for (index, group) in builder.metadata().row_groups().iter().enumerate() {
-            if remaining == 0 {
-                break;
-            }
-            let rows = usize::try_from(group.num_rows())
-                .map_err(|_| ParquetError::General("row count does not fit usize".into()))?;
-            if offset >= rows {
-                offset -= rows;
-                continue;
-            }
-            if row_groups.is_empty() {
-                first_group_offset = offset;
-            }
-            row_groups.push(index);
-            remaining -= remaining.min(rows - offset);
-            offset = 0;
-        }
-        builder = builder
-            .with_row_groups(row_groups)
-            .with_offset(first_group_offset)
-            .with_batch_size(options.batch_size);
-        if let Some(limit) = options.row_limit {
-            builder = builder.with_limit(limit);
-        }
+        let builder = select_parquet(builder, selection, options)?;
         let reader = builder.build()?;
         let schema = Arc::new(reader.schema().as_ref().clone().with_metadata(metadata));
         let batch_schema = schema.clone();
