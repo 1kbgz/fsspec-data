@@ -403,9 +403,9 @@
 <h1>Interchange API reference<a class="headerlink" href="#interchange-api-reference" title="Link to this heading">¶</a></h1>
 <section id="dataviewfilesystem">
 <h2><code class="docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code><a class="headerlink" href="#dataviewfilesystem" title="Link to this heading">¶</a></h2>
-<p>Read-only view of a <a class="reference internal" href="#data-sources"><span class="xref myst">data source</span></a> registered as the <code class="docutils literal notranslate"><span class="pre">dataview</span></code> protocol. It
-renders each node’s facets as files, so ordinary fsspec tools and mounts can read a backend’s
-rows and metadata. Open a view with an outer path and the wrapped URL, such as
+<p>View of a <a class="reference internal" href="#data-sources"><span class="xref myst">data source</span></a> registered as the <code class="docutils literal notranslate"><span class="pre">dataview</span></code> protocol. It renders
+each node’s facets as files, so ordinary fsspec tools and mounts can read a backend’s rows and
+metadata. Open a view with an outer path and the wrapped URL, such as
 <code class="docutils literal notranslate"><span class="pre">dataview://orders.parquet::s3://bucket/data</span></code>, or construct it directly.</p>
 <p>Constructor parameters:</p>
 <ul class="simple">
@@ -434,6 +434,14 @@ the converted schema. <code class="docutils literal notranslate"><span class="pr
 the native file of the same name. After a table is converted, <code class="docutils literal notranslate"><span class="pre">provided_schema_provenance</span></code>
 and <code class="docutils literal notranslate"><span class="pre">requested_schema_provenance</span></code> describe the resolved schema sources without exposing
 storage options.</p>
+<p>Raw files are writable when the view has a wrapped filesystem. Opening a raw file with
+<code class="docutils literal notranslate"><span class="pre">&quot;wb&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;ab&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;xb&quot;</span></code> opens the node’s path on the wrapped filesystem, and <code class="docutils literal notranslate"><span class="pre">rm_file</span></code>
+removes it. A new name under a directory of the view maps to the same name under that
+directory’s node, including parents the view does not list, such as a new key prefix in a
+<code class="docutils literal notranslate"><span class="pre">kafka+records</span></code> topic; the wrapped filesystem decides whether it can create them. Closing a
+written file clears the view’s cached listings and sizes. Writing or removing a rendered file
+(a conversion, metadata, schema, or index) raises <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code>, which a mount reports as
+“Permission denied”. A view built from a <code class="docutils literal notranslate"><span class="pre">source</span></code> alone is read-only.</p>
 <p>Nested schema options have a <code class="docutils literal notranslate"><span class="pre">fields</span></code> list. Each field has <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">type</span></code>, and optional
 <code class="docutils literal notranslate"><span class="pre">nullable</span></code> keys. String types use PyArrow aliases such as <code class="docutils literal notranslate"><span class="pre">int64</span></code>, <code class="docutils literal notranslate"><span class="pre">string</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">timestamp[ms]</span></code>. Schema references can be <code class="docutils literal notranslate"><span class="pre">SchemaRef</span></code> values, URL strings, or mappings with

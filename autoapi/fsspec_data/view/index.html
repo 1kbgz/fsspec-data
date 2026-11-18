@@ -411,6 +411,12 @@
     <a href="#fsspec_data.view.DataViewFileSystem._open">DataViewFileSystem._open()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view.DataViewFileSystem.rm_file">DataViewFileSystem.rm_file()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view.DataViewFileSystem._writable_path">DataViewFileSystem._writable_path()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.view.DataViewFileSystem._view_path">DataViewFileSystem._view_path()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -442,6 +448,27 @@
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.view.DataViewFileSystem._index_row">DataViewFileSystem._index_row()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.view._InvalidatingFile">_InvalidatingFile</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile._file">_InvalidatingFile._file</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile._view">_InvalidatingFile._view</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile.close">_InvalidatingFile.close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile.__enter__">_InvalidatingFile.__enter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile.__exit__">_InvalidatingFile.__exit__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile.__getattr__">_InvalidatingFile.__getattr__()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.view._validate_mapping">_validate_mapping()</a>
@@ -501,7 +528,10 @@
 <td><p>A file or directory of a data view and what it renders. <code class="docutils literal notranslate"><span class="pre">facet</span></code> is <code class="docutils literal notranslate"><span class="pre">children</span></code>,</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.view.DataViewFileSystem" title="fsspec_data.view.DataViewFileSystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code></a></p></td>
-<td><p>Read-only view of a data source, rendering each node's facets as files.</p></td>
+<td><p>View of a data source, rendering each node's facets as files.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.view._InvalidatingFile" title="fsspec_data.view._InvalidatingFile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_InvalidatingFile</span></code></a></p></td>
+<td><p>A file opened for writing on the wrapped filesystem. Closing it clears the view's</p></td>
 </tr>
 </tbody>
 </table>
@@ -579,12 +609,16 @@ or a format name. <code class="docutils literal notranslate"><span class="pre">u
 <dt class="sig sig-object py" id="fsspec_data.view.DataViewFileSystem">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.view.</span></span><span class="sig-name descname"><span class="pre">DataViewFileSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_protocol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec.AbstractFileSystem</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../describe/index.html#fsspec_data.describe.DataSource" title="fsspec_data.describe.DataSource"><span class="pre">fsspec_data.describe.DataSource</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provided_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec_data.schema.SchemaInput</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec_data.schema.SchemaInput</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../interchange/index.html#fsspec_data.interchange.SchemaPolicy" title="fsspec_data.interchange.SchemaPolicy"><span class="pre">fsspec_data.interchange.SchemaPolicy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">SchemaPolicy.EXACT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spool_max_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/fsspec_data/view.html#DataViewFileSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.view.DataViewFileSystem" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">fsspec.implementations.chained.ChainedFileSystem</span></code></p>
-<p>Read-only view of a data source, rendering each node’s facets as files.</p>
+<p>View of a data source, rendering each node’s facets as files.</p>
 <p><code class="docutils literal notranslate"><span class="pre">mapping</span></code> lists the forms to show for each facet, for example
 <code class="docutils literal notranslate"><span class="pre">{&quot;table&quot;:</span> <span class="pre">[&quot;raw&quot;,</span> <span class="pre">&quot;parquet&quot;],</span> <span class="pre">&quot;metadata&quot;:</span> <span class="pre">[&quot;json&quot;]}</span></code>; facets it leaves out are not
 shown. A container becomes a directory, a table <code class="docutils literal notranslate"><span class="pre">N.parquet</span></code> (<code class="docutils literal notranslate"><span class="pre">raw</span></code> keeps the
 native file), metadata <code class="docutils literal notranslate"><span class="pre">N.metadata.json</span></code>, a table’s schema <code class="docutils literal notranslate"><span class="pre">N.schema.json</span></code>, and a
 container’s index of its children <code class="docutils literal notranslate"><span class="pre">N.json</span></code>.</p>
+<p>Raw files pass writes and deletes to the wrapped filesystem unchanged: opening a raw
+file, or a new name under a directory, with <code class="docutils literal notranslate"><span class="pre">&quot;wb&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;ab&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;xb&quot;</span></code> writes the
+node’s path, and <code class="docutils literal notranslate"><span class="pre">rm_file</span></code> removes it. Writing or removing a rendered file raises
+<code class="docutils literal notranslate"><span class="pre">PermissionError</span></code>. A view built from a <code class="docutils literal notranslate"><span class="pre">source</span></code> without a filesystem is read-only.</p>
 <p>Create and configure file-system instance</p>
 <p>Instances may be cachable, so if similar enough arguments are seen
 a new instance is not required. The token attribute exists to allow
@@ -804,6 +838,19 @@ path.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.view.DataViewFileSystem.rm_file">
+<span class="sig-name descname"><span class="pre">rm_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/view.html#DataViewFileSystem.rm_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.view.DataViewFileSystem.rm_file" title="Link to this definition">¶</a></dt>
+<dd><p>Delete a file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.view.DataViewFileSystem._writable_path">
+<span class="sig-name descname"><span class="pre">_writable_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">fsspec.AbstractFileSystem</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/view.html#DataViewFileSystem._writable_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.view.DataViewFileSystem._writable_path" title="Link to this definition">¶</a></dt>
+<dd><p>The wrapped filesystem and its path for a write or delete of <code class="docutils literal notranslate"><span class="pre">path</span></code>: a raw file’s
+node, or with <code class="docutils literal notranslate"><span class="pre">create</span></code>, a new name under a directory.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.view.DataViewFileSystem._view_path">
 <span class="sig-name descname"><span class="pre">_view_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/view.html#DataViewFileSystem._view_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.view.DataViewFileSystem._view_path" title="Link to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">path</span></code> relative to the view. Paths under the root are accepted too, since fsspec
@@ -864,6 +911,43 @@ from the source’s.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.view.DataViewFileSystem._index_row">
 <span class="sig-name descname"><span class="pre">_index_row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../describe/index.html#fsspec_data.describe.Node" title="fsspec_data.describe.Node"><span class="pre">fsspec_data.describe.Node</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/view.html#DataViewFileSystem._index_row"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.view.DataViewFileSystem._index_row" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.view._InvalidatingFile">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.view.</span></span><span class="sig-name descname"><span class="pre">_InvalidatingFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.view.DataViewFileSystem" title="fsspec_data.view.DataViewFileSystem"><span class="pre">DataViewFileSystem</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/fsspec_data/view.html#_InvalidatingFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.view._InvalidatingFile" title="Link to this definition">¶</a></dt>
+<dd><p>A file opened for writing on the wrapped filesystem. Closing it clears the view’s
+listings, so they show what was written.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.view._InvalidatingFile._file">
+<span class="sig-name descname"><span class="pre">_file</span></span><a class="headerlink" href="#fsspec_data.view._InvalidatingFile._file" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.view._InvalidatingFile._view">
+<span class="sig-name descname"><span class="pre">_view</span></span><a class="headerlink" href="#fsspec_data.view._InvalidatingFile._view" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.view._InvalidatingFile.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/view.html#_InvalidatingFile.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.view._InvalidatingFile.close" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.view._InvalidatingFile.__enter__">
+<span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/view.html#_InvalidatingFile.__enter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.view._InvalidatingFile.__enter__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.view._InvalidatingFile.__exit__">
+<span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exc_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/view.html#_InvalidatingFile.__exit__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.view._InvalidatingFile.__exit__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.view._InvalidatingFile.__getattr__">
+<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/view.html#_InvalidatingFile.__getattr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.view._InvalidatingFile.__getattr__" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1045,6 +1129,12 @@ from the source’s.</p>
     <a href="#fsspec_data.view.DataViewFileSystem._open">DataViewFileSystem._open()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view.DataViewFileSystem.rm_file">DataViewFileSystem.rm_file()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view.DataViewFileSystem._writable_path">DataViewFileSystem._writable_path()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.view.DataViewFileSystem._view_path">DataViewFileSystem._view_path()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -1076,6 +1166,27 @@ from the source’s.</p>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.view.DataViewFileSystem._index_row">DataViewFileSystem._index_row()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.view._InvalidatingFile">_InvalidatingFile</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile._file">_InvalidatingFile._file</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile._view">_InvalidatingFile._view</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile.close">_InvalidatingFile.close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile.__enter__">_InvalidatingFile.__enter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile.__exit__">_InvalidatingFile.__exit__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.view._InvalidatingFile.__getattr__">_InvalidatingFile.__getattr__()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.view._validate_mapping">_validate_mapping()</a>

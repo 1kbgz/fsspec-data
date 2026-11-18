@@ -64,8 +64,8 @@ write a store, or use Arrow internally when that is appropriate. Entry-point dis
 integration packages add routes without adding their dependencies or release cadence to
 `fsspec-data`.
 
-`DataViewFileSystem` is the read-only façade for tabular conversion, of one file or of a
-whole backend. Native resource conversion uses `ConverterRegistry` directly because its output may not satisfy a
+`DataViewFileSystem` is the façade for tabular conversion, of one file or of a whole
+backend. Its rendered files are read-only; raw files pass writes to the wrapped filesystem. Native resource conversion uses `ConverterRegistry` directly because its output may not satisfy a
 file-like `open()` contract.
 
 ## Arrow is the internal boundary

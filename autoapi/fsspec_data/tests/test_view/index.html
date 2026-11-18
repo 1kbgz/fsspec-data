@@ -327,6 +327,18 @@
     <a href="#fsspec_data.tests.test_view.test_views_open_through_fsspec_urls">test_views_open_through_fsspec_urls()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_view.test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem">test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_view.test_rendered_files_and_directories_cannot_be_written">test_rendered_files_and_directories_cannot_be_written()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_view.test_writes_need_a_directory_and_a_filesystem">test_writes_need_a_directory_and_a_filesystem()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_view.test_closing_a_write_follows_the_wrapped_file">test_closing_a_write_follows_the_wrapped_file()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_view.Catalog">Catalog</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -423,6 +435,18 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_view.test_views_open_through_fsspec_urls" title="fsspec_data.tests.test_view.test_views_open_through_fsspec_urls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_views_open_through_fsspec_urls</span></code></a>(memory)</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_view.test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem" title="fsspec_data.tests.test_view.test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem</span></code></a>(memory)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_view.test_rendered_files_and_directories_cannot_be_written" title="fsspec_data.tests.test_view.test_rendered_files_and_directories_cannot_be_written"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_rendered_files_and_directories_cannot_be_written</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_view.test_writes_need_a_directory_and_a_filesystem" title="fsspec_data.tests.test_view.test_writes_need_a_directory_and_a_filesystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_writes_need_a_directory_and_a_filesystem</span></code></a>(memory)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_view.test_closing_a_write_follows_the_wrapped_file" title="fsspec_data.tests.test_view.test_closing_a_write_follows_the_wrapped_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_closing_a_write_follows_the_wrapped_file</span></code></a>(memory)</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_view.test_a_catalog_renders_datasets_and_metadata_at_every_level" title="fsspec_data.tests.test_view.test_a_catalog_renders_datasets_and_metadata_at_every_level"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_a_catalog_renders_datasets_and_metadata_at_every_level</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
@@ -477,6 +501,26 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.tests.test_view.test_views_open_through_fsspec_urls">
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_view.</span></span><span class="sig-name descname"><span class="pre">test_views_open_through_fsspec_urls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_view.test_views_open_through_fsspec_urls" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_view.test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_view.</span></span><span class="sig-name descname"><span class="pre">test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_view.test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_view.test_rendered_files_and_directories_cannot_be_written">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_view.</span></span><span class="sig-name descname"><span class="pre">test_rendered_files_and_directories_cannot_be_written</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_view.test_rendered_files_and_directories_cannot_be_written" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_view.test_writes_need_a_directory_and_a_filesystem">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_view.</span></span><span class="sig-name descname"><span class="pre">test_writes_need_a_directory_and_a_filesystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_view.test_writes_need_a_directory_and_a_filesystem" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_view.test_closing_a_write_follows_the_wrapped_file">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_view.</span></span><span class="sig-name descname"><span class="pre">test_closing_a_write_follows_the_wrapped_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_view.test_closing_a_write_follows_the_wrapped_file" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
@@ -606,6 +650,18 @@ view does not show the same rows twice.</p>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_view.test_views_open_through_fsspec_urls">test_views_open_through_fsspec_urls()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_view.test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem">test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_view.test_rendered_files_and_directories_cannot_be_written">test_rendered_files_and_directories_cannot_be_written()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_view.test_writes_need_a_directory_and_a_filesystem">test_writes_need_a_directory_and_a_filesystem()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_view.test_closing_a_write_follows_the_wrapped_file">test_closing_a_write_follows_the_wrapped_file()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_view.Catalog">Catalog</a>

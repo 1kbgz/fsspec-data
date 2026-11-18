@@ -840,13 +840,18 @@ Package Contents
    Bases: :py:obj:`fsspec.implementations.chained.ChainedFileSystem`
 
 
-   Read-only view of a data source, rendering each node's facets as files.
+   View of a data source, rendering each node's facets as files.
 
    ``mapping`` lists the forms to show for each facet, for example
    ``{"table": ["raw", "parquet"], "metadata": ["json"]}``; facets it leaves out are not
    shown. A container becomes a directory, a table ``N.parquet`` (``raw`` keeps the
    native file), metadata ``N.metadata.json``, a table's schema ``N.schema.json``, and a
    container's index of its children ``N.json``.
+
+   Raw files pass writes and deletes to the wrapped filesystem unchanged: opening a raw
+   file, or a new name under a directory, with ``"wb"``, ``"ab"``, or ``"xb"`` writes the
+   node's path, and ``rm_file`` removes it. Writing or removing a rendered file raises
+   ``PermissionError``. A view built from a ``source`` without a filesystem is read-only.
 
    Create and configure file-system instance
 
@@ -1054,6 +1059,19 @@ Package Contents
    .. py:method:: _open(path: str, mode: str = 'rb', block_size: int | None = None, autocommit: bool = True, cache_options: dict[str, Any] | None = None, **kwargs: Any)
 
       Return raw bytes-mode file-like from the file-system
+
+
+
+   .. py:method:: rm_file(path: str) -> None
+
+      Delete a file
+
+
+
+   .. py:method:: _writable_path(path: str, create: bool = True) -> tuple[fsspec.AbstractFileSystem, str]
+
+      The wrapped filesystem and its path for a write or delete of ``path``: a raw file's
+      node, or with ``create``, a new name under a directory.
 
 
 

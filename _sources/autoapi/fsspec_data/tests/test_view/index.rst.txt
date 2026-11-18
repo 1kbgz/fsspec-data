@@ -26,6 +26,10 @@ Functions
    fsspec_data.tests.test_view.test_two_nodes_rendering_one_name_is_an_error
    fsspec_data.tests.test_view.test_resolve_maps_view_paths_back_to_nodes
    fsspec_data.tests.test_view.test_views_open_through_fsspec_urls
+   fsspec_data.tests.test_view.test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem
+   fsspec_data.tests.test_view.test_rendered_files_and_directories_cannot_be_written
+   fsspec_data.tests.test_view.test_writes_need_a_directory_and_a_filesystem
+   fsspec_data.tests.test_view.test_closing_a_write_follows_the_wrapped_file
    fsspec_data.tests.test_view.test_a_catalog_renders_datasets_and_metadata_at_every_level
    fsspec_data.tests.test_view.test_views_check_arguments_paths_and_forms
 
@@ -50,6 +54,14 @@ Module Contents
 .. py:function:: test_resolve_maps_view_paths_back_to_nodes(memory)
 
 .. py:function:: test_views_open_through_fsspec_urls(memory)
+
+.. py:function:: test_raw_files_pass_writes_and_deletes_to_the_wrapped_filesystem(memory)
+
+.. py:function:: test_rendered_files_and_directories_cannot_be_written(memory, path, error)
+
+.. py:function:: test_writes_need_a_directory_and_a_filesystem(memory)
+
+.. py:function:: test_closing_a_write_follows_the_wrapped_file(memory)
 
 .. py:class:: Catalog
 

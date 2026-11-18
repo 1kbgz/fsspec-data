@@ -785,8 +785,8 @@ route. A converter owns the semantics of its source and target types and may ret
 write a store, or use Arrow internally when that is appropriate. Entry-point discovery lets
 integration packages add routes without adding their dependencies or release cadence to
 <code class="docutils literal notranslate"><span class="pre">fsspec-data</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code> is the read-only façade for tabular conversion, of one file or of a
-whole backend. Native resource conversion uses <code class="docutils literal notranslate"><span class="pre">ConverterRegistry</span></code> directly because its output may not satisfy a
+<p><code class="docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code> is the façade for tabular conversion, of one file or of a whole
+backend. Its rendered files are read-only; raw files pass writes to the wrapped filesystem. Native resource conversion uses <code class="docutils literal notranslate"><span class="pre">ConverterRegistry</span></code> directly because its output may not satisfy a
 file-like <code class="docutils literal notranslate"><span class="pre">open()</span></code> contract.</p>
 </section>
 <section id="arrow-is-the-internal-boundary">

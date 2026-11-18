@@ -315,8 +315,9 @@
 <a class="reference external" href="https://github.com/1kbgz/fsspec-data"><img alt="License" src="https://img.shields.io/github/license/1kbgz/fsspec-data" /></a>
 <a class="reference external" href="https://pypi.python.org/pypi/fsspec-data"><img alt="PyPI" src="https://img.shields.io/pypi/v/fsspec-data.svg" /></a></p>
 <p><code class="docutils literal notranslate"><span class="pre">fsspec-data</span></code> plans schema mappings and executes them over Arrow record batches.
-Codecs handle Arrow IPC, Parquet, CSV, and JSONL. The read-only <code class="docutils literal notranslate"><span class="pre">dataview</span></code> filesystem
-exposes converted files, schemas, and metadata of any source; a separate converter registry handles resources such as
+Codecs handle Arrow IPC, Parquet, CSV, and JSONL. The <code class="docutils literal notranslate"><span class="pre">dataview</span></code> filesystem
+exposes converted files, schemas, and metadata of any source and passes writes to raw files
+through to it; a separate converter registry handles resources such as
 Xarray datasets and Zarr stores.</p>
 <section id="start-here">
 <h2>Start here<a class="headerlink" href="#start-here" title="Link to this heading">¶</a></h2>
