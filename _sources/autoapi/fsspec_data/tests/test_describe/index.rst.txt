@@ -25,6 +25,10 @@ Functions
    fsspec_data.tests.test_describe.test_data_format_from_path
    fsspec_data.tests.test_describe.test_a_catalog_backend_describes_metadata_at_every_level
    fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported
+   fsspec_data.tests.test_describe.test_parquet_scan_batches_selected_column_ranges
+   fsspec_data.tests.test_describe.test_parquet_range_scan_cancel_stops_data_fetches
+   fsspec_data.tests.test_describe.test_parquet_range_scan_preserves_fetch_exception
+   fsspec_data.tests.test_describe.test_parquet_scan_uses_typed_ranges_when_available
    fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns
    fsspec_data.tests.test_describe.test_file_column_selection_order_duplicates_and_unknown_names
    fsspec_data.tests.test_describe.test_source_column_selection_fallback_limits_and_cancellation
@@ -93,6 +97,14 @@ Module Contents
 .. py:function:: test_a_catalog_backend_describes_metadata_at_every_level()
 
 .. py:function:: test_facets_a_source_does_not_implement_raise_facet_not_supported()
+
+.. py:function:: test_parquet_scan_batches_selected_column_ranges(files, monkeypatch)
+
+.. py:function:: test_parquet_range_scan_cancel_stops_data_fetches(files, monkeypatch)
+
+.. py:function:: test_parquet_range_scan_preserves_fetch_exception(files, monkeypatch)
+
+.. py:function:: test_parquet_scan_uses_typed_ranges_when_available(files, monkeypatch)
 
 .. py:function:: test_file_column_selection_preserves_rows_with_no_columns(files, path)
 

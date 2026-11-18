@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Interchange API reference &#8212; fsspec-data v0.8.0</title>
+    <title>Interchange API reference &#8212; fsspec-data v0.9.0</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/fuma.css?v=ca04d621" />
     <link rel="stylesheet" type="text/css" href="../_static/fuma-code.css?v=a950e949" />
@@ -16,7 +16,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/fonts/fuma-fonts.css?v=c2892c73" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/custom.css?v=88c24c6a" />
-    <script src="../_static/documentation_options.js?v=486e5634"></script>
+    <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -49,7 +49,7 @@
   <div class="fd-subnav-inner">
     <button type="button" class="fd-icon-button fd-sidebar-toggle" aria-controls="fd-sidebar" aria-expanded="false" aria-label="Toggle navigation" title="Toggle navigation">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-    </button><a class="fd-brand" href="../index.html"><span class="fd-brand-name">fsspec-data v0.8.0</span>
+    </button><a class="fd-brand" href="../index.html"><span class="fd-brand-name">fsspec-data v0.9.0</span>
 </a>
 
     <div class="fd-nav-actions">
@@ -64,7 +64,7 @@
 
 <aside id="fd-sidebar" aria-label="Documentation">
   <div class="fd-sidebar-header">
-    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../index.html"><span class="fd-brand-name">fsspec-data v0.8.0</span>
+    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../index.html"><span class="fd-brand-name">fsspec-data v0.9.0</span>
 </a>
       <button type="button" class="fd-icon-button fd-sidebar-collapse" aria-label="Collapse sidebar" title="Collapse sidebar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
     </div>
@@ -916,6 +916,22 @@ first <code class="docutils literal notranslate"><span class="pre">sample_size</
 <code class="docutils literal notranslate"><span class="pre">type</span></code>, and without <code class="docutils literal notranslate"><span class="pre">size</span></code> for directories; values that are not JSON scalars become strings.
 Rust metadata holds <code class="docutils literal notranslate"><span class="pre">size</span></code> for files, <code class="docutils literal notranslate"><span class="pre">created</span></code> and <code class="docutils literal notranslate"><span class="pre">mtime</span></code> in seconds since the Unix epoch
 when known, and the filesystem’s extra fields as strings.</p>
+<p>Parquet scans read footer metadata by suffix, then fetch selected column chunks together
+for each selected row group. No data chunks are fetched until iteration starts. Column
+order, duplicate columns, row offsets and output limits retain their scan semantics.
+Coalescing may also fetch bytes in gaps between selected chunks. Output byte limits do
+not bound compressed row-group buffers.</p>
+<p>Rust file sources use <code class="docutils literal notranslate"><span class="pre">FileSystem::read_ranges</span></code>. Python file sources use the typed
+<code class="docutils literal notranslate"><span class="pre">read_ranges</span></code> API when available, otherwise fsspec’s <code class="docutils literal notranslate"><span class="pre">cat_ranges(...,</span> <span class="pre">on_error=&quot;raise&quot;)</span></code>.
+With a validator from the first footer read, subsequent footer and data requests use
+<code class="docutils literal notranslate"><span class="pre">Match</span></code> against that validator. Native S3 therefore rejects object changes during a scan;
+Python preserves the filesystem’s <code class="docutils literal notranslate"><span class="pre">ConflictError</span></code>, and Rust returns
+<code class="docutils literal notranslate"><span class="pre">InterchangeError::Operation</span></code>. Results already yielded before a later conflict remain
+visible to the caller. Sources without validators provide no snapshot guarantee.</p>
+<p>Fetching remains synchronous to callers. Parquet’s batch-range interface delegates
+request concurrency and size limits to the filesystem. Cancellation stops subsequent
+fetches and batches; it does not interrupt a synchronous request already in progress.
+<code class="docutils literal notranslate"><span class="pre">Codec.iter_batches</span></code> with a file-like object retains its existing seekable-reader path.</p>
 <p><code class="docutils literal notranslate"><span class="pre">DataFormat.from_path(path)</span></code> (Rust: <code class="docutils literal notranslate"><span class="pre">DataFormat::from_path</span></code>) maps <code class="docutils literal notranslate"><span class="pre">.arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">.ipc</span></code>,
 <code class="docutils literal notranslate"><span class="pre">.parquet</span></code>, <code class="docutils literal notranslate"><span class="pre">.pq</span></code>, <code class="docutils literal notranslate"><span class="pre">.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">.jsonl</span></code>, <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code>, and <code class="docutils literal notranslate"><span class="pre">.avro</span></code> to a format and returns <code class="docutils literal notranslate"><span class="pre">None</span></code> for
 anything else.</p>

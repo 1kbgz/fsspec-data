@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>fsspec_data.tests.test_describe &#8212; fsspec-data v0.8.0</title>
+    <title>fsspec_data.tests.test_describe &#8212; fsspec-data v0.9.0</title>
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/fuma.css?v=ca04d621" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/fuma-code.css?v=a950e949" />
@@ -16,7 +16,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/fonts/fuma-fonts.css?v=c2892c73" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/custom.css?v=88c24c6a" />
-    <script src="../../../../_static/documentation_options.js?v=486e5634"></script>
+    <script src="../../../../_static/documentation_options.js?v=39bb1c6d"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -49,7 +49,7 @@
   <div class="fd-subnav-inner">
     <button type="button" class="fd-icon-button fd-sidebar-toggle" aria-controls="fd-sidebar" aria-expanded="false" aria-label="Toggle navigation" title="Toggle navigation">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-    </button><a class="fd-brand" href="../../../../index.html"><span class="fd-brand-name">fsspec-data v0.8.0</span>
+    </button><a class="fd-brand" href="../../../../index.html"><span class="fd-brand-name">fsspec-data v0.9.0</span>
 </a>
 
     <div class="fd-nav-actions">
@@ -64,7 +64,7 @@
 
 <aside id="fd-sidebar" aria-label="Documentation">
   <div class="fd-sidebar-header">
-    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../../../../index.html"><span class="fd-brand-name">fsspec-data v0.8.0</span>
+    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../../../../index.html"><span class="fd-brand-name">fsspec-data v0.9.0</span>
 </a>
       <button type="button" class="fd-icon-button fd-sidebar-collapse" aria-label="Collapse sidebar" title="Collapse sidebar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
     </div>
@@ -348,6 +348,18 @@
     <a href="#fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported">test_facets_a_source_does_not_implement_raise_facet_not_supported()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_scan_batches_selected_column_ranges">test_parquet_scan_batches_selected_column_ranges()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_range_scan_cancel_stops_data_fetches">test_parquet_range_scan_cancel_stops_data_fetches()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_range_scan_preserves_fetch_exception">test_parquet_range_scan_preserves_fetch_exception()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_scan_uses_typed_ranges_when_available">test_parquet_scan_uses_typed_ranges_when_available()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns">test_file_column_selection_preserves_rows_with_no_columns()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
@@ -442,6 +454,18 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported" title="fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_facets_a_source_does_not_implement_raise_facet_not_supported</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_parquet_scan_batches_selected_column_ranges" title="fsspec_data.tests.test_describe.test_parquet_scan_batches_selected_column_ranges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_parquet_scan_batches_selected_column_ranges</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_parquet_range_scan_cancel_stops_data_fetches" title="fsspec_data.tests.test_describe.test_parquet_range_scan_cancel_stops_data_fetches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_parquet_range_scan_cancel_stops_data_fetches</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_parquet_range_scan_preserves_fetch_exception" title="fsspec_data.tests.test_describe.test_parquet_range_scan_preserves_fetch_exception"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_parquet_range_scan_preserves_fetch_exception</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_parquet_scan_uses_typed_ranges_when_available" title="fsspec_data.tests.test_describe.test_parquet_scan_uses_typed_ranges_when_available"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_parquet_scan_uses_typed_ranges_when_available</span></code></a>(...)</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns" title="fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_file_column_selection_preserves_rows_with_no_columns</span></code></a>(...)</p></td>
@@ -565,6 +589,26 @@ view does not show the same rows twice.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported">
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_facets_a_source_does_not_implement_raise_facet_not_supported</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_parquet_scan_batches_selected_column_ranges">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_parquet_scan_batches_selected_column_ranges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monkeypatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_parquet_scan_batches_selected_column_ranges" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_parquet_range_scan_cancel_stops_data_fetches">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_parquet_range_scan_cancel_stops_data_fetches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monkeypatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_parquet_range_scan_cancel_stops_data_fetches" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_parquet_range_scan_preserves_fetch_exception">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_parquet_range_scan_preserves_fetch_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monkeypatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_parquet_range_scan_preserves_fetch_exception" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_describe.test_parquet_scan_uses_typed_ranges_when_available">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_describe.</span></span><span class="sig-name descname"><span class="pre">test_parquet_scan_uses_typed_ranges_when_available</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monkeypatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_describe.test_parquet_scan_uses_typed_ranges_when_available" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -714,6 +758,18 @@ view does not show the same rows twice.</p>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_describe.test_facets_a_source_does_not_implement_raise_facet_not_supported">test_facets_a_source_does_not_implement_raise_facet_not_supported()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_scan_batches_selected_column_ranges">test_parquet_scan_batches_selected_column_ranges()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_range_scan_cancel_stops_data_fetches">test_parquet_range_scan_cancel_stops_data_fetches()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_range_scan_preserves_fetch_exception">test_parquet_range_scan_preserves_fetch_exception()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_describe.test_parquet_scan_uses_typed_ranges_when_available">test_parquet_scan_uses_typed_ranges_when_available()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_describe.test_file_column_selection_preserves_rows_with_no_columns">test_file_column_selection_preserves_rows_with_no_columns()</a>
