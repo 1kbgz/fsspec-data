@@ -422,6 +422,27 @@
   <li class="fd-toc-item" data-depth="2">
     <a href="#errors">Errors</a>
   </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#rust-file-data-sink">Rust file data sink</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#opening-a-writer">Opening a writer</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#batches-and-positions">Batches and positions</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#publication-and-close">Publication and close</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#recovery">Recovery</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fingerprint-version-one">Fingerprint version one</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#limits-and-retained-objects">Limits and retained objects</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -1150,6 +1171,134 @@ permanently fails the writer. Subsequent writes, flushes, and finish return <cod
 The caller must discard the unpublished attempt’s staged parts before replaying it.</p>
 </section>
 </section>
+<section id="rust-file-data-sink">
+<h2>Rust file data sink<a class="headerlink" href="#rust-file-data-sink" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">fsspec_data::sink::FileDataSink</span></code> stages immutable Parquet parts and publishes version-one
+manifests. This Rust API supports one partition per writer. It has no Python binding,
+background collector, cross-partition transaction, or automatic conflict rebase.</p>
+<section id="opening-a-writer">
+<h3>Opening a writer<a class="headerlink" href="#opening-a-writer" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">FileDataSink::open(fs,</span> <span class="pre">root,</span> <span class="pre">mode,</span> <span class="pre">schema,</span> <span class="pre">options)</span></code> accepts a <code class="docutils literal notranslate"><span class="pre">SharedFileSystem</span></code>, partition
+root, <code class="docutils literal notranslate"><span class="pre">WriteMode</span></code>, Arrow schema, and <code class="docutils literal notranslate"><span class="pre">SinkOptions</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Create</span></code> requires an unused or tombstoned path and starts a new table identity at position
+zero. Recreation advances the existing generation sequence.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Append</span></code> requires an incomplete table with the exact schema and <code class="docutils literal notranslate"><span class="pre">rows</span></code> progress unit.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Replace</span></code> requires an existing table and starts a new table identity at position zero.
+The previous table remains visible until publication succeeds.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">SinkOptions.parts</span></code> configures the Parquet encoder’s <code class="docutils literal notranslate"><span class="pre">PartLimits</span></code>.
+<code class="docutils literal notranslate"><span class="pre">max_manifest_bytes</span></code> defaults to 8 MiB and cannot exceed the manifest format limit.
+<code class="docutils literal notranslate"><span class="pre">max_history_reads</span></code> defaults to 256 and bounds generations examined for one retry-key
+lookup; validating a generation may read its parent and generation zero too.
+<code class="docutils literal notranslate"><span class="pre">partition_values</span></code> defaults to an empty map and must match an existing partition.
+All limits must be positive, the target part size must be below the part memory limit,
+and the part memory limit must be less than <code class="docutils literal notranslate"><span class="pre">usize::MAX</span></code>.</p>
+<p>Supported columns are Boolean, signed/unsigned integers, Float32/Float64, Utf8/LargeUtf8,
+Binary/LargeBinary, Date32/Date64, Timestamp, valid Time32/Time64 units, Duration, and
+Decimal128. Nested, dictionary, and other types return <code class="docutils literal notranslate"><span class="pre">NotSupported</span></code>. Schema changes
+require replacement.</p>
+<p>The source must advertise <code class="docutils literal notranslate"><span class="pre">io_capabilities().write_missing</span></code>. Correct publication also
+requires atomic, durable create-if-absent, immutable objects, and consistent reads of
+missing keys. The flag does not certify deployment guarantees. Local integration and
+fault-injection tests do not certify AWS S3, on-premises S3, NFS, or power-loss behavior.</p>
+</section>
+<section id="batches-and-positions">
+<h3>Batches and positions<a class="headerlink" href="#batches-and-positions" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">write_batch(expected_position,</span> <span class="pre">key,</span> <span class="pre">batch)</span></code> returns a <code class="docutils literal notranslate"><span class="pre">BatchReceipt</span></code>. Keys contain 1–256
+UTF-8 bytes; batches must be nonempty and exactly match the writer schema.</p>
+<p>Pending and published receipts are checked before comparing positions. The same key,
+position, and logical content return the original receipt without writing again. A changed
+request with the same key returns <code class="docutils literal notranslate"><span class="pre">Conflict</span></code>. A new key ahead of accepted progress returns
+<code class="docutils literal notranslate"><span class="pre">Gap</span></code>; one behind it returns <code class="docutils literal notranslate"><span class="pre">Conflict</span></code>. Keys belong to one table identity and remain
+available through its retained manifest history.</p>
+<p><code class="docutils literal notranslate"><span class="pre">position()</span></code> reports accepted progress, which includes unpublished rows. Only a successful
+<code class="docutils literal notranslate"><span class="pre">PublicationReceipt</span></code> authorizes checkpointing upstream progress. The receipt includes the
+published generation and identity in <code class="docutils literal notranslate"><span class="pre">recovery</span></code>, the manifest <code class="docutils literal notranslate"><span class="pre">sha256</span></code>, <code class="docutils literal notranslate"><span class="pre">progress</span></code>,
+<code class="docutils literal notranslate"><span class="pre">num_rows</span></code>, <code class="docutils literal notranslate"><span class="pre">complete</span></code>, and an optional <code class="docutils literal notranslate"><span class="pre">marker_error</span></code>.</p>
+<p>Metadata capacity is checked before accepting a new receipt, reserving 1 KiB per possible
+new part (one per encoder row slice, plus one previously buffered part). Reservations are
+conservative and can reject a batch whose actual encoding would use less metadata.
+Schema, position, key, input-limit, history-read, and metadata-preflight errors leave
+pending work unchanged. Encoding or staging failure makes the writer unusable; the caller
+must replay the unpublished attempt with a new writer.</p>
+</section>
+<section id="publication-and-close">
+<h3>Publication and close<a class="headerlink" href="#publication-and-close" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">flush()</span></code> finishes and stages parts without making them visible.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">commit()</span></code> publishes pending rows with <code class="docutils literal notranslate"><span class="pre">complete</span> <span class="pre">=</span> <span class="pre">false</span></code>, then allocates the next attempt
+and leaves the writer open. An empty commit on an existing instance returns its last
+receipt without a new generation. Initial empty Create/Replace publishes an empty table.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">finish()</span></code> publishes with <code class="docutils literal notranslate"><span class="pre">complete</span> <span class="pre">=</span> <span class="pre">true</span></code> and closes the writer. Repeating a resolved
+finish returns its receipt.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abort()</span></code> and <code class="docutils literal notranslate"><span class="pre">close()</span></code> discard pending encoder state and close the writer. Earlier
+commits remain visible. Both return <code class="docutils literal notranslate"><span class="pre">UnknownOutcome</span></code> while publication is unresolved.</p></li>
+<li><p>Drop performs no publication or deletion. A previously submitted request may still
+complete after the writer is dropped.</p></li>
+</ul>
+<p>Parts use <code class="docutils literal notranslate"><span class="pre">parts/&lt;generation&gt;/&lt;publication_id&gt;/&lt;part_number&gt;.parquet</span></code> keys. Creation is
+conditional and followed by an exact-byte read check. A manifest is submitted only after
+the parts and immutable attempt descriptor are stored and verified. Competing writers
+use the same generation key; a different valid winner returns <code class="docutils literal notranslate"><span class="pre">Conflict</span></code>.</p>
+<p>After a complete manifest is published, the sink writes that generation’s <code class="docutils literal notranslate"><span class="pre">_SUCCESS</span></code>.
+Marker failure is returned separately as <code class="docutils literal notranslate"><span class="pre">PublicationReceipt.marker_error</span></code>; publication
+has already succeeded. There is no mutable root <code class="docutils literal notranslate"><span class="pre">_SUCCESS</span></code> marker.</p>
+</section>
+<section id="recovery">
+<h3>Recovery<a class="headerlink" href="#recovery" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">recovery_token()</span></code> returns a serializable <code class="docutils literal notranslate"><span class="pre">RecoveryToken</span></code> containing the partition root,
+namespace, table identity, target generation, and publication ID. The caller must persist
+it with the source configuration before commit/finish, and persist the newly allocated
+token before the next publication. Tokens contain no credentials.</p>
+<p><code class="docutils literal notranslate"><span class="pre">resolve(action)</span></code> resumes an unresolved live writer. After restart,
+<code class="docutils literal notranslate"><span class="pre">recover(fs,</span> <span class="pre">&amp;token,</span> <span class="pre">&amp;options,</span> <span class="pre">action)</span></code> uses the same source and credential context.
+<code class="docutils literal notranslate"><span class="pre">RecoveryAction::Observe</span></code> checks the target without resubmitting it;
+<code class="docutils literal notranslate"><span class="pre">RecoveryAction::Retry</span></code> may submit only the original bytes to the original key using
+create-if-absent. Both attempt <code class="docutils literal notranslate"><span class="pre">_SUCCESS</span></code> repair after observing a completed publication.
+Standalone recovery returns a publication receipt; further writes require reopening.</p>
+<p>The immutable descriptor at <code class="docutils literal notranslate"><span class="pre">parts/&lt;generation&gt;/&lt;publication_id&gt;/candidate</span></code> contains the
+ASCII header <code class="docutils literal notranslate"><span class="pre">fsspec-data/candidate/1</span></code> followed by a newline, the 64-character lowercase
+SHA-256 and another newline, then the exact manifest JSON bytes. Recovery checks the hash,
+identity, parent, and newly staged parts before resubmission. It checks for a different
+winner before loading a possibly collected losing descriptor.</p>
+<p>Missing data after an ambiguous publication request returns <code class="docutils literal notranslate"><span class="pre">UnknownOutcome</span></code>, since a
+request can complete later. The writer freezes its candidate and rejects new batches,
+commit/finish, and abort until resolved. An ambiguous descriptor write submits no manifest
+and fails the writer; that writer can close safely. Its persisted descriptor, if it later
+appears, can only publish through an explicit recovery retry.</p>
+</section>
+<section id="fingerprint-version-one">
+<h3>Fingerprint version one<a class="headerlink" href="#fingerprint-version-one" title="Link to this heading">¶</a></h3>
+<p>Batch fingerprints hash logical values with SHA-256 before Parquet encoding. The byte
+protocol starts with <code class="docutils literal notranslate"><span class="pre">fsspec-data/batch/1</span></code> and a NUL byte, then the expected position,
+length-prefixed UTF-8 <code class="docutils literal notranslate"><span class="pre">rows</span></code>, row count, and column count. Integers used as counts, lengths,
+and positions are unsigned 64-bit little-endian.</p>
+<p>Schema metadata comes next, followed by each field in schema order: length-prefixed UTF-8
+name, length-prefixed Arrow 60 serde JSON scalar type (compact JSON with UTF-8 strings),
+one nullability byte, and field metadata. Metadata is a count followed by key/value
+UTF-8 byte strings sorted by key, each with a length prefix.</p>
+<p>Values follow column by column, in row order. Each has a validity byte: zero for null,
+one for valid. Nulls have no payload. Booleans use one byte; numeric, temporal, decimal,
+and floating-point values use their native-width little-endian representation. Floating
+point retains signed zero and NaN payload bits. Strings and binary values use a 64-bit
+length followed by their bytes. Array offsets, unused null storage, and buffer padding
+are excluded. Rust and independent Python reference code check shared fixtures in
+<code class="docutils literal notranslate"><span class="pre">rust/tests/fixtures/batch_fingerprints.json</span></code>.</p>
+</section>
+<section id="limits-and-retained-objects">
+<h3>Limits and retained objects<a class="headerlink" href="#limits-and-retained-objects" title="Link to this heading">¶</a></h3>
+<p>Part encoding retains the estimated-memory limitation documented for <code class="docutils literal notranslate"><span class="pre">ParquetPartWriter</span></code>.
+Manifest and descriptor reads are bounded individually. Storage adapters may allocate
+additional upload/readback buffers; this API does not impose a hard total-memory limit
+across the encoder, metadata copies, and backend. Historical receipt searches have a
+read budget and no process-global cache.</p>
+<p>Abort, failure, and recovery never delete parts or descriptors. Published history remains
+readable. Reclaiming orphan attempts requires a separate collector that proves their
+publication slots are permanently occupied and observes retention. Generic automatic
+retries are disabled for sink-generated errors (<code class="docutils literal notranslate"><span class="pre">retry_safe</span> <span class="pre">=</span> <span class="pre">false</span></code>).</p>
+</section>
+</section>
 </section>
 
 
@@ -1316,6 +1465,27 @@ The caller must discard the unpublished attempt’s staged parts before replayin
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#errors">Errors</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#rust-file-data-sink">Rust file data sink</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#opening-a-writer">Opening a writer</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#batches-and-positions">Batches and positions</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#publication-and-close">Publication and close</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#recovery">Recovery</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fingerprint-version-one">Fingerprint version one</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#limits-and-retained-objects">Limits and retained objects</a>
   </li>
 </ul>
 
