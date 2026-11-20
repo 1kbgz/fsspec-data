@@ -10,6 +10,7 @@ pub mod manifest;
 #[cfg(test)]
 mod parquet_range_tests;
 mod parquet_ranges;
+pub mod parts;
 mod plan;
 mod schema;
 mod stream;
