@@ -15,13 +15,15 @@ crate-type = ["rlib"]
 
 [dependencies]
 arrow = "60.1.0"
+arrow-schema = { version = "60.1.0", features = ["serde"] }
 arrow-avro = { version = "60.1.0", default-features = false, features = ["deflate", "snappy", "zstd"] }
 bytes = "1"
 fsspec_rs = "0.3.0"
 futures = { version = "0.3", default-features = false, features = ["std"] }
 parquet = { version = "60.1.0", features = ["arrow", "async"] }
-serde = "1"
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+sha2 = "0.10"
 thiserror = "2"
 ureq = { version = "3", optional = true }
 

@@ -289,6 +289,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "de2c8e714b466404cdc1189e89f892426efea614d938e16c15518c340cd43ba3"
 dependencies = [
  "bitflags",
+ "serde",
+ "serde_core",
 ]
 
 [[package]]
@@ -744,12 +746,14 @@ version = "0.9.0"
 dependencies = [
  "arrow",
  "arrow-avro",
+ "arrow-schema",
  "bytes",
  "fsspec_rs",
  "futures",
  "parquet",
  "serde",
  "serde_json",
+ "sha2",
  "thiserror",
 ]
 

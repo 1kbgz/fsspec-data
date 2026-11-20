@@ -6,6 +6,7 @@ mod converter;
 mod describe;
 mod error;
 mod json_schema;
+pub mod manifest;
 #[cfg(test)]
 mod parquet_range_tests;
 mod parquet_ranges;
