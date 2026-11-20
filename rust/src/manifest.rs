@@ -40,7 +40,7 @@ pub const MAX_MANIFEST_BYTES: usize = 8 * 1024 * 1024;
 /// SHA-256 of exact stored bytes, serialized as 64 lowercase hexadecimal digits.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(try_from = "String", into = "String")]
-pub struct Checksum([u8; 32]);
+pub struct Checksum(pub(crate) [u8; 32]);
 
 impl Checksum {
     pub fn of(bytes: &[u8]) -> Self {
@@ -168,7 +168,7 @@ fn check(valid: bool, message: &str) -> Result<()> {
     }
 }
 
-fn identifier(value: &str) -> bool {
+pub(crate) fn identifier(value: &str) -> bool {
     !value.is_empty()
         && value.len() <= 128
         && value
@@ -376,7 +376,7 @@ impl Manifest {
         )
     }
 
-    fn validate_parent(&self, parent: &Manifest) -> Result<()> {
+    pub(crate) fn validate_parent(&self, parent: &Manifest) -> Result<()> {
         check(
             self.namespace_id == parent.namespace_id
                 && self.partition_values == parent.partition_values,
@@ -689,7 +689,7 @@ impl Session<'_> {
     }
 }
 
-fn join(root: &str, key: &str) -> String {
+pub(crate) fn join(root: &str, key: &str) -> String {
     if root.is_empty() {
         key.to_owned()
     } else {
@@ -699,7 +699,7 @@ fn join(root: &str, key: &str) -> String {
 
 // Read through a handle: the generic filesystem cat_file implementation can read an
 // unknown-size input completely before applying a requested range.
-fn bounded_read(fs: &SharedFileSystem, path: &str, limit: usize) -> Result<Vec<u8>> {
+pub(crate) fn bounded_read(fs: &SharedFileSystem, path: &str, limit: usize) -> Result<Vec<u8>> {
     let file = fs.open(path, OpenMode::Read, None)?;
     let mut bytes = Vec::new();
     file.take(limit as u64 + 1)

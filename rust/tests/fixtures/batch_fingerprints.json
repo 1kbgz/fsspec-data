@@ -1,0 +1,120 @@
+[
+  {
+    "name": "nulls_unicode_metadata",
+    "position": 7,
+    "metadata": {
+      "z": "last",
+      "a": "α"
+    },
+    "columns": [
+      {
+        "name": "integer",
+        "data_type": "Int64",
+        "nullable": true,
+        "metadata": {
+          "unit": "count"
+        },
+        "values": [
+          123,
+          null,
+          -1
+        ]
+      },
+      {
+        "name": "text",
+        "data_type": "Utf8",
+        "nullable": true,
+        "metadata": {},
+        "values": [
+          "é",
+          "",
+          null
+        ]
+      },
+      {
+        "name": "flag",
+        "data_type": "Boolean",
+        "nullable": true,
+        "metadata": {},
+        "values": [
+          true,
+          false,
+          null
+        ]
+      }
+    ],
+    "sha256": "f33727bb9b8a01ae7fdf41f81e8316d2660c8fe2a664c5f4ce2022a468a34f79"
+  },
+  {
+    "name": "float_bits_and_binary",
+    "position": 0,
+    "metadata": {},
+    "columns": [
+      {
+        "name": "number",
+        "data_type": "Float64",
+        "nullable": false,
+        "metadata": {},
+        "values": [
+          "0000000000000000",
+          "8000000000000000",
+          "7ff8000000000001",
+          "7ff8000000000002"
+        ]
+      },
+      {
+        "name": "bytes",
+        "data_type": "Binary",
+        "nullable": true,
+        "metadata": {},
+        "values": [
+          "00ff",
+          null,
+          "",
+          "deadbeef"
+        ]
+      }
+    ],
+    "sha256": "057320e19e01ad98fca24b5eeb505b752fa1dfa14288e87935a5af82d4006ddc"
+  },
+  {
+    "name": "time_and_decimal",
+    "position": 4294967296,
+    "metadata": {},
+    "columns": [
+      {
+        "name": "time",
+        "data_type": {
+          "Timestamp": [
+            "Microsecond",
+            "UTC"
+          ]
+        },
+        "nullable": true,
+        "metadata": {},
+        "values": [
+          0,
+          -1,
+          null
+        ]
+      },
+      {
+        "name": "amount",
+        "data_type": {
+          "Decimal128": [
+            10,
+            2
+          ]
+        },
+        "nullable": true,
+        "metadata": {},
+        "values": [
+          123,
+          -456,
+          null
+        ]
+      }
+    ],
+    "sha256": "a13e41c091907a0c74cef33e923d8cb9582675aadbe17292d2fe1bda2489e14d"
+  }
+]

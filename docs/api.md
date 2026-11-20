@@ -693,3 +693,142 @@ Schema and input-limit errors leave previously buffered rows intact. An error af
 encoding starts, including a consumer or footer failure, drops the current part and
 permanently fails the writer. Subsequent writes, flushes, and finish return `Invalid`.
 The caller must discard the unpublished attempt's staged parts before replaying it.
+
+## Rust file data sink
+
+`fsspec_data::sink::FileDataSink` stages immutable Parquet parts and publishes version-one
+manifests. This Rust API supports one partition per writer. It has no Python binding,
+background collector, cross-partition transaction, or automatic conflict rebase.
+
+### Opening a writer
+
+`FileDataSink::open(fs, root, mode, schema, options)` accepts a `SharedFileSystem`, partition
+root, `WriteMode`, Arrow schema, and `SinkOptions`.
+
+- `Create` requires an unused or tombstoned path and starts a new table identity at position
+  zero. Recreation advances the existing generation sequence.
+- `Append` requires an incomplete table with the exact schema and `rows` progress unit.
+- `Replace` requires an existing table and starts a new table identity at position zero.
+  The previous table remains visible until publication succeeds.
+
+`SinkOptions.parts` configures the Parquet encoder's `PartLimits`.
+`max_manifest_bytes` defaults to 8 MiB and cannot exceed the manifest format limit.
+`max_history_reads` defaults to 256 and bounds generations examined for one retry-key
+lookup; validating a generation may read its parent and generation zero too.
+`partition_values` defaults to an empty map and must match an existing partition.
+All limits must be positive, the target part size must be below the part memory limit,
+and the part memory limit must be less than `usize::MAX`.
+
+Supported columns are Boolean, signed/unsigned integers, Float32/Float64, Utf8/LargeUtf8,
+Binary/LargeBinary, Date32/Date64, Timestamp, valid Time32/Time64 units, Duration, and
+Decimal128. Nested, dictionary, and other types return `NotSupported`. Schema changes
+require replacement.
+
+The source must advertise `io_capabilities().write_missing`. Correct publication also
+requires atomic, durable create-if-absent, immutable objects, and consistent reads of
+missing keys. The flag does not certify deployment guarantees. Local integration and
+fault-injection tests do not certify AWS S3, on-premises S3, NFS, or power-loss behavior.
+
+### Batches and positions
+
+`write_batch(expected_position, key, batch)` returns a `BatchReceipt`. Keys contain 1–256
+UTF-8 bytes; batches must be nonempty and exactly match the writer schema.
+
+Pending and published receipts are checked before comparing positions. The same key,
+position, and logical content return the original receipt without writing again. A changed
+request with the same key returns `Conflict`. A new key ahead of accepted progress returns
+`Gap`; one behind it returns `Conflict`. Keys belong to one table identity and remain
+available through its retained manifest history.
+
+`position()` reports accepted progress, which includes unpublished rows. Only a successful
+`PublicationReceipt` authorizes checkpointing upstream progress. The receipt includes the
+published generation and identity in `recovery`, the manifest `sha256`, `progress`,
+`num_rows`, `complete`, and an optional `marker_error`.
+
+Metadata capacity is checked before accepting a new receipt, reserving 1 KiB per possible
+new part (one per encoder row slice, plus one previously buffered part). Reservations are
+conservative and can reject a batch whose actual encoding would use less metadata.
+Schema, position, key, input-limit, history-read, and metadata-preflight errors leave
+pending work unchanged. Encoding or staging failure makes the writer unusable; the caller
+must replay the unpublished attempt with a new writer.
+
+### Publication and close
+
+- `flush()` finishes and stages parts without making them visible.
+- `commit()` publishes pending rows with `complete = false`, then allocates the next attempt
+  and leaves the writer open. An empty commit on an existing instance returns its last
+  receipt without a new generation. Initial empty Create/Replace publishes an empty table.
+- `finish()` publishes with `complete = true` and closes the writer. Repeating a resolved
+  finish returns its receipt.
+- `abort()` and `close()` discard pending encoder state and close the writer. Earlier
+  commits remain visible. Both return `UnknownOutcome` while publication is unresolved.
+- Drop performs no publication or deletion. A previously submitted request may still
+  complete after the writer is dropped.
+
+Parts use `parts/<generation>/<publication_id>/<part_number>.parquet` keys. Creation is
+conditional and followed by an exact-byte read check. A manifest is submitted only after
+the parts and immutable attempt descriptor are stored and verified. Competing writers
+use the same generation key; a different valid winner returns `Conflict`.
+
+After a complete manifest is published, the sink writes that generation's `_SUCCESS`.
+Marker failure is returned separately as `PublicationReceipt.marker_error`; publication
+has already succeeded. There is no mutable root `_SUCCESS` marker.
+
+### Recovery
+
+`recovery_token()` returns a serializable `RecoveryToken` containing the partition root,
+namespace, table identity, target generation, and publication ID. The caller must persist
+it with the source configuration before commit/finish, and persist the newly allocated
+token before the next publication. Tokens contain no credentials.
+
+`resolve(action)` resumes an unresolved live writer. After restart,
+`recover(fs, &token, &options, action)` uses the same source and credential context.
+`RecoveryAction::Observe` checks the target without resubmitting it;
+`RecoveryAction::Retry` may submit only the original bytes to the original key using
+create-if-absent. Both attempt `_SUCCESS` repair after observing a completed publication.
+Standalone recovery returns a publication receipt; further writes require reopening.
+
+The immutable descriptor at `parts/<generation>/<publication_id>/candidate` contains the
+ASCII header `fsspec-data/candidate/1` followed by a newline, the 64-character lowercase
+SHA-256 and another newline, then the exact manifest JSON bytes. Recovery checks the hash,
+identity, parent, and newly staged parts before resubmission. It checks for a different
+winner before loading a possibly collected losing descriptor.
+
+Missing data after an ambiguous publication request returns `UnknownOutcome`, since a
+request can complete later. The writer freezes its candidate and rejects new batches,
+commit/finish, and abort until resolved. An ambiguous descriptor write submits no manifest
+and fails the writer; that writer can close safely. Its persisted descriptor, if it later
+appears, can only publish through an explicit recovery retry.
+
+### Fingerprint version one
+
+Batch fingerprints hash logical values with SHA-256 before Parquet encoding. The byte
+protocol starts with `fsspec-data/batch/1` and a NUL byte, then the expected position,
+length-prefixed UTF-8 `rows`, row count, and column count. Integers used as counts, lengths,
+and positions are unsigned 64-bit little-endian.
+
+Schema metadata comes next, followed by each field in schema order: length-prefixed UTF-8
+name, length-prefixed Arrow 60 serde JSON scalar type (compact JSON with UTF-8 strings),
+one nullability byte, and field metadata. Metadata is a count followed by key/value
+UTF-8 byte strings sorted by key, each with a length prefix.
+
+Values follow column by column, in row order. Each has a validity byte: zero for null,
+one for valid. Nulls have no payload. Booleans use one byte; numeric, temporal, decimal,
+and floating-point values use their native-width little-endian representation. Floating
+point retains signed zero and NaN payload bits. Strings and binary values use a 64-bit
+length followed by their bytes. Array offsets, unused null storage, and buffer padding
+are excluded. Rust and independent Python reference code check shared fixtures in
+`rust/tests/fixtures/batch_fingerprints.json`.
+
+### Limits and retained objects
+
+Part encoding retains the estimated-memory limitation documented for `ParquetPartWriter`.
+Manifest and descriptor reads are bounded individually. Storage adapters may allocate
+additional upload/readback buffers; this API does not impose a hard total-memory limit
+across the encoder, metadata copies, and backend. Historical receipt searches have a
+read budget and no process-global cache.
+
+Abort, failure, and recovery never delete parts or descriptors. Published history remains
+readable. Reclaiming orphan attempts requires a separate collector that proves their
+publication slots are permanently occupied and observes retention. Generic automatic
+retries are disabled for sink-generated errors (`retry_safe = false`).

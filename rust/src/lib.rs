@@ -5,6 +5,7 @@ mod confluent;
 mod converter;
 mod describe;
 mod error;
+mod fingerprint;
 mod json_schema;
 pub mod manifest;
 #[cfg(test)]
@@ -13,6 +14,7 @@ mod parquet_ranges;
 pub mod parts;
 mod plan;
 mod schema;
+pub mod sink;
 mod stream;
 
 pub use avro::{avro_arrow_schema, AvroCodec, AvroFraming, AvroValueDecoder, AvroValueEncoder};

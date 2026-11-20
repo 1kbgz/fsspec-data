@@ -36,7 +36,7 @@ use crate::manifest::Checksum;
 use crate::{InterchangeError, Result};
 
 // Check encoder estimates between bounded row slices, including within a large batch.
-const ROWS_PER_WRITE: usize = 1024;
+pub(crate) const ROWS_PER_WRITE: usize = 1024;
 
 #[derive(Clone, Copy, Debug)]
 pub struct PartLimits {
