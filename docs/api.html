@@ -392,6 +392,24 @@
   <li class="fd-toc-item" data-depth="1">
     <a href="#data-sources">Data sources</a>
   </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#rust-manifest-snapshots">Rust manifest snapshots</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#manifest">Manifest</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#manifestreader-new-fs-root-limits">ManifestReader::new(fs, root, limits)</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#manifestreader-read-selection">ManifestReader::read(selection)</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#snapshot">Snapshot</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#readlimits-and-errors">ReadLimits and errors</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -936,6 +954,130 @@ fetches and batches; it does not interrupt a synchronous request already in prog
 <code class="docutils literal notranslate"><span class="pre">.parquet</span></code>, <code class="docutils literal notranslate"><span class="pre">.pq</span></code>, <code class="docutils literal notranslate"><span class="pre">.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">.jsonl</span></code>, <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code>, and <code class="docutils literal notranslate"><span class="pre">.avro</span></code> to a format and returns <code class="docutils literal notranslate"><span class="pre">None</span></code> for
 anything else.</p>
 </section>
+<section id="rust-manifest-snapshots">
+<h2>Rust manifest snapshots<a class="headerlink" href="#rust-manifest-snapshots" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">fsspec_data::manifest</span></code> provides version-one JSON manifests and a synchronous snapshot
+reader. This module has no Python binding or publication API. It reads encoded parts;
+row decoding and schema reconciliation remain codec operations.</p>
+<section id="manifest">
+<h3><code class="docutils literal notranslate"><span class="pre">Manifest</span></code><a class="headerlink" href="#manifest" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Manifest::encode()</span></code> validates and serializes a manifest. <code class="docutils literal notranslate"><span class="pre">Manifest::decode(bytes)</span></code> parses
+and validates one stored document. <code class="docutils literal notranslate"><span class="pre">validate()</span></code> checks the same local invariants without
+serialization. Parent comparisons require <code class="docutils literal notranslate"><span class="pre">ManifestReader</span></code>.</p>
+<p>The version-one fields are:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fields</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">format_version</span></code></p></td>
+<td><p>Must be <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">namespace_id</span></code>, <code class="docutils literal notranslate"><span class="pre">table_id</span></code></p></td>
+<td><p>Partition history and table-instance identities.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">generation</span></code>, <code class="docutils literal notranslate"><span class="pre">parent</span></code></p></td>
+<td><p>Unsigned generation and optional previous generation with its <code class="docutils literal notranslate"><span class="pre">sha256</span></code>. Generation zero has no parent.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">publication_id</span></code>, <code class="docutils literal notranslate"><span class="pre">kind</span></code></p></td>
+<td><p>Publication identity and <code class="docutils literal notranslate"><span class="pre">create</span></code>, <code class="docutils literal notranslate"><span class="pre">append</span></code>, <code class="docutils literal notranslate"><span class="pre">replace</span></code>, <code class="docutils literal notranslate"><span class="pre">finish</span></code>, <code class="docutils literal notranslate"><span class="pre">delete</span></code>, or <code class="docutils literal notranslate"><span class="pre">cleanup</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">schema</span></code>, <code class="docutils literal notranslate"><span class="pre">partition_values</span></code></p></td>
+<td><p>Arrow schema and a map of partition names to JSON values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">complete</span></code>, <code class="docutils literal notranslate"><span class="pre">deleted</span></code></p></td>
+<td><p>Completion and tombstone state.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">num_rows</span></code>, <code class="docutils literal notranslate"><span class="pre">progress_unit</span></code>, <code class="docutils literal notranslate"><span class="pre">progress</span></code></p></td>
+<td><p>Total visible rows and separate logical write progress.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">parts</span></code></p></td>
+<td><p>Ordered, complete list of visible encoded parts.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">receipts</span></code></p></td>
+<td><p>Batch receipts introduced by this publication. Earlier receipts remain in earlier manifests.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The schema uses Arrow 60’s serde JSON representation, including field and schema metadata.
+Unknown fields in manifest, parent, part, span, and receipt objects are rejected.
+Namespace, table, publication, and progress-unit identifiers contain 1–128 ASCII letters,
+digits, underscores, or hyphens.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Part</span></code> has <code class="docutils literal notranslate"><span class="pre">key</span></code>, <code class="docutils literal notranslate"><span class="pre">size</span></code>, <code class="docutils literal notranslate"><span class="pre">sha256</span></code>, <code class="docutils literal notranslate"><span class="pre">num_rows</span></code>, <code class="docutils literal notranslate"><span class="pre">progress:</span> <span class="pre">{start,</span> <span class="pre">end}</span></code>, <code class="docutils literal notranslate"><span class="pre">encoding</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">options</span></code>. Keys have the form <code class="docutils literal notranslate"><span class="pre">parts/&lt;generation&gt;/&lt;publication_id&gt;/&lt;filename&gt;</span></code> relative to
+the partition root. Generations use 20 decimal digits. Filenames contain 1–128 ASCII
+letters, digits, underscores, hyphens, or periods, excluding <code class="docutils literal notranslate"><span class="pre">.</span></code> and <code class="docutils literal notranslate"><span class="pre">..</span></code>. These checks
+reject absolute paths and traversal syntax; filesystem symlinks remain the caller’s
+responsibility. Part size must be positive. Supported encoding names are <code class="docutils literal notranslate"><span class="pre">parquet</span></code>,
+<code class="docutils literal notranslate"><span class="pre">arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">csv</span></code>, <code class="docutils literal notranslate"><span class="pre">jsonl</span></code>, and <code class="docutils literal notranslate"><span class="pre">avro</span></code>; options are retained as JSON values without interpretation.</p>
+<p>Part progress spans are half-open, contiguous from zero, and end at the manifest’s
+<code class="docutils literal notranslate"><span class="pre">progress</span></code>. Their row counts sum to <code class="docutils literal notranslate"><span class="pre">num_rows</span></code>. With <code class="docutils literal notranslate"><span class="pre">progress_unit</span> <span class="pre">=</span> <span class="pre">&quot;rows&quot;</span></code>, each span’s
+length must equal its row count. Other units keep progress separate from rows.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">BatchReceipt</span></code> has <code class="docutils literal notranslate"><span class="pre">key</span></code>, <code class="docutils literal notranslate"><span class="pre">progress:</span> <span class="pre">{start,</span> <span class="pre">end}</span></code>, and <code class="docutils literal notranslate"><span class="pre">fingerprint</span></code>. Keys contain
+1–256 UTF-8 bytes and are unique within the document. Receipt spans cover the progress
+introduced by a publication, independently of part boundaries. Cleanup publications have
+no receipts. The reader does not search historical receipts for duplicate keys.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Checksum::of(bytes)</span></code> computes SHA-256. Checksums serialize as 64 lowercase hexadecimal
+digits. Parent checksums refer to the exact stored manifest bytes; equivalent JSON with
+different whitespace has a different checksum. Re-encoding a parsed manifest is not a
+canonical byte representation. Batch fingerprints identify logical requests and are
+separate from encoded part checksums.</p>
+</section>
+<section id="manifestreader-new-fs-root-limits">
+<h3><code class="docutils literal notranslate"><span class="pre">ManifestReader::new(fs,</span> <span class="pre">root,</span> <span class="pre">limits)</span></code><a class="headerlink" href="#manifestreader-new-fs-root-limits" title="Link to this heading">¶</a></h3>
+<p>Accepts a <code class="docutils literal notranslate"><span class="pre">SharedFileSystem</span></code>, partition root, and <code class="docutils literal notranslate"><span class="pre">ReadLimits</span></code>. The filesystem instance is
+retained by snapshots; readers do not share a global cache or serialize credentials.</p>
+<p>The store must retain immutable parts and a consecutive sequence of immutable manifests
+starting at zero, with consistent reads of missing keys. The reader assumes these
+properties; it does not certify backend durability or create-if-absent behavior.</p>
+</section>
+<section id="manifestreader-read-selection">
+<h3><code class="docutils literal notranslate"><span class="pre">ManifestReader::read(selection)</span></code><a class="headerlink" href="#manifestreader-read-selection" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Selection::Generation(g)</span></code> selects that exact generation.
+<code class="docutils literal notranslate"><span class="pre">Selection::Latest</span></code> probes generation keys and uses binary search to locate the newest
+manifest. It rechecks the missing successor before returning. Under concurrent
+publication, the snapshot was latest at that final missing-key read. Discovery uses
+logarithmically many probes when no writer is publishing.</p>
+<p>Manifest keys are <code class="docutils literal notranslate"><span class="pre">manifests/&lt;20-digit-generation&gt;/manifest.json</span></code> beneath the root. The
+reader does not list directories or consult <code class="docutils literal notranslate"><span class="pre">_SUCCESS</span></code>. Unlisted parts are invisible.
+Opening a snapshot reads metadata only. It validates generation zero, each selected or
+probed manifest, and its immediate parent’s checksum and state transition. It does not
+audit the full historical chain or detect arbitrary gaps outside those probes.</p>
+<p>Append and finish preserve the table identity, schema, progress unit, and existing part
+prefix, and require an incomplete parent. Finish marks the table complete. Replacement
+changes the table identity. Delete creates an empty tombstone with a new table identity;
+create after a tombstone starts another table identity. Cleanup preserves table state.
+Old parts may only be inherited unchanged from the immediate parent.</p>
+<p>A selected tombstone returns a snapshot with <code class="docutils literal notranslate"><span class="pre">deleted</span> <span class="pre">=</span> <span class="pre">true</span></code> and no parts. Replacements
+and later publications do not change snapshots already returned.</p>
+</section>
+<section id="snapshot">
+<h3><code class="docutils literal notranslate"><span class="pre">Snapshot</span></code><a class="headerlink" href="#snapshot" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">manifest()</span></code> returns the frozen metadata. <code class="docutils literal notranslate"><span class="pre">checksum()</span></code> returns the SHA-256 of its original
+stored bytes. <code class="docutils literal notranslate"><span class="pre">read_part(index)</span></code> returns one complete encoded part after verifying its
+size and SHA-256. It does not read other parts or decode rows.</p>
+</section>
+<section id="readlimits-and-errors">
+<h3><code class="docutils literal notranslate"><span class="pre">ReadLimits</span></code> and errors<a class="headerlink" href="#readlimits-and-errors" title="Link to this heading">¶</a></h3>
+<p>Defaults are 8 MiB for <code class="docutils literal notranslate"><span class="pre">max_manifest_bytes</span></code>, 64 MiB for <code class="docutils literal notranslate"><span class="pre">max_part_bytes</span></code>, and 256 for
+<code class="docutils literal notranslate"><span class="pre">max_manifest_reads</span></code>. All must be positive. Manifest reads cannot exceed the version-one
+8 MiB format limit; <code class="docutils literal notranslate"><span class="pre">max_part_bytes</span></code> must be less than <code class="docutils literal notranslate"><span class="pre">usize::MAX</span></code>. The request budget
+includes parent reads and missing-key probes.</p>
+<p>Reads consume at most the applicable encoded byte limit plus one byte to detect excess
+input. These limits do not bound backend prefetching, parsed metadata memory, transport
+request duration, or process-wide memory. Part limits are checked against declared size
+before opening the part.</p>
+<p>Methods return <code class="docutils literal notranslate"><span class="pre">fsspec_rs::OperationError</span></code>. Missing selected generations return <code class="docutils literal notranslate"><span class="pre">NotFound</span></code>.
+Malformed metadata, invalid transitions, observed missing parents, missing referenced
+parts, and part size/checksum mismatches return <code class="docutils literal notranslate"><span class="pre">Corrupt</span></code>. Unsupported format versions or
+encodings return <code class="docutils literal notranslate"><span class="pre">NotSupported</span></code>. Invalid limits, oversized documents, parts exceeding the
+configured limit, and invalid part indices return <code class="docutils literal notranslate"><span class="pre">Invalid</span></code>. Exhausting the discovery
+request budget returns <code class="docutils literal notranslate"><span class="pre">Timeout</span></code>. Reader-generated errors have <code class="docutils literal notranslate"><span class="pre">retry_safe</span> <span class="pre">=</span> <span class="pre">false</span></code>.
+Permission and transport failures propagate; they never count as missing generations.</p>
+</section>
+</section>
 </section>
 
 
@@ -1072,6 +1214,24 @@ anything else.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#data-sources">Data sources</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#rust-manifest-snapshots">Rust manifest snapshots</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#manifest">Manifest</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#manifestreader-new-fs-root-limits">ManifestReader::new(fs, root, limits)</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#manifestreader-read-selection">ManifestReader::read(selection)</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#snapshot">Snapshot</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#readlimits-and-errors">ReadLimits and errors</a>
   </li>
 </ul>
 
