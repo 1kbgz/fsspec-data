@@ -517,3 +517,115 @@ fetches and batches; it does not interrupt a synchronous request already in prog
 `DataFormat.from_path(path)` (Rust: `DataFormat::from_path`) maps `.arrow`, `.ipc`,
 `.parquet`, `.pq`, `.csv`, `.jsonl`, `.ndjson`, and `.avro` to a format and returns `None` for
 anything else.
+
+## Rust manifest snapshots
+
+`fsspec_data::manifest` provides version-one JSON manifests and a synchronous snapshot
+reader. This module has no Python binding or publication API. It reads encoded parts;
+row decoding and schema reconciliation remain codec operations.
+
+### `Manifest`
+
+`Manifest::encode()` validates and serializes a manifest. `Manifest::decode(bytes)` parses
+and validates one stored document. `validate()` checks the same local invariants without
+serialization. Parent comparisons require `ManifestReader`.
+
+The version-one fields are:
+
+| Fields                                  | Meaning                                                                                                |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `format_version`                        | Must be `1`.                                                                                           |
+| `namespace_id`, `table_id`              | Partition history and table-instance identities.                                                       |
+| `generation`, `parent`                  | Unsigned generation and optional previous generation with its `sha256`. Generation zero has no parent. |
+| `publication_id`, `kind`                | Publication identity and `create`, `append`, `replace`, `finish`, `delete`, or `cleanup`.              |
+| `schema`, `partition_values`            | Arrow schema and a map of partition names to JSON values.                                              |
+| `complete`, `deleted`                   | Completion and tombstone state.                                                                        |
+| `num_rows`, `progress_unit`, `progress` | Total visible rows and separate logical write progress.                                                |
+| `parts`                                 | Ordered, complete list of visible encoded parts.                                                       |
+| `receipts`                              | Batch receipts introduced by this publication. Earlier receipts remain in earlier manifests.           |
+
+The schema uses Arrow 60's serde JSON representation, including field and schema metadata.
+Unknown fields in manifest, parent, part, span, and receipt objects are rejected.
+Namespace, table, publication, and progress-unit identifiers contain 1–128 ASCII letters,
+digits, underscores, or hyphens.
+
+A `Part` has `key`, `size`, `sha256`, `num_rows`, `progress: {start, end}`, `encoding`, and
+`options`. Keys have the form `parts/<generation>/<publication_id>/<filename>` relative to
+the partition root. Generations use 20 decimal digits. Filenames contain 1–128 ASCII
+letters, digits, underscores, hyphens, or periods, excluding `.` and `..`. These checks
+reject absolute paths and traversal syntax; filesystem symlinks remain the caller's
+responsibility. Part size must be positive. Supported encoding names are `parquet`,
+`arrow`, `csv`, `jsonl`, and `avro`; options are retained as JSON values without interpretation.
+
+Part progress spans are half-open, contiguous from zero, and end at the manifest's
+`progress`. Their row counts sum to `num_rows`. With `progress_unit = "rows"`, each span's
+length must equal its row count. Other units keep progress separate from rows.
+
+A `BatchReceipt` has `key`, `progress: {start, end}`, and `fingerprint`. Keys contain
+1–256 UTF-8 bytes and are unique within the document. Receipt spans cover the progress
+introduced by a publication, independently of part boundaries. Cleanup publications have
+no receipts. The reader does not search historical receipts for duplicate keys.
+
+`Checksum::of(bytes)` computes SHA-256. Checksums serialize as 64 lowercase hexadecimal
+digits. Parent checksums refer to the exact stored manifest bytes; equivalent JSON with
+different whitespace has a different checksum. Re-encoding a parsed manifest is not a
+canonical byte representation. Batch fingerprints identify logical requests and are
+separate from encoded part checksums.
+
+### `ManifestReader::new(fs, root, limits)`
+
+Accepts a `SharedFileSystem`, partition root, and `ReadLimits`. The filesystem instance is
+retained by snapshots; readers do not share a global cache or serialize credentials.
+
+The store must retain immutable parts and a consecutive sequence of immutable manifests
+starting at zero, with consistent reads of missing keys. The reader assumes these
+properties; it does not certify backend durability or create-if-absent behavior.
+
+### `ManifestReader::read(selection)`
+
+`Selection::Generation(g)` selects that exact generation.
+`Selection::Latest` probes generation keys and uses binary search to locate the newest
+manifest. It rechecks the missing successor before returning. Under concurrent
+publication, the snapshot was latest at that final missing-key read. Discovery uses
+logarithmically many probes when no writer is publishing.
+
+Manifest keys are `manifests/<20-digit-generation>/manifest.json` beneath the root. The
+reader does not list directories or consult `_SUCCESS`. Unlisted parts are invisible.
+Opening a snapshot reads metadata only. It validates generation zero, each selected or
+probed manifest, and its immediate parent's checksum and state transition. It does not
+audit the full historical chain or detect arbitrary gaps outside those probes.
+
+Append and finish preserve the table identity, schema, progress unit, and existing part
+prefix, and require an incomplete parent. Finish marks the table complete. Replacement
+changes the table identity. Delete creates an empty tombstone with a new table identity;
+create after a tombstone starts another table identity. Cleanup preserves table state.
+Old parts may only be inherited unchanged from the immediate parent.
+
+A selected tombstone returns a snapshot with `deleted = true` and no parts. Replacements
+and later publications do not change snapshots already returned.
+
+### `Snapshot`
+
+`manifest()` returns the frozen metadata. `checksum()` returns the SHA-256 of its original
+stored bytes. `read_part(index)` returns one complete encoded part after verifying its
+size and SHA-256. It does not read other parts or decode rows.
+
+### `ReadLimits` and errors
+
+Defaults are 8 MiB for `max_manifest_bytes`, 64 MiB for `max_part_bytes`, and 256 for
+`max_manifest_reads`. All must be positive. Manifest reads cannot exceed the version-one
+8 MiB format limit; `max_part_bytes` must be less than `usize::MAX`. The request budget
+includes parent reads and missing-key probes.
+
+Reads consume at most the applicable encoded byte limit plus one byte to detect excess
+input. These limits do not bound backend prefetching, parsed metadata memory, transport
+request duration, or process-wide memory. Part limits are checked against declared size
+before opening the part.
+
+Methods return `fsspec_rs::OperationError`. Missing selected generations return `NotFound`.
+Malformed metadata, invalid transitions, observed missing parents, missing referenced
+parts, and part size/checksum mismatches return `Corrupt`. Unsupported format versions or
+encodings return `NotSupported`. Invalid limits, oversized documents, parts exceeding the
+configured limit, and invalid part indices return `Invalid`. Exhausting the discovery
+request budget returns `Timeout`. Reader-generated errors have `retry_safe = false`.
+Permission and transport failures propagate; they never count as missing generations.
