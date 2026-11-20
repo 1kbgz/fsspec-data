@@ -62,11 +62,11 @@ def fingerprint(case):
 
 
 path = Path(__file__).with_name("batch_fingerprints.json")
-cases = json.loads(path.read_text())
+cases = json.loads(path.read_text(encoding="utf-8"))
 if sys.argv[1:] == ["--write"]:
     for case in cases:
         case["sha256"] = fingerprint(case)
-    path.write_text(json.dumps(cases, ensure_ascii=False, indent=2) + "\n")
+    path.write_text(json.dumps(cases, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 else:
     for case in cases:
         assert fingerprint(case) == case["sha256"], case["name"]
