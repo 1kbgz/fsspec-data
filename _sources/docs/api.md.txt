@@ -629,3 +629,67 @@ encodings return `NotSupported`. Invalid limits, oversized documents, parts exce
 configured limit, and invalid part indices return `Invalid`. Exhausting the discovery
 request budget returns `Timeout`. Reader-generated errors have `retry_safe = false`.
 Permission and transport failures propagate; they never count as missing generations.
+
+## Rust Parquet part writer
+
+`fsspec_data::parts::ParquetPartWriter` encodes Arrow batches into complete Parquet files.
+`new(schema, limits, consume)` accepts a nonempty Arrow schema, `PartLimits`, and a
+synchronous `FnMut(EncodedPart) -> Result<()>` consumer. Completed parts are passed to the
+consumer in row order without copying their bytes. The writer keeps one unfinished part
+and no queue of completed parts.
+
+`EncodedPart` contains `bytes: Vec<u8>`, `num_rows: u64`, and `sha256: Checksum`. Each part
+has one row group and preserves the input schema, including metadata. Encoding uses
+Parquet's default compression and dictionary settings.
+
+### Operations
+
+- `write_batch(&RecordBatch)` accepts a batch with exactly the configured schema. It checks
+  input allocation size before encoding, processes at most 1,024 rows between encoder
+  memory checks, and emits parts when their estimated encoded size reaches the target or
+  encoder memory reaches half the remaining budget. Empty batches emit no parts.
+- `flush()` emits the current part and leaves the encoder open. Repeated flushes without
+  new rows emit no files.
+- `finish(self)` emits remaining rows and closes the encoder.
+- `abort(self)` and dropping the writer discard the unfinished part. Neither calls the
+  consumer for that part.
+
+These operations do not publish manifests, write storage objects, or mark a table complete.
+The consumer owns staging and cleanup. Previously emitted parts remain its responsibility,
+including when a later batch or consumer call fails. A batch can span multiple parts; its
+emission is not atomic.
+
+### `PartLimits`
+
+`target_part_bytes` defaults to 8 MiB. It is a rotation goal before footer overhead, not
+an exact file size. A row slice can exceed the target. Memory pressure can produce smaller
+parts. `memory_limit` defaults to 64 MiB. Configuration requires
+`0 < target_part_bytes < memory_limit`.
+
+The accounting budget combines the current input arrays' reported allocation sizes,
+encoded output capacity, and `ArrowWriter::memory_size()`. Input accounting includes
+backing buffer capacity retained by slices; shared buffers may be counted repeatedly.
+Input batches are not retained between calls. A previously buffered part may be emitted
+before the next input is encoded to make room within the budget.
+
+Output growth is capped at the budget remaining after charging input and the reported
+encoder estimate. The pre-flush estimate remains charged while writing the final pages
+and footer. Exceeding the output limit fails without handing a partial file to the
+consumer. Consumers that retain parts must enforce their own limits.
+
+Parquet reports estimated encoder memory after allocation. Internal allocations can
+exceed the budget before a check, and its estimate does not cover all schema, footer,
+I/O-buffer, and temporary allocations. This API therefore limits input/output buffers
+and checks estimated encoder usage; it does not guarantee a hard total-memory or RSS
+limit. It does not retry failed encoding with smaller row slices.
+
+### Errors
+
+Schema mismatches return `InterchangeError::InputSchema`. Configuration, input limits,
+encoder-budget checks, and Parquet encoding failures return an `OperationError` with
+kind `Invalid` and `retry_safe = false`. Consumer errors propagate unchanged.
+
+Schema and input-limit errors leave previously buffered rows intact. An error after
+encoding starts, including a consumer or footer failure, drops the current part and
+permanently fails the writer. Subsequent writes, flushes, and finish return `Invalid`.
+The caller must discard the unpublished attempt's staged parts before replaying it.

@@ -410,6 +410,18 @@
   <li class="fd-toc-item" data-depth="2">
     <a href="#readlimits-and-errors">ReadLimits and errors</a>
   </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#rust-parquet-part-writer">Rust Parquet part writer</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#operations">Operations</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#partlimits">PartLimits</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#errors">Errors</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -1078,6 +1090,66 @@ request budget returns <code class="docutils literal notranslate"><span class="p
 Permission and transport failures propagate; they never count as missing generations.</p>
 </section>
 </section>
+<section id="rust-parquet-part-writer">
+<h2>Rust Parquet part writer<a class="headerlink" href="#rust-parquet-part-writer" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">fsspec_data::parts::ParquetPartWriter</span></code> encodes Arrow batches into complete Parquet files.
+<code class="docutils literal notranslate"><span class="pre">new(schema,</span> <span class="pre">limits,</span> <span class="pre">consume)</span></code> accepts a nonempty Arrow schema, <code class="docutils literal notranslate"><span class="pre">PartLimits</span></code>, and a
+synchronous <code class="docutils literal notranslate"><span class="pre">FnMut(EncodedPart)</span> <span class="pre">-&gt;</span> <span class="pre">Result&lt;()&gt;</span></code> consumer. Completed parts are passed to the
+consumer in row order without copying their bytes. The writer keeps one unfinished part
+and no queue of completed parts.</p>
+<p><code class="docutils literal notranslate"><span class="pre">EncodedPart</span></code> contains <code class="docutils literal notranslate"><span class="pre">bytes:</span> <span class="pre">Vec&lt;u8&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">num_rows:</span> <span class="pre">u64</span></code>, and <code class="docutils literal notranslate"><span class="pre">sha256:</span> <span class="pre">Checksum</span></code>. Each part
+has one row group and preserves the input schema, including metadata. Encoding uses
+Parquet’s default compression and dictionary settings.</p>
+<section id="operations">
+<h3>Operations<a class="headerlink" href="#operations" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">write_batch(&amp;RecordBatch)</span></code> accepts a batch with exactly the configured schema. It checks
+input allocation size before encoding, processes at most 1,024 rows between encoder
+memory checks, and emits parts when their estimated encoded size reaches the target or
+encoder memory reaches half the remaining budget. Empty batches emit no parts.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flush()</span></code> emits the current part and leaves the encoder open. Repeated flushes without
+new rows emit no files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">finish(self)</span></code> emits remaining rows and closes the encoder.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abort(self)</span></code> and dropping the writer discard the unfinished part. Neither calls the
+consumer for that part.</p></li>
+</ul>
+<p>These operations do not publish manifests, write storage objects, or mark a table complete.
+The consumer owns staging and cleanup. Previously emitted parts remain its responsibility,
+including when a later batch or consumer call fails. A batch can span multiple parts; its
+emission is not atomic.</p>
+</section>
+<section id="partlimits">
+<h3><code class="docutils literal notranslate"><span class="pre">PartLimits</span></code><a class="headerlink" href="#partlimits" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">target_part_bytes</span></code> defaults to 8 MiB. It is a rotation goal before footer overhead, not
+an exact file size. A row slice can exceed the target. Memory pressure can produce smaller
+parts. <code class="docutils literal notranslate"><span class="pre">memory_limit</span></code> defaults to 64 MiB. Configuration requires
+<code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">&lt;</span> <span class="pre">target_part_bytes</span> <span class="pre">&lt;</span> <span class="pre">memory_limit</span></code>.</p>
+<p>The accounting budget combines the current input arrays’ reported allocation sizes,
+encoded output capacity, and <code class="docutils literal notranslate"><span class="pre">ArrowWriter::memory_size()</span></code>. Input accounting includes
+backing buffer capacity retained by slices; shared buffers may be counted repeatedly.
+Input batches are not retained between calls. A previously buffered part may be emitted
+before the next input is encoded to make room within the budget.</p>
+<p>Output growth is capped at the budget remaining after charging input and the reported
+encoder estimate. The pre-flush estimate remains charged while writing the final pages
+and footer. Exceeding the output limit fails without handing a partial file to the
+consumer. Consumers that retain parts must enforce their own limits.</p>
+<p>Parquet reports estimated encoder memory after allocation. Internal allocations can
+exceed the budget before a check, and its estimate does not cover all schema, footer,
+I/O-buffer, and temporary allocations. This API therefore limits input/output buffers
+and checks estimated encoder usage; it does not guarantee a hard total-memory or RSS
+limit. It does not retry failed encoding with smaller row slices.</p>
+</section>
+<section id="errors">
+<h3>Errors<a class="headerlink" href="#errors" title="Link to this heading">¶</a></h3>
+<p>Schema mismatches return <code class="docutils literal notranslate"><span class="pre">InterchangeError::InputSchema</span></code>. Configuration, input limits,
+encoder-budget checks, and Parquet encoding failures return an <code class="docutils literal notranslate"><span class="pre">OperationError</span></code> with
+kind <code class="docutils literal notranslate"><span class="pre">Invalid</span></code> and <code class="docutils literal notranslate"><span class="pre">retry_safe</span> <span class="pre">=</span> <span class="pre">false</span></code>. Consumer errors propagate unchanged.</p>
+<p>Schema and input-limit errors leave previously buffered rows intact. An error after
+encoding starts, including a consumer or footer failure, drops the current part and
+permanently fails the writer. Subsequent writes, flushes, and finish return <code class="docutils literal notranslate"><span class="pre">Invalid</span></code>.
+The caller must discard the unpublished attempt’s staged parts before replaying it.</p>
+</section>
+</section>
 </section>
 
 
@@ -1232,6 +1304,18 @@ Permission and transport failures propagate; they never count as missing generat
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#readlimits-and-errors">ReadLimits and errors</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#rust-parquet-part-writer">Rust Parquet part writer</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#operations">Operations</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#partlimits">PartLimits</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#errors">Errors</a>
   </li>
 </ul>
 
