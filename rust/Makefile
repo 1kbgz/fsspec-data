@@ -39,7 +39,7 @@ test:  ## run the tests
 tests: test
 
 coverage:  ## collect Rust test coverage
-	cargo llvm-cov nextest --workspace --all-features --lcov --output-path coverage
+	cargo llvm-cov nextest --workspace --all-features --cobertura --output-path coverage.xml
 
 .PHONY: dist publish
 dist:  ## validate crate packaging

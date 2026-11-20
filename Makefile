@@ -89,14 +89,18 @@ check: checks
 # TESTS #
 #########
 .PHONY: test-py tests-py coverage-py
-test-py:  ## run python tests
+test-py: test-fingerprints  ## run python tests
 	python -m pytest -v fsspec_data/tests
 
 # alias
 tests-py: test-py
 
-coverage-py:  ## run python tests and collect test coverage
+coverage-py: test-fingerprints  ## run python tests and collect test coverage
 	python -m pytest -v fsspec_data/tests --cov=fsspec_data --cov-report term-missing --cov-report xml
+
+.PHONY: test-fingerprints
+test-fingerprints:  ## verify cross-language batch fingerprints
+	python rust/tests/fixtures/check_fingerprints.py
 
 .PHONY: test-rs tests-rs coverage-rs
 test-rs:  ## run rust tests
