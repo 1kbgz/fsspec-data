@@ -165,3 +165,42 @@ Rust has no entry points, so integrations register their converters explicitly.
 
 See the [API reference](api.md) for codec signatures, limits, casts, and errors, and the
 [schema and converter reference](resources.md#rust) for the Rust schema types.
+
+## Scan Parquet through an async file handle
+
+Open a native async S3 handle, then pass ownership to the Parquet codec. Both metadata
+loading and batch decoding run off the calling executor. The filesystem constructor uses
+fsspec-rs's managed runtime; an external async provider can use its own executor through
+the fsspec-rs C API.
+
+```rust
+use fsspec_data::{AsyncScanOptions, CancellationToken, ParquetCodec, ScanSelection};
+use fsspec_rs::async_files::{AsyncContext, AsyncFilesystem, Limits};
+use fsspec_rs::async_io::Value;
+use futures::StreamExt;
+
+let context = AsyncContext::new(Limits::default())?;
+let fs = AsyncFilesystem::s3("bucket", &Default::default(), &context)?;
+let open = fs.open_read("orders.parquet", None)?;
+let Value::File(file) = open.clone().await? else { unreachable!() };
+open.drain().await;
+let mut batches = ParquetCodec.decode_async(
+    file,
+    ScanSelection { columns: Some(vec!["order_id".into()]), row_offset: 0 },
+    AsyncScanOptions::default(),
+    CancellationToken::new(),
+).await?;
+while let Some(batch) = batches.next().await {
+    let batch = batch?;
+    // Process this batch before requesting another.
+}
+batches.close().await?;
+fs.close(None)?.await?;
+context.close(None)?.await?;
+```
+
+Clone the cancellation token before starting the scan to cancel it from another task.
+Call `close().await` when ending iteration early and waiting for cleanup matters. A dropped
+stream requests cleanup without waiting. Set the buffer sizes and deadline with
+[`AsyncScanOptions`](api.md#rust-asynchronous-parquet-scans); decoder allocations are not
+covered by a total memory limit.

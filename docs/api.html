@@ -443,6 +443,9 @@
   <li class="fd-toc-item" data-depth="2">
     <a href="#limits-and-retained-objects">Limits and retained objects</a>
   </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#rust-asynchronous-parquet-scans">Rust asynchronous Parquet scans</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -1299,6 +1302,64 @@ publication slots are permanently occupied and observes retention. Generic autom
 retries are disabled for sink-generated errors (<code class="docutils literal notranslate"><span class="pre">retry_safe</span> <span class="pre">=</span> <span class="pre">false</span></code>).</p>
 </section>
 </section>
+<section id="rust-asynchronous-parquet-scans">
+<h2>Rust asynchronous Parquet scans<a class="headerlink" href="#rust-asynchronous-parquet-scans" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ParquetCodec::decode_async(file,</span> <span class="pre">selection,</span> <span class="pre">options,</span> <span class="pre">cancellation).await</span></code> returns an
+<code class="docutils literal notranslate"><span class="pre">AsyncDecodedStream</span></code> implementing <code class="docutils literal notranslate"><span class="pre">futures::Stream&lt;Item</span> <span class="pre">=</span> <span class="pre">Result&lt;RecordBatch&gt;&gt;</span></code>. This is a
+Rust API; Python <code class="docutils literal notranslate"><span class="pre">DataSource</span></code> scans remain synchronous.</p>
+<p>The method takes ownership of a seekable <code class="docutils literal notranslate"><span class="pre">fsspec_rs::AsyncFsFile</span></code>. It supports the core
+async handles and C ABI handles wrapped by <code class="docutils literal notranslate"><span class="pre">fsspec_sys</span></code>. The provider must preserve a
+consistent object across reads; native fsspec-rs S3 handles pin the ETag and size.
+An object replacement returns the provider’s structured conflict error.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ScanSelection</span></code> selects top-level columns, including requested order and duplicates,
+and a source row offset. <code class="docutils literal notranslate"><span class="pre">AsyncScanOptions::stream</span></code> supplies batch size, output row limit,
+and cumulative output byte limit. Selection skips unneeded row groups and column chunks.
+Schema metadata is preserved, including for an empty column selection.</p>
+<p>Additional <code class="docutils literal notranslate"><span class="pre">AsyncScanOptions</span></code> fields:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_range_bytes</span></code></p></td>
+<td><p>64 MiB</p></td>
+<td><p>Aggregate compressed ranges requested for one row group or footer; checked before allocation or I/O. Larger requests fail with <code class="docutils literal notranslate"><span class="pre">RangeLimitExceeded</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_batch_bytes</span></code></p></td>
+<td><p>64 MiB</p></td>
+<td><p>Maximum projected output batch; checked after decoding with Arrow’s <code class="docutils literal notranslate"><span class="pre">get_array_memory_size</span></code>. Larger batches fail with <code class="docutils literal notranslate"><span class="pre">ByteLimitExceeded</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">read_chunk_size</span></code></p></td>
+<td><p>1 MiB</p></td>
+<td><p>Maximum individual file read. Must fit the provider’s read limit and byte budget. Native S3 reserves twice this amount for result and staging buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">deadline</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Absolute <code class="docutils literal notranslate"><span class="pre">std::time::Instant</span></code> covering metadata loading, reads, decoding and idle time between consumer polls. Expiry returns <code class="docutils literal notranslate"><span class="pre">StreamDeadlineExceeded</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Each scan uses one worker thread for Parquet metadata parsing and batch decoding. File I/O
+uses the provider’s async implementation and runtime. The caller needs no Tokio runtime.
+One consumer request produces at most one batch; the worker does not prefetch another
+batch while the consumer is idle. Separate scans do not share reads or buffers.</p>
+<p>Compressed row-group data, parsed metadata, a temporary file-read buffer and a decoded
+batch can coexist. These limits are not a total memory cap. Parquet’s internal allocations,
+provider transport allocations, and batches retained by callers are outside these limits.
+The batch limit detects excessive output after allocation; it does not prevent it.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CancellationToken::cancel()</span></code> wakes pending reads and idle scans. Cancellation drops the
+pending I/O future and returns <code class="docutils literal notranslate"><span class="pre">StreamCancelled</span></code>; decoding already running on the worker
+finishes its current poll before the cancellation or deadline is observed. No subsequent
+batch is delivered after cancellation is observed.</p>
+<p>EOF, errors, cancellation and dropping the stream close the owned file. Dropping the
+initialization future also requests cleanup. <code class="docutils literal notranslate"><span class="pre">stream.close().await</span></code> cancels the scan and
+waits for provider cleanup, including after EOF or a scan error. Cleanup is not cut short
+by the scan deadline and can wait for the provider. Normal EOF waits for cleanup and
+reports a close error; an earlier scan error takes precedence during iteration.</p>
+</section>
 </section>
 
 
@@ -1486,6 +1547,9 @@ retries are disabled for sink-generated errors (<code class="docutils literal no
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#limits-and-retained-objects">Limits and retained objects</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#rust-asynchronous-parquet-scans">Rust asynchronous Parquet scans</a>
   </li>
 </ul>
 

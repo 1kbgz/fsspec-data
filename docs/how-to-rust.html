@@ -302,6 +302,9 @@
   <li class="fd-toc-item" data-depth="1">
     <a href="#register-a-converter">Register a converter</a>
   </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#scan-parquet-through-an-async-file-handle">Scan Parquet through an async file handle</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -460,6 +463,43 @@ written with older schemas.</p>
 <p>See the <a class="reference internal" href="api.html"><span class="std std-doc">API reference</span></a> for codec signatures, limits, casts, and errors, and the
 <a class="reference internal" href="resources.html#rust"><span class="std std-ref">schema and converter reference</span></a> for the Rust schema types.</p>
 </section>
+<section id="scan-parquet-through-an-async-file-handle">
+<h2>Scan Parquet through an async file handle<a class="headerlink" href="#scan-parquet-through-an-async-file-handle" title="Link to this heading">¶</a></h2>
+<p>Open a native async S3 handle, then pass ownership to the Parquet codec. Both metadata
+loading and batch decoding run off the calling executor. The filesystem constructor uses
+fsspec-rs’s managed runtime; an external async provider can use its own executor through
+the fsspec-rs C API.</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">use</span><span class="w"> </span><span class="n">fsspec_data</span><span class="p">::{</span><span class="n">AsyncScanOptions</span><span class="p">,</span><span class="w"> </span><span class="n">CancellationToken</span><span class="p">,</span><span class="w"> </span><span class="n">ParquetCodec</span><span class="p">,</span><span class="w"> </span><span class="n">ScanSelection</span><span class="p">};</span>
+<span class="k">use</span><span class="w"> </span><span class="n">fsspec_rs</span><span class="p">::</span><span class="n">async_files</span><span class="p">::{</span><span class="n">AsyncContext</span><span class="p">,</span><span class="w"> </span><span class="n">AsyncFilesystem</span><span class="p">,</span><span class="w"> </span><span class="n">Limits</span><span class="p">};</span>
+<span class="k">use</span><span class="w"> </span><span class="n">fsspec_rs</span><span class="p">::</span><span class="n">async_io</span><span class="p">::</span><span class="n">Value</span><span class="p">;</span>
+<span class="k">use</span><span class="w"> </span><span class="n">futures</span><span class="p">::</span><span class="n">StreamExt</span><span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AsyncContext</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">Limits</span><span class="p">::</span><span class="n">default</span><span class="p">())</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">fs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AsyncFilesystem</span><span class="p">::</span><span class="n">s3</span><span class="p">(</span><span class="s">"bucket"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="nb">Default</span><span class="p">::</span><span class="n">default</span><span class="p">(),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">context</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">open</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fs</span><span class="p">.</span><span class="n">open_read</span><span class="p">(</span><span class="s">"orders.parquet"</span><span class="p">,</span><span class="w"> </span><span class="nb">None</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">Value</span><span class="p">::</span><span class="n">File</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">open</span><span class="p">.</span><span class="n">clone</span><span class="p">().</span><span class="k">await</span><span class="o">?</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="fm">unreachable!</span><span class="p">()</span><span class="w"> </span><span class="p">};</span>
+<span class="n">open</span><span class="p">.</span><span class="n">drain</span><span class="p">().</span><span class="k">await</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">batches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ParquetCodec</span><span class="p">.</span><span class="n">decode_async</span><span class="p">(</span>
+<span class="w">    </span><span class="n">file</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ScanSelection</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">columns</span><span class="p">:</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="fm">vec!</span><span class="p">[</span><span class="s">"order_id"</span><span class="p">.</span><span class="n">into</span><span class="p">()]),</span><span class="w"> </span><span class="n">row_offset</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="n">AsyncScanOptions</span><span class="p">::</span><span class="n">default</span><span class="p">(),</span>
+<span class="w">    </span><span class="n">CancellationToken</span><span class="p">::</span><span class="n">new</span><span class="p">(),</span>
+<span class="p">).</span><span class="k">await</span><span class="o">?</span><span class="p">;</span>
+<span class="k">while</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">batches</span><span class="p">.</span><span class="n">next</span><span class="p">().</span><span class="k">await</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">batch</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// Process this batch before requesting another.</span>
+<span class="p">}</span>
+<span class="n">batches</span><span class="p">.</span><span class="n">close</span><span class="p">().</span><span class="k">await</span><span class="o">?</span><span class="p">;</span>
+<span class="n">fs</span><span class="p">.</span><span class="n">close</span><span class="p">(</span><span class="nb">None</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="k">await</span><span class="o">?</span><span class="p">;</span>
+<span class="n">context</span><span class="p">.</span><span class="n">close</span><span class="p">(</span><span class="nb">None</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="k">await</span><span class="o">?</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Clone the cancellation token before starting the scan to cancel it from another task.
+Call <code class="docutils literal notranslate"><span class="pre">close().await</span></code> when ending iteration early and waiting for cleanup matters. A dropped
+stream requests cleanup without waiting. Set the buffer sizes and deadline with
+<a class="reference internal" href="api.html#rust-asynchronous-parquet-scans"><span class="std std-ref"><code class="docutils literal notranslate"><span class="pre">AsyncScanOptions</span></code></span></a>; decoder allocations are not
+covered by a total memory limit.</p>
+</section>
 </section>
 
 
@@ -506,6 +546,9 @@ written with older schemas.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#register-a-converter">Register a converter</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#scan-parquet-through-an-async-file-handle">Scan Parquet through an async file handle</a>
   </li>
 </ul>
 
