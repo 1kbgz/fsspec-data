@@ -66,3 +66,38 @@ with open("result.arrow", "wb") as output:
 For native resource conversions and entry-point registration, see
 [How to convert Xarray and Zarr resources](how-to-convert-resources.md).
 For the Rust codec boundary, see [How to integrate Rust batch streams](how-to-rust.md).
+
+## Read S3 Parquet without blocking asyncio
+
+Use `scan_parquet_async` when the consumer already runs in an asyncio loop. Await opening
+the scan, then use its async context manager to close the file when iteration ends early:
+
+```python
+import asyncio
+
+from fsspec_data import scan_parquet_async
+
+
+async def consume():
+    stream = await scan_parquet_async(
+        "s3://bucket/orders.parquet",
+        columns=["order_id", "amount"],
+        batch_size=4096,
+        deadline=asyncio.get_running_loop().time() + 30,
+    )
+    async with stream:
+        async for batch in stream:
+            print(batch.num_rows)
+
+
+asyncio.run(consume())
+```
+
+For an S3-compatible endpoint, pass flat options such as
+`storage_options={"endpoint_url": "http://minio:9000", "region": "us-east-1"}`.
+Credentials follow fsspec-rs's options and environment defaults.
+
+Cancel the consuming asyncio task to stop pending reads. If you manage the stream without
+an async context manager, await `stream.aclose()` in a `finally` block. See the
+[async scan reference](api.md#python-asynchronous-parquet-scans) for buffer limits, deadline
+semantics and supported protocols.

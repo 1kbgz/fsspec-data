@@ -1,3 +1,4 @@
+from .async_scan import AsyncDecodedBatchStream, scan_parquet_async
 from .converters import (
     CONVERTER_ENTRY_POINT_GROUP,
     DEFAULT_CONVERTERS,
@@ -42,6 +43,7 @@ __all__ = [
     "DEFAULT_MAPPING",
     "DEFAULT_REGISTRY",
     "DEFAULT_SCHEMA_RESOLVERS",
+    "AsyncDecodedBatchStream",
     "Codec",
     "CodecCapabilities",
     "CodecRegistry",
@@ -73,4 +75,5 @@ __all__ = [
     "json_schema_to_arrow",
     "plan_schema",
     "resolve_schema",
+    "scan_parquet_async",
 ]
