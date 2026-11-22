@@ -1,3 +1,4 @@
+mod async_parquet;
 mod avro;
 mod codec;
 #[cfg(feature = "confluent")]
@@ -17,6 +18,7 @@ mod schema;
 pub mod sink;
 mod stream;
 
+pub use async_parquet::{AsyncDecodedStream, AsyncScanOptions};
 pub use avro::{avro_arrow_schema, AvroCodec, AvroFraming, AvroValueDecoder, AvroValueEncoder};
 pub use codec::{
     ArrowIpcCodec, Codec, CodecCapabilities, CodecReader, CodecRegistry, CodecWriter, CsvCodec,

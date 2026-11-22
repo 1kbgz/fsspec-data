@@ -294,3 +294,90 @@ fn memory_parquet_scan_runs_inside_existing_executor() {
         );
     });
 }
+
+#[test]
+fn async_s3_parquet_reads_selected_chunks_and_rejects_replacement() {
+    use fsspec_rs::async_files::{AsyncContext, AsyncFilesystem, Limits};
+    use fsspec_rs::async_io::Value;
+    use futures::{executor::block_on, StreamExt};
+
+    for replace in [false, true] {
+        let data = parquet_file();
+        let metadata = ParquetRecordBatchReaderBuilder::try_new(Bytes::from(data.clone())).unwrap();
+        let chunk = metadata.metadata().row_group(1).column(1).byte_range();
+        let server = Server::new(data, false);
+        block_on(async {
+            let context = AsyncContext::new(Limits::default()).unwrap();
+            let options = [
+                ("anon".into(), "true".into()),
+                ("region".into(), "us-east-1".into()),
+                ("endpoint_url".into(), server.endpoint.clone()),
+            ]
+            .into();
+            let fs = AsyncFilesystem::s3("test", &options, &context).unwrap();
+            let open = fs.open_read("rows.parquet", None).unwrap();
+            let Value::File(file) = open.clone().await.unwrap() else {
+                panic!("expected file")
+            };
+            open.drain().await;
+            let mut stream = crate::ParquetCodec
+                .decode_async(
+                    file,
+                    ScanSelection {
+                        columns: Some(vec!["b".into()]),
+                        row_offset: 5,
+                    },
+                    crate::AsyncScanOptions {
+                        stream: StreamOptions {
+                            row_limit: Some(2),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    },
+                    CancellationToken::new(),
+                )
+                .await
+                .unwrap();
+            let before = server.requests.lock().unwrap().len();
+            server.changed.store(replace, Ordering::Release);
+            let batch = stream.next().await.unwrap();
+            if replace {
+                let Err(InterchangeError::Operation(error)) = batch else {
+                    panic!("expected conflict")
+                };
+                assert_eq!(error.kind(), fsspec_rs::ErrorKind::Conflict);
+            } else {
+                let batch = batch.unwrap();
+                assert_eq!(batch.num_rows(), 2);
+                assert_eq!(
+                    batch
+                        .column(0)
+                        .as_any()
+                        .downcast_ref::<Int32Array>()
+                        .unwrap()
+                        .values()
+                        .as_ref(),
+                    &[25, 26]
+                );
+                assert!(stream.next().await.is_none());
+                let requests = server.requests.lock().unwrap();
+                let gets: Vec<_> = requests[before..]
+                    .iter()
+                    .filter(|r| r.method == "GET")
+                    .collect();
+                assert_eq!(gets.len(), 1);
+                assert_eq!(
+                    gets[0].range,
+                    Some((chunk.0 as usize, (chunk.0 + chunk.1) as usize))
+                );
+                assert!(requests
+                    .iter()
+                    .filter(|r| r.method == "GET")
+                    .all(|r| r.condition.as_deref() == Some("\"v1\"")));
+            }
+            stream.close().await.unwrap();
+            fs.close(None).unwrap().await.unwrap();
+            context.close(None).unwrap().await.unwrap();
+        });
+    }
+}
