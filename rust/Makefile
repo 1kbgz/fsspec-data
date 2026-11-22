@@ -8,11 +8,19 @@ requirements:  ## install required dev dependencies
 develop: requirements  ## install required dev dependencies
 
 build:  ## build release
+<<<<<<< before updating
 	cargo build --release --all-features --package fsspec_data
 
 .PHONY: lint lints fix format
 lint:  ## run Clippy for linting, rustfmt for autoformat checks
 	cargo clippy --workspace --all-targets --all-features -- -D warnings
+=======
+	cargo build --release --workspace --all-features
+
+.PHONY: lint lints fix format
+lint:  ## run Clippy for linting, rustfmt for autoformat checks
+	cargo clippy --workspace --all-features
+>>>>>>> after updating
 	cargo fmt --all -- --check
 
 # alias
@@ -27,7 +35,10 @@ format: fix
 .PHONY: check checks
 check:
 	cargo check --workspace --all-features
+<<<<<<< before updating
 
+=======
+>>>>>>> after updating
 # alias
 checks: check
 
@@ -38,8 +49,13 @@ test:  ## run the tests
 # alias
 tests: test
 
+<<<<<<< before updating
 coverage:  ## collect Rust test coverage
 	cargo llvm-cov nextest --workspace --all-features --cobertura --output-path coverage.xml
+=======
+coverage:
+	cargo llvm-cov nextest --workspace --lcov --output-path coverage
+>>>>>>> after updating
 
 .PHONY: dist publish
 dist:  ## validate crate packaging
