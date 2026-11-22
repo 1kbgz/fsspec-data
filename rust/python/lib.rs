@@ -1,3 +1,4 @@
+mod async_file;
 mod async_parquet;
 
 use std::collections::HashMap;

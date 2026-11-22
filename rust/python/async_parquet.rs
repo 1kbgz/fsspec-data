@@ -9,7 +9,9 @@ use fsspec_data::{
 };
 use fsspec_rs::async_files::{AsyncContext, AsyncFilesystem, Limits};
 use fsspec_rs::async_io::{Operation, Value};
-use fsspec_rs::{ErrorKind, FsOptions, OperationError};
+use fsspec_rs::{AsyncFsFile, ErrorKind, FsError, FsOptions, OperationError};
+
+use super::async_file::PythonAsyncFile;
 use futures::StreamExt;
 use pyo3::exceptions::{
     PyConnectionError, PyFileExistsError, PyFileNotFoundError, PyNotImplementedError, PyOSError,
@@ -33,17 +35,36 @@ struct State {
     closed: bool,
 }
 
+enum Source {
+    S3 {
+        context: AsyncContext,
+        fs: AsyncFilesystem,
+        path: String,
+    },
+    Python(PythonAsyncFile),
+}
+
 struct Session {
-    context: AsyncContext,
-    fs: AsyncFilesystem,
+    source: Source,
     state: Mutex<State>,
     cancellation: CancellationToken,
-    path: String,
     selection: ScanSelection,
     options: AsyncScanOptions,
 }
 
 impl Session {
+    async fn decode(&self, file: impl AsyncFsFile + 'static) -> PyResult<AsyncDecodedStream> {
+        ParquetCodec
+            .decode_async(
+                file,
+                self.selection.clone(),
+                self.options,
+                self.cancellation.clone(),
+            )
+            .await
+            .map_err(scan_error)
+    }
+
     async fn close(&self) -> PyResult<()> {
         self.cancellation.cancel();
         let mut state = self.state.lock().await;
@@ -55,9 +76,15 @@ impl Session {
             Some(stream) => stream.close().await.map_err(scan_error),
             None => Ok(()),
         };
-        let fs_result = finish(self.fs.close(None)).await.map(|_| ());
-        let context_result = finish(self.context.close(None)).await.map(|_| ());
-        stream_result.and(fs_result).and(context_result)
+        let source_result = match &self.source {
+            Source::S3 { fs, context, .. } => {
+                let fs_result = finish(fs.close(None)).await.map(|_| ());
+                let context_result = finish(context.close(None)).await.map(|_| ());
+                fs_result.and(context_result)
+            }
+            Source::Python(file) => file.clone().close().await.map_err(storage_error),
+        };
+        stream_result.and(source_result)
     }
 }
 
@@ -90,23 +117,19 @@ impl NativeAsyncParquetScan {
                 return Err(PyRuntimeError::new_err("scan is already opened or closed"));
             }
             state.opened = true;
-            let timeout = session
-                .options
-                .deadline
-                .map(|deadline| deadline.saturating_duration_since(Instant::now()));
-            let Value::File(file) = finish(session.fs.open_read(&session.path, timeout)).await?
-            else {
-                unreachable!()
+            let stream = match &session.source {
+                Source::S3 { fs, path, .. } => {
+                    let timeout = session
+                        .options
+                        .deadline
+                        .map(|deadline| deadline.saturating_duration_since(Instant::now()));
+                    let Value::File(file) = finish(fs.open_read(path, timeout)).await? else {
+                        unreachable!()
+                    };
+                    session.decode(file).await?
+                }
+                Source::Python(file) => session.decode(file.clone()).await?,
             };
-            let stream = ParquetCodec
-                .decode_async(
-                    file,
-                    session.selection.clone(),
-                    session.options,
-                    session.cancellation.clone(),
-                )
-                .await
-                .map_err(scan_error)?;
             let schema = PyArrowType(stream.schema.as_ref().clone());
             state.stream = Some(stream);
             guard.0.take();
@@ -159,12 +182,93 @@ fn async_parquet_scan(
     read_chunk_size: usize,
     timeout: Option<f64>,
 ) -> PyResult<NativeAsyncParquetScan> {
-    let limits = Limits::default();
+    let options = scan_options(
+        batch_size,
+        row_limit,
+        byte_limit,
+        max_range_bytes,
+        max_batch_bytes,
+        read_chunk_size,
+        timeout,
+    )?;
+    let context = AsyncContext::new(Limits::default()).map_err(storage_error)?;
+    let fs = AsyncFilesystem::s3(bucket, &storage_options, &context).map_err(storage_error)?;
+    Ok(new_scan(
+        Source::S3 { context, fs, path },
+        columns,
+        row_offset,
+        options,
+    ))
+}
+
+#[pyfunction]
+#[pyo3(signature = (provider, size, columns, row_offset, batch_size, row_limit, byte_limit, max_range_bytes, max_batch_bytes, read_chunk_size, timeout))]
+#[allow(clippy::too_many_arguments)]
+fn async_parquet_file(
+    py: Python<'_>,
+    provider: Py<PyAny>,
+    size: u64,
+    columns: Option<Vec<String>>,
+    row_offset: usize,
+    batch_size: usize,
+    row_limit: Option<usize>,
+    byte_limit: Option<usize>,
+    max_range_bytes: usize,
+    max_batch_bytes: usize,
+    read_chunk_size: usize,
+    timeout: Option<f64>,
+) -> PyResult<NativeAsyncParquetScan> {
+    let options = scan_options(
+        batch_size,
+        row_limit,
+        byte_limit,
+        max_range_bytes,
+        max_batch_bytes,
+        read_chunk_size,
+        timeout,
+    )?;
+    let file = PythonAsyncFile::new(py, provider, size)?;
+    Ok(new_scan(Source::Python(file), columns, row_offset, options))
+}
+
+fn new_scan(
+    source: Source,
+    columns: Option<Vec<String>>,
+    row_offset: usize,
+    options: AsyncScanOptions,
+) -> NativeAsyncParquetScan {
+    NativeAsyncParquetScan {
+        session: Arc::new(Session {
+            source,
+            state: Mutex::new(State {
+                stream: None,
+                opened: false,
+                closed: false,
+            }),
+            cancellation: CancellationToken::new(),
+            selection: ScanSelection {
+                columns,
+                row_offset,
+            },
+            options,
+        }),
+    }
+}
+
+fn scan_options(
+    batch_size: usize,
+    row_limit: Option<usize>,
+    byte_limit: Option<usize>,
+    max_range_bytes: usize,
+    max_batch_bytes: usize,
+    read_chunk_size: usize,
+    timeout: Option<f64>,
+) -> PyResult<AsyncScanOptions> {
     if batch_size == 0
         || max_range_bytes == 0
         || max_batch_bytes == 0
         || read_chunk_size == 0
-        || read_chunk_size > limits.max_read_size
+        || read_chunk_size > Limits::default().max_read_size
     {
         return Err(PyValueError::new_err(
             "batch and buffer limits must be positive; read_chunk_size must not exceed 8 MiB",
@@ -179,35 +283,16 @@ fn async_parquet_scan(
                 .ok_or_else(|| PyValueError::new_err("deadline exceeds supported range"))
         })
         .transpose()?;
-    let context = AsyncContext::new(limits).map_err(storage_error)?;
-    let fs = AsyncFilesystem::s3(bucket, &storage_options, &context).map_err(storage_error)?;
-    Ok(NativeAsyncParquetScan {
-        session: Arc::new(Session {
-            context,
-            fs,
-            state: Mutex::new(State {
-                stream: None,
-                opened: false,
-                closed: false,
-            }),
-            cancellation: CancellationToken::new(),
-            path,
-            selection: ScanSelection {
-                columns,
-                row_offset,
-            },
-            options: AsyncScanOptions {
-                stream: StreamOptions {
-                    batch_size,
-                    row_limit,
-                    byte_limit,
-                },
-                max_range_bytes,
-                max_batch_bytes,
-                read_chunk_size,
-                deadline,
-            },
-        }),
+    Ok(AsyncScanOptions {
+        stream: StreamOptions {
+            batch_size,
+            row_limit,
+            byte_limit,
+        },
+        max_range_bytes,
+        max_batch_bytes,
+        read_chunk_size,
+        deadline,
     })
 }
 
@@ -234,6 +319,11 @@ fn scan_error(error: InterchangeError) -> PyErr {
 }
 
 fn storage_error(error: OperationError) -> PyErr {
+    if let OperationError::FileSystem(FsError::IoError(ref io)) = error {
+        if let Some(error) = io.get_ref().and_then(|inner| inner.downcast_ref::<PyErr>()) {
+            return Python::attach(|py| error.clone_ref(py));
+        }
+    }
     let message = error.to_string();
     let exception = match error.kind() {
         ErrorKind::NotFound => PyFileNotFoundError::new_err(message),
@@ -255,5 +345,6 @@ fn storage_error(error: OperationError) -> PyErr {
 }
 
 pub(super) fn register(module: &Bound<'_, PyModule>) -> PyResult<()> {
-    module.add_function(wrap_pyfunction!(async_parquet_scan, module)?)
+    module.add_function(wrap_pyfunction!(async_parquet_scan, module)?)?;
+    module.add_function(wrap_pyfunction!(async_parquet_file, module)?)
 }

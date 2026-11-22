@@ -15,6 +15,7 @@ from typing import Any, BinaryIO
 import pyarrow as pa
 from fsspec import AbstractFileSystem
 
+from .async_scan import AsyncDecodedBatchStream, scan_parquet_async
 from .interchange import DEFAULT_REGISTRY, DataFormat, DecodedBatchStream, _rust
 
 
@@ -121,6 +122,23 @@ class DataSource:
             schema = self.schema(path)
         schema, native = _rust.project_batches(schema, iter(source), None, batch_size, row_limit, byte_limit, row_offset)
         return DecodedBatchStream(schema, native, on_cancel=getattr(source, "cancel", None))
+
+    async def scan_async(
+        self,
+        path: str,
+        *,
+        columns: Sequence[str] | None = None,
+        row_offset: int = 0,
+        batch_size: int = 1024,
+        row_limit: int | None = None,
+        byte_limit: int | None = None,
+        max_range_bytes: int = 64 * 1024 * 1024,
+        max_batch_bytes: int = 64 * 1024 * 1024,
+        read_chunk_size: int = 1024 * 1024,
+        deadline: float | None = None,
+    ) -> AsyncDecodedBatchStream:
+        """Scan asynchronously with selection and limits; requires backend support."""
+        raise NotImplementedError("this data source does not support asynchronous scans")
 
     def open_raw(self, path: str) -> BinaryIO:
         raise FacetNotSupportedError(path, Facet.RAW)
@@ -235,6 +253,37 @@ class FileDataSource(DataSource):
             batch_size=batch_size,
             row_limit=row_limit,
             byte_limit=byte_limit,
+        )
+
+    async def scan_async(
+        self,
+        path: str,
+        *,
+        columns: Sequence[str] | None = None,
+        row_offset: int = 0,
+        batch_size: int = 1024,
+        row_limit: int | None = None,
+        byte_limit: int | None = None,
+        max_range_bytes: int = 64 * 1024 * 1024,
+        max_batch_bytes: int = 64 * 1024 * 1024,
+        read_chunk_size: int = 1024 * 1024,
+        deadline: float | None = None,
+    ) -> AsyncDecodedBatchStream:
+        """Read Parquet through this filesystem's async opener without sync metadata I/O."""
+        if DataFormat.from_path(path) != DataFormat.PARQUET:
+            raise NotImplementedError("asynchronous file scans currently require Parquet")
+        return await scan_parquet_async(
+            path,
+            fs=self.fs,
+            columns=columns,
+            row_offset=row_offset,
+            batch_size=batch_size,
+            row_limit=row_limit,
+            byte_limit=byte_limit,
+            max_range_bytes=max_range_bytes,
+            max_batch_bytes=max_batch_bytes,
+            read_chunk_size=read_chunk_size,
+            deadline=deadline,
         )
 
     def open_raw(self, path: str) -> BinaryIO:
