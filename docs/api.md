@@ -878,3 +878,51 @@ initialization future also requests cleanup. `stream.close().await` cancels the 
 waits for provider cleanup, including after EOF or a scan error. Cleanup is not cut short
 by the scan deadline and can wait for the provider. Normal EOF waits for cleanup and
 reports a close error; an earlier scan error takes precedence during iteration.
+
+## Python asynchronous Parquet scans
+
+`await scan_parquet_async(url, **options)` returns an `AsyncDecodedBatchStream` with an
+Arrow `schema` and async iteration yielding `pyarrow.RecordBatch` values. This API reads
+`s3://bucket/key` and `s3-rs://bucket/key` through native fsspec-rs handles. Other protocols
+and Python `DataSource` implementations are not supported by this entry point.
+
+Options:
+
+| Parameter         | Default | Meaning                                                                                                                                                                                          |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `storage_options` | `None`  | Flat fsspec-rs S3 options, such as `anon`, `region`, `endpoint_url`, `key`, `secret` and `token`. Values are strings, booleans or numbers. Environment and credential defaults follow fsspec-rs. |
+| `columns`         | `None`  | Top-level column names in output order. Duplicates and an empty selection are supported.                                                                                                         |
+| `row_offset`      | `0`     | Source rows to skip before applying output limits.                                                                                                                                               |
+| `batch_size`      | `1024`  | Maximum rows per batch. Must be positive.                                                                                                                                                        |
+| `row_limit`       | `None`  | Maximum output rows; zero produces no batches.                                                                                                                                                   |
+| `byte_limit`      | `None`  | Cumulative Arrow batch memory limit after selection.                                                                                                                                             |
+| `max_range_bytes` | 64 MiB  | Aggregate compressed row-group or footer range limit, checked before allocation.                                                                                                                 |
+| `max_batch_bytes` | 64 MiB  | Single projected batch limit, checked after decoding.                                                                                                                                            |
+| `read_chunk_size` | 1 MiB   | Maximum individual file read; positive and at most 8 MiB.                                                                                                                                        |
+| `deadline`        | `None`  | Absolute deadline in `asyncio.get_running_loop().time()` units. Includes opening the file, metadata, reads, decoding and idle consumer time.                                                     |
+
+Buffer accounting and decoder allocation limits follow the
+[Rust async scan contract](#rust-asynchronous-parquet-scans). Each scan owns an independent
+filesystem, file and I/O context. The native context uses the fsspec-rs defaults of 64
+operations, 64 MiB of buffered I/O and an 8 MiB maximum read; S3 reserves both output and
+staging capacity. Decode work runs on the Rust scan worker. PyO3 connects Rust futures to
+the calling asyncio loop, without using Python executor threads for waits.
+
+`AsyncDecodedBatchStream` supports `async for`, `async with`, and `await stream.aclose()`.
+It permits one pending batch request. Overlapping `__anext__` calls raise `RuntimeError`.
+The producer does not prefetch another batch while the consumer is idle. Breaking out of
+`async for` requires `aclose()` or an enclosing `async with` to wait for cleanup.
+
+EOF and scan errors close the stream. Task cancellation during opening or iteration
+cancels native work and raises `asyncio.CancelledError`. `aclose()` cancels pending work,
+waits for file/filesystem/context cleanup and is safe to repeat. Cleanup continues if its
+awaiter is cancelled; another `aclose()` waits for that same cleanup. Cleanup is not cut
+short by the scan deadline. Dropping the stream requests native cancellation without
+waiting for cleanup.
+
+Deadlines raise `TimeoutError`; buffer limit failures raise `ValueError`. Storage errors
+use standard Python exceptions, including `FileNotFoundError`, `PermissionError`,
+`ConnectionError`, `TimeoutError` and `OSError`. Storage exceptions retain fsspec-rs's
+`kind` string and `retry_safe` flag. Object replacement raises `OSError` with
+`kind == "conflict"`. A consumer exception takes precedence over cleanup errors during
+context-manager exit.
