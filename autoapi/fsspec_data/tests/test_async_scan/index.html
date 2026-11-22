@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>fsspec_data.tests.test_async_scan &#8212; fsspec-data v0.9.0</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/fuma.css?v=ca04d621" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/fuma-code.css?v=a950e949" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/fonts/fuma-fonts.css?v=c2892c73" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/custom.css?v=88c24c6a" />
+    <script src="../../../../_static/documentation_options.js?v=39bb1c6d"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script data-searchlite-index="searchlite-index.json" defer="defer" src="../../../../_static/searchlite.js?v=a5320898"></script>
+    <script defer="defer" src="../../../../_static/fuma.js?v=9c325f6c"></script>
+    <script src="../../../../_static/js/custom.js?v=956e5d78"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="fsspec_data.tests.test_converters" href="../test_converters/index.html" />
+    <link rel="prev" title="fsspec_data.tests.test_all" href="../test_all/index.html" />
+    <script>
+      (function () {
+        var root = document.documentElement;
+        try {
+          var stored = localStorage.getItem("fuma-theme");
+          if (stored) {
+            root.classList.add(stored === "dark" ? "dark" : "light");
+            root.style.colorScheme = stored === "dark" ? "dark" : "light";
+          }
+          if (localStorage.getItem("fuma-sidebar") === "collapsed") root.dataset.sidebarCollapsed = "true";
+          if (localStorage.getItem("fuma-toc") === "collapsed") root.dataset.tocCollapsed = "true";
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+<body class="fd-body" data-layout="docs" data-toc-style="normal" data-open-level="0">
+<div id="fd-layout"><header id="fd-subnav">
+  <div class="fd-subnav-inner">
+    <button type="button" class="fd-icon-button fd-sidebar-toggle" aria-controls="fd-sidebar" aria-expanded="false" aria-label="Toggle navigation" title="Toggle navigation">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+    </button><a class="fd-brand" href="../../../../index.html"><span class="fd-brand-name">fsspec-data v0.9.0</span>
+</a>
+
+    <div class="fd-nav-actions">
+      <button type="button" class="fd-icon-button" data-fd-search-open aria-label="Search" title="Search"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <a class="fd-icon-button" href="https://github.com/1kbgz/fsspec-data" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></a>
+      <button type="button" class="fd-icon-button fd-theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon fd-icon-light"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon fd-icon-dark"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<aside id="fd-sidebar" aria-label="Documentation">
+  <div class="fd-sidebar-header">
+    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../../../../index.html"><span class="fd-brand-name">fsspec-data v0.9.0</span>
+</a>
+      <button type="button" class="fd-icon-button fd-sidebar-collapse" aria-label="Collapse sidebar" title="Collapse sidebar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
+    </div>
+    <button type="button" class="fd-search-trigger" data-fd-search-open title="Search">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Search</span><kbd class="fd-kbd">/</kbd>
+    </button>
+  </div>
+
+  <nav class="fd-sidebar-nav">
+    <div class="fd-sidebar-group">
+      
+<ul class="fd-tree">
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../../../docs/tutorial.html">
+      <span class="fd-link-text">Convert tabular data</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../../../docs/how-to-integrate.html">
+      <span class="fd-link-text">How to connect a batch producer or consumer</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../../../docs/how-to-chain-filesystems.html">
+      <span class="fd-link-text">How to convert a file through an fsspec chain</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../../../docs/how-to-resolve-schemas.html">
+      <span class="fd-link-text">How to resolve schemas from files and registries</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../../../docs/how-to-convert-resources.html">
+      <span class="fd-link-text">How to convert Xarray and Zarr resources</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../../../docs/how-to-rust.html">
+      <span class="fd-link-text">How to integrate Rust batch streams</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../../../docs/api.html">
+      <span class="fd-link-text">Interchange API reference</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../../../docs/resources.html">
+      <span class="fd-link-text">Schema and converter reference</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../../../docs/explanation.html">
+      <span class="fd-link-text">Interchange design</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <details class="fd-folder" open>
+      <summary class="fd-folder-summary" title="Toggle section: API Reference">
+        <a class="fd-link" href="../../../index.html">
+          <span class="fd-link-text">API Reference</span>
+        </a>
+        <span class="fd-folder-marker" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg></span>
+      </summary>
+      
+<ul class="fd-tree">
+  <li class="fd-tree-item">
+    <details class="fd-folder" open>
+      <summary class="fd-folder-summary" title="Toggle section: fsspec_data">
+        <a class="fd-link" href="../../index.html">
+          <span class="fd-link-text">fsspec_data</span>
+        </a>
+        <span class="fd-folder-marker" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg></span>
+      </summary>
+      
+<ul class="fd-tree">
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../_version/index.html">
+      <span class="fd-link-text">fsspec_data._version</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../async_scan/index.html">
+      <span class="fd-link-text">fsspec_data.async_scan</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <details class="fd-folder">
+      <summary class="fd-folder-summary" title="Toggle section: fsspec_data.backends">
+        <a class="fd-link" href="../../backends/index.html">
+          <span class="fd-link-text">fsspec_data.backends</span>
+        </a>
+        <span class="fd-folder-marker" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg></span>
+      </summary>
+      
+<ul class="fd-tree">
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../backends/base/index.html">
+      <span class="fd-link-text">fsspec_data.backends.base</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../backends/http/index.html">
+      <span class="fd-link-text">fsspec_data.backends.http</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../backends/sqlalchemy/index.html">
+      <span class="fd-link-text">fsspec_data.backends.sqlalchemy</span>
+    </a>
+  </li>
+</ul>
+    </details>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../confluent/index.html">
+      <span class="fd-link-text">fsspec_data.confluent</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../converters/index.html">
+      <span class="fd-link-text">fsspec_data.converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../describe/index.html">
+      <span class="fd-link-text">fsspec_data.describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../interchange/index.html">
+      <span class="fd-link-text">fsspec_data.interchange</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../json_schema/index.html">
+      <span class="fd-link-text">fsspec_data.json_schema</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../schema/index.html">
+      <span class="fd-link-text">fsspec_data.schema</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <details class="fd-folder" open>
+      <summary class="fd-folder-summary" title="Toggle section: fsspec_data.tests">
+        <a class="fd-link" href="../index.html">
+          <span class="fd-link-text">fsspec_data.tests</span>
+        </a>
+        <span class="fd-folder-marker" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg></span>
+      </summary>
+      
+<ul class="fd-tree">
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../conftest/index.html">
+      <span class="fd-link-text">fsspec_data.tests.conftest</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../test_all/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_all</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link fd-current" href="#">
+      <span class="fd-link-text">fsspec_data.tests.test_async_scan</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../test_converters/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../test_describe/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../test_schema/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_schema</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../test_view/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_view</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../test_view_conversion/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_view_conversion</span>
+    </a>
+  </li>
+</ul>
+    </details>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../view/index.html">
+      <span class="fd-link-text">fsspec_data.view</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../xarray_zarr/index.html">
+      <span class="fd-link-text">fsspec_data.xarray_zarr</span>
+    </a>
+  </li>
+</ul>
+    </details>
+  </li>
+</ul>
+    </details>
+  </li>
+</ul>
+    </div>
+  </nav>
+
+  <div class="fd-sidebar-footer">
+    <div class="fd-toolbar">
+      <a class="fd-toolbar-item" href="https://github.com/1kbgz/fsspec-data" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></a>
+      <div class="fd-theme-switch" role="group" aria-label="Theme">
+        <button type="button" class="fd-theme-option" data-fd-theme="light" aria-label="Light theme" title="Light theme"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button>
+        <button type="button" class="fd-theme-option" data-fd-theme="dark" aria-label="Dark theme" title="Dark theme"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg></button>
+      </div>
+    </div>
+  </div>
+</aside>
+<button type="button" id="fd-sidebar-restore" class="fd-icon-button" aria-label="Expand sidebar" title="Expand sidebar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
+<div class="fd-sidebar-scrim" hidden></div>
+  <div id="fd-toc-popover">
+    <button type="button" class="fd-toc-trigger" aria-expanded="false" aria-controls="fd-toc-mobile" title="On this page">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg><span>On this page</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div id="fd-toc-mobile" hidden><ul class="fd-toc-list">
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#functions">Functions</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#module-contents">Module Contents</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.store">store()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.until">until()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.scan">scan()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_selection_schema_and_only_requested_column_reads">test_selection_schema_and_only_requested_column_reads()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_slow_consumer_does_not_prefetch">test_slow_consumer_does_not_prefetch()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_task_cancellation_closes_pending_network_read">test_task_cancellation_closes_pending_network_read()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_deadline_stops_io_and_raises_timeout">test_deadline_stops_io_and_raises_timeout()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_close_cancels_pending_next_and_rejects_overlapping_reads">test_close_cancels_pending_next_and_rejects_overlapping_reads()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_context_manager_exception_closes_stream">test_context_manager_exception_closes_stream()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_buffer_limits_report_failure_and_cleanup">test_buffer_limits_report_failure_and_cleanup()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_storage_failures_preserve_kind_and_retry_safety">test_storage_failures_preserve_kind_and_retry_safety()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_empty_selection_and_zero_rows">test_empty_selection_and_zero_rows()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_invalid_options_do_not_contact_storage">test_invalid_options_do_not_contact_storage()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_key_with_bucket_prefix_is_not_stripped_twice">test_key_with_bucket_prefix_is_not_stripped_twice()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_cancelling_close_waiter_does_not_cancel_cleanup">test_cancelling_close_waiter_does_not_cancel_cleanup()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_close">test_ready_batch_is_not_delivered_after_close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_deadline_includes_idle_consumer_time">test_deadline_includes_idle_consumer_time()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed">test_independent_scans_continue_after_one_is_closed()</a>
+  </li>
+</ul>
+</div>
+  </div>
+
+  <main id="fd-main">
+    <article class="fd-page">
+<nav class="fd-breadcrumbs" aria-label="Breadcrumbs">
+  <ol>
+    <li>
+      <a href="../../../index.html">API Reference</a>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m9 18 6-6-6-6"/></svg>
+    </li>
+    <li>
+      <a href="../../index.html">fsspec_data</a>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m9 18 6-6-6-6"/></svg>
+    </li>
+    <li>
+      <a href="../index.html">fsspec_data.tests</a>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m9 18 6-6-6-6"/></svg>
+    </li>
+    <li aria-current="page">fsspec_data.tests.test_async_scan</li>
+  </ol>
+</nav>
+      <div class="fd-prose">
+  <section id="module-fsspec_data.tests.test_async_scan">
+<span id="fsspec-data-tests-test-async-scan"></span><h1>fsspec_data.tests.test_async_scan<a class="headerlink" href="#module-fsspec_data.tests.test_async_scan" title="Link to this heading">¶</a></h1>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.store" title="fsspec_data.tests.test_async_scan.store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.until" title="fsspec_data.tests.test_async_scan.until"><code class="xref py py-obj docutils literal notranslate"><span class="pre">until</span></code></a>(predicate)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.scan" title="fsspec_data.tests.test_async_scan.scan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scan</span></code></a>(store, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_selection_schema_and_only_requested_column_reads" title="fsspec_data.tests.test_async_scan.test_selection_schema_and_only_requested_column_reads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_selection_schema_and_only_requested_column_reads</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_slow_consumer_does_not_prefetch" title="fsspec_data.tests.test_async_scan.test_slow_consumer_does_not_prefetch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_slow_consumer_does_not_prefetch</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_task_cancellation_closes_pending_network_read" title="fsspec_data.tests.test_async_scan.test_task_cancellation_closes_pending_network_read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_task_cancellation_closes_pending_network_read</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_deadline_stops_io_and_raises_timeout" title="fsspec_data.tests.test_async_scan.test_deadline_stops_io_and_raises_timeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_deadline_stops_io_and_raises_timeout</span></code></a>(store, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_close_cancels_pending_next_and_rejects_overlapping_reads" title="fsspec_data.tests.test_async_scan.test_close_cancels_pending_next_and_rejects_overlapping_reads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_close_cancels_pending_next_and_rejects_overlapping_reads</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_context_manager_exception_closes_stream" title="fsspec_data.tests.test_async_scan.test_context_manager_exception_closes_stream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_context_manager_exception_closes_stream</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_buffer_limits_report_failure_and_cleanup" title="fsspec_data.tests.test_async_scan.test_buffer_limits_report_failure_and_cleanup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_buffer_limits_report_failure_and_cleanup</span></code></a>(store, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_storage_failures_preserve_kind_and_retry_safety" title="fsspec_data.tests.test_async_scan.test_storage_failures_preserve_kind_and_retry_safety"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_storage_failures_preserve_kind_and_retry_safety</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_empty_selection_and_zero_rows" title="fsspec_data.tests.test_async_scan.test_empty_selection_and_zero_rows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_empty_selection_and_zero_rows</span></code></a>(store, kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_invalid_options_do_not_contact_storage" title="fsspec_data.tests.test_async_scan.test_invalid_options_do_not_contact_storage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_invalid_options_do_not_contact_storage</span></code></a>(store, kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_key_with_bucket_prefix_is_not_stripped_twice" title="fsspec_data.tests.test_async_scan.test_key_with_bucket_prefix_is_not_stripped_twice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_key_with_bucket_prefix_is_not_stripped_twice</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_cancelling_close_waiter_does_not_cancel_cleanup" title="fsspec_data.tests.test_async_scan.test_cancelling_close_waiter_does_not_cancel_cleanup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_cancelling_close_waiter_does_not_cancel_cleanup</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_close" title="fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_ready_batch_is_not_delivered_after_close</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_deadline_includes_idle_consumer_time" title="fsspec_data.tests.test_async_scan.test_deadline_includes_idle_consumer_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_deadline_includes_idle_consumer_time</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed" title="fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_independent_scans_continue_after_one_is_closed</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.store">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.store" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.until">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">until</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.until" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.scan">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.scan" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_selection_schema_and_only_requested_column_reads">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_selection_schema_and_only_requested_column_reads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_selection_schema_and_only_requested_column_reads" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_slow_consumer_does_not_prefetch">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_slow_consumer_does_not_prefetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_slow_consumer_does_not_prefetch" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_task_cancellation_closes_pending_network_read">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_task_cancellation_closes_pending_network_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">during_open</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_task_cancellation_closes_pending_network_read" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_deadline_stops_io_and_raises_timeout">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_deadline_stops_io_and_raises_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">during_open</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_deadline_stops_io_and_raises_timeout" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_close_cancels_pending_next_and_rejects_overlapping_reads">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_close_cancels_pending_next_and_rejects_overlapping_reads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_close_cancels_pending_next_and_rejects_overlapping_reads" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_context_manager_exception_closes_stream">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_context_manager_exception_closes_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_context_manager_exception_closes_stream" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_buffer_limits_report_failure_and_cleanup">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_buffer_limits_report_failure_and_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_buffer_limits_report_failure_and_cleanup" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_storage_failures_preserve_kind_and_retry_safety">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_storage_failures_preserve_kind_and_retry_safety</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_storage_failures_preserve_kind_and_retry_safety" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_empty_selection_and_zero_rows">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_empty_selection_and_zero_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_empty_selection_and_zero_rows" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_invalid_options_do_not_contact_storage">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_invalid_options_do_not_contact_storage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_invalid_options_do_not_contact_storage" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_key_with_bucket_prefix_is_not_stripped_twice">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_key_with_bucket_prefix_is_not_stripped_twice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_key_with_bucket_prefix_is_not_stripped_twice" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_cancelling_close_waiter_does_not_cancel_cleanup">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_cancelling_close_waiter_does_not_cancel_cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_cancelling_close_waiter_does_not_cancel_cleanup" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_close">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_ready_batch_is_not_delivered_after_close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_close" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_deadline_includes_idle_consumer_time">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_deadline_includes_idle_consumer_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_deadline_includes_idle_consumer_time" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_independent_scans_continue_after_one_is_closed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+      </div>
+<nav class="fd-pagination" aria-label="Pagination">
+  <a class="fd-pagination-card fd-pagination-prev" href="../test_all/index.html" title="Previous: fsspec_data.tests.test_all">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m15 18-6-6 6-6"/></svg>
+    <span class="fd-pagination-text">
+      <span class="fd-pagination-label">Previous</span>
+      <span class="fd-pagination-title">fsspec_data.tests.test_all</span>
+    </span>
+  </a>
+  <a class="fd-pagination-card fd-pagination-next" href="../test_converters/index.html" title="Next: fsspec_data.tests.test_converters">
+    <span class="fd-pagination-text">
+      <span class="fd-pagination-label">Next</span>
+      <span class="fd-pagination-title">fsspec_data.tests.test_converters</span>
+    </span>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m9 18 6-6-6-6"/></svg>
+  </a>
+</nav>
+<footer id="fd-footer">
+  <p class="fd-footer-meta"><span>&#169; the fsspec-data authors</span><span>Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.</span>
+  </p>
+</footer>
+    </article>
+  </main>
+<nav id="fd-toc" aria-label="On this page">
+  <div class="fd-toc-header">
+    <p class="fd-toc-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>On this page</p>
+    <button type="button" class="fd-icon-button fd-toc-collapse" aria-label="Collapse page navigation" title="Collapse page navigation" aria-controls="fd-toc" aria-expanded="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></svg></button>
+  </div>
+  <div class="fd-toc-body"><svg class="fd-toc-rail" aria-hidden="true" preserveAspectRatio="none">
+      <path class="fd-toc-track" fill="none" />
+      <path class="fd-toc-thumb" fill="none" />
+    </svg><ul class="fd-toc-list">
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#functions">Functions</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#module-contents">Module Contents</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.store">store()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.until">until()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.scan">scan()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_selection_schema_and_only_requested_column_reads">test_selection_schema_and_only_requested_column_reads()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_slow_consumer_does_not_prefetch">test_slow_consumer_does_not_prefetch()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_task_cancellation_closes_pending_network_read">test_task_cancellation_closes_pending_network_read()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_deadline_stops_io_and_raises_timeout">test_deadline_stops_io_and_raises_timeout()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_close_cancels_pending_next_and_rejects_overlapping_reads">test_close_cancels_pending_next_and_rejects_overlapping_reads()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_context_manager_exception_closes_stream">test_context_manager_exception_closes_stream()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_buffer_limits_report_failure_and_cleanup">test_buffer_limits_report_failure_and_cleanup()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_storage_failures_preserve_kind_and_retry_safety">test_storage_failures_preserve_kind_and_retry_safety()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_empty_selection_and_zero_rows">test_empty_selection_and_zero_rows()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_invalid_options_do_not_contact_storage">test_invalid_options_do_not_contact_storage()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_key_with_bucket_prefix_is_not_stripped_twice">test_key_with_bucket_prefix_is_not_stripped_twice()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_cancelling_close_waiter_does_not_cancel_cleanup">test_cancelling_close_waiter_does_not_cancel_cleanup()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_close">test_ready_batch_is_not_delivered_after_close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_deadline_includes_idle_consumer_time">test_deadline_includes_idle_consumer_time()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed">test_independent_scans_continue_after_one_is_closed()</a>
+  </li>
+</ul>
+
+  </div>
+  <div class="fd-toc-actions">
+    <a class="fd-toc-action" href="https://github.com/1kbgz/fsspec-data/edit/HEAD/autoapi/fsspec_data/tests/test_async_scan/index.rst" target="_blank" rel="noopener" title="Edit this page"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg><span>Edit this page</span></a>
+    <a class="fd-toc-action" href="../../../../_sources/autoapi/fsspec_data/tests/test_async_scan/index.rst.txt" rel="nofollow" title="View source"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg><span>View source</span></a>
+  </div>
+</nav>
+<button type="button" id="fd-toc-restore" class="fd-icon-button" aria-label="Expand page navigation" title="Expand page navigation" aria-controls="fd-toc" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></svg></button>
+</div>
+<dialog id="fd-search-dialog" aria-label="Search">
+  <form class="fd-search-panel" method="dialog" role="search">
+    <div class="fd-search-field">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="fd-search-input" autocomplete="off" spellcheck="false" placeholder="Search documentation..." aria-label="Search" />
+      <kbd class="fd-kbd">Esc</kbd>
+    </div>
+    <div id="fd-search-results" role="listbox" aria-label="Search results"></div>
+    <p id="fd-search-empty" class="fd-search-empty" hidden>No results found.</p>
+  </form>
+</dialog>
+  </body>
+</html>

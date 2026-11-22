@@ -148,6 +148,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="async_scan/index.html">
+      <span class="fd-link-text">fsspec_data.async_scan</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <details class="fd-folder">
       <summary class="fd-folder-summary" title="Toggle section: fsspec_data.backends">
         <a class="fd-link" href="backends/index.html">
@@ -223,6 +228,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="tests/test_all/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_all</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="tests/test_async_scan/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_async_scan</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -307,6 +317,42 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#package-contents">Package Contents</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.AsyncDecodedBatchStream">AsyncDecodedBatchStream</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.schema">AsyncDecodedBatchStream.schema</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._native">AsyncDecodedBatchStream._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._closed">AsyncDecodedBatchStream._closed</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._pending">AsyncDecodedBatchStream._pending</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._close_waiter">AsyncDecodedBatchStream._close_waiter</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.__aiter__">AsyncDecodedBatchStream.__aiter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.__anext__">AsyncDecodedBatchStream.__anext__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.aclose">AsyncDecodedBatchStream.aclose()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.__aenter__">AsyncDecodedBatchStream.__aenter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.__aexit__">AsyncDecodedBatchStream.__aexit__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.scan_parquet_async">scan_parquet_async()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.CONVERTER_ENTRY_POINT_GROUP">CONVERTER_ENTRY_POINT_GROUP</a>
@@ -979,6 +1025,7 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="_version/index.html">fsspec_data._version</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async_scan/index.html">fsspec_data.async_scan</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backends/index.html">fsspec_data.backends</a></li>
 <li class="toctree-l1"><a class="reference internal" href="confluent/index.html">fsspec_data.confluent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="converters/index.html">fsspec_data.converters</a></li>
@@ -1031,82 +1078,85 @@
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.Converter" title="fsspec_data.Converter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Converter</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.AsyncDecodedBatchStream" title="fsspec_data.AsyncDecodedBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncDecodedBatchStream</span></code></a></p></td>
+<td><p>Demand-driven Arrow batches; use <code class="docutils literal notranslate"><span class="pre">aclose</span></code> or an async context manager.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.Converter" title="fsspec_data.Converter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Converter</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.ConverterRegistry" title="fsspec_data.ConverterRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConverterRegistry</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.ConverterRegistry" title="fsspec_data.ConverterRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConverterRegistry</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.DataSource" title="fsspec_data.DataSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataSource</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.DataSource" title="fsspec_data.DataSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataSource</span></code></a></p></td>
 <td><p>A backend that describes its nodes. Methods for facets a backend never offers keep</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.Facet" title="fsspec_data.Facet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Facet</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.Facet" title="fsspec_data.Facet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Facet</span></code></a></p></td>
 <td><p>Something a node offers.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.FileDataSource" title="fsspec_data.FileDataSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileDataSource</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.FileDataSource" title="fsspec_data.FileDataSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileDataSource</span></code></a></p></td>
 <td><p>Describes any fsspec filesystem: directories are containers, and files with a</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.Node" title="fsspec_data.Node"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Node</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.Node" title="fsspec_data.Node"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Node</span></code></a></p></td>
 <td><p>A node in a backend's namespace and the facets it offers. <code class="docutils literal notranslate"><span class="pre">native_format</span></code> is the</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.Codec" title="fsspec_data.Codec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Codec</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.Codec" title="fsspec_data.Codec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Codec</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.CodecCapabilities" title="fsspec_data.CodecCapabilities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CodecCapabilities</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.CodecCapabilities" title="fsspec_data.CodecCapabilities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CodecCapabilities</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.CodecRegistry" title="fsspec_data.CodecRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CodecRegistry</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.CodecRegistry" title="fsspec_data.CodecRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CodecRegistry</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.DataFormat" title="fsspec_data.DataFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFormat</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.DataFormat" title="fsspec_data.DataFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFormat</span></code></a></p></td>
 <td><p>str(object='') -&gt; str</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.DecodedBatches" title="fsspec_data.DecodedBatches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedBatches</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.DecodedBatches" title="fsspec_data.DecodedBatches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedBatches</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.DecodedBatchStream" title="fsspec_data.DecodedBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedBatchStream</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.DecodedBatchStream" title="fsspec_data.DecodedBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedBatchStream</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.FieldAddition" title="fsspec_data.FieldAddition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FieldAddition</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.FieldAddition" title="fsspec_data.FieldAddition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FieldAddition</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.FieldMapping" title="fsspec_data.FieldMapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FieldMapping</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.FieldMapping" title="fsspec_data.FieldMapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FieldMapping</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.InterchangePlan" title="fsspec_data.InterchangePlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterchangePlan</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.InterchangePlan" title="fsspec_data.InterchangePlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterchangePlan</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.InterchangeRequest" title="fsspec_data.InterchangeRequest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterchangeRequest</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.InterchangeRequest" title="fsspec_data.InterchangeRequest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InterchangeRequest</span></code></a></p></td>
 <td><p>A conversion request. Either schema may be a PyArrow schema or a schema reference;</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.PlannedBatchStream" title="fsspec_data.PlannedBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PlannedBatchStream</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.PlannedBatchStream" title="fsspec_data.PlannedBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PlannedBatchStream</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaPolicy" title="fsspec_data.SchemaPolicy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaPolicy</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaPolicy" title="fsspec_data.SchemaPolicy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaPolicy</span></code></a></p></td>
 <td><p>str(object='') -&gt; str</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.ResolvedSchema" title="fsspec_data.ResolvedSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResolvedSchema</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.ResolvedSchema" title="fsspec_data.ResolvedSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResolvedSchema</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaDocument" title="fsspec_data.SchemaDocument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaDocument</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaDocument" title="fsspec_data.SchemaDocument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaDocument</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaFormat" title="fsspec_data.SchemaFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaFormat</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaFormat" title="fsspec_data.SchemaFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaFormat</span></code></a></p></td>
 <td><p>str(object='') -&gt; str</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaProvenance" title="fsspec_data.SchemaProvenance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaProvenance</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaProvenance" title="fsspec_data.SchemaProvenance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaProvenance</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaRef" title="fsspec_data.SchemaRef"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaRef</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaRef" title="fsspec_data.SchemaRef"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaRef</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaResolverRegistry" title="fsspec_data.SchemaResolverRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaResolverRegistry</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaResolverRegistry" title="fsspec_data.SchemaResolverRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaResolverRegistry</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.DataViewFileSystem" title="fsspec_data.DataViewFileSystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.DataViewFileSystem" title="fsspec_data.DataViewFileSystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code></a></p></td>
 <td><p>View of a data source, rendering each node's facets as files.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.ViewEntry" title="fsspec_data.ViewEntry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ViewEntry</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.ViewEntry" title="fsspec_data.ViewEntry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ViewEntry</span></code></a></p></td>
 <td><p>A file or directory of a data view and what it renders. <code class="docutils literal notranslate"><span class="pre">facet</span></code> is <code class="docutils literal notranslate"><span class="pre">children</span></code>,</p></td>
 </tr>
 </tbody>
@@ -1116,13 +1166,16 @@
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.plan_schema" title="fsspec_data.plan_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_schema</span></code></a>(provided_schema, requested_schema, policy, *) → InterchangePlan</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.scan_parquet_async" title="fsspec_data.scan_parquet_async"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scan_parquet_async</span></code></a>(url, *[, storage_options, columns, ...]) → AsyncDecodedBatchStream</p></td>
+<td><p>Open a native S3 Parquet scan. <code class="docutils literal notranslate"><span class="pre">deadline</span></code> uses <code class="docutils literal notranslate"><span class="pre">asyncio</span></code> loop time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.plan_schema" title="fsspec_data.plan_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_schema</span></code></a>(provided_schema, requested_schema, policy, *) → InterchangePlan</p></td>
 <td><p>Plan how provided fields become requested fields.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.json_schema_to_arrow" title="fsspec_data.json_schema_to_arrow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">json_schema_to_arrow</span></code></a>(value) → pyarrow.Schema</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.json_schema_to_arrow" title="fsspec_data.json_schema_to_arrow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">json_schema_to_arrow</span></code></a>(value) → pyarrow.Schema</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.resolve_schema" title="fsspec_data.resolve_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_schema</span></code></a>(value[, registry]) → ResolvedSchema | None</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.resolve_schema" title="fsspec_data.resolve_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_schema</span></code></a>(value[, registry]) → ResolvedSchema | None</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -1130,6 +1183,72 @@
 </section>
 <section id="package-contents">
 <h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">AsyncDecodedBatchStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream" title="Link to this definition">¶</a></dt>
+<dd><p>Demand-driven Arrow batches; use <code class="docutils literal notranslate"><span class="pre">aclose</span></code> or an async context manager.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream.schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream._native">
+<span class="sig-name descname"><span class="pre">_native</span></span><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream._native" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream._closed">
+<span class="sig-name descname"><span class="pre">_closed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream._closed" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream._pending">
+<span class="sig-name descname"><span class="pre">_pending</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream._pending" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream._close_waiter">
+<span class="sig-name descname"><span class="pre">_close_waiter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">asyncio.Future</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream._close_waiter" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream.__aiter__">
+<span class="sig-name descname"><span class="pre">__aiter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.AsyncDecodedBatchStream" title="fsspec_data.AsyncDecodedBatchStream"><span class="pre">AsyncDecodedBatchStream</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream.__aiter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream.__aiter__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream.__anext__">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__anext__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.RecordBatch</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream.__anext__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream.__anext__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream.aclose">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aclose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream.aclose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream.aclose" title="Link to this definition">¶</a></dt>
+<dd><p>Cancel reads and wait for cleanup. Cleanup continues if this await is cancelled.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream.__aenter__">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__aenter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream.__aenter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream.__aenter__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream.__aexit__">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__aexit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseException</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">types.TracebackType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream.__aexit__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream.__aexit__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.scan_parquet_async">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">scan_parquet_async</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_range_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_batch_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.AsyncDecodedBatchStream" title="fsspec_data.AsyncDecodedBatchStream"><span class="pre">AsyncDecodedBatchStream</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#scan_parquet_async"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.scan_parquet_async" title="Link to this definition">¶</a></dt>
+<dd><p>Open a native S3 Parquet scan. <code class="docutils literal notranslate"><span class="pre">deadline</span></code> uses <code class="docutils literal notranslate"><span class="pre">asyncio</span></code> loop time.</p>
+<p><code class="docutils literal notranslate"><span class="pre">url</span></code> is <code class="docutils literal notranslate"><span class="pre">s3://bucket/key</span></code> or <code class="docutils literal notranslate"><span class="pre">s3-rs://bucket/key</span></code>. Storage options use
+fsspec-rs’s flat names, such as <code class="docutils literal notranslate"><span class="pre">anon</span></code>, <code class="docutils literal notranslate"><span class="pre">region</span></code> and <code class="docutils literal notranslate"><span class="pre">endpoint_url</span></code>.
+The stream owns its file. Decoding allocations are outside the buffer limits.</p>
+</dd></dl>
+
 <dl class="py data">
 <dt class="sig sig-object py" id="fsspec_data.CONVERTER_ENTRY_POINT_GROUP">
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">CONVERTER_ENTRY_POINT_GROUP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fsspec_data.converters'</span></em><a class="headerlink" href="#fsspec_data.CONVERTER_ENTRY_POINT_GROUP" title="Link to this definition">¶</a></dt>
@@ -2450,6 +2569,42 @@ or a format name. <code class="docutils literal notranslate"><span class="pre">u
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#package-contents">Package Contents</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.AsyncDecodedBatchStream">AsyncDecodedBatchStream</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.schema">AsyncDecodedBatchStream.schema</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._native">AsyncDecodedBatchStream._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._closed">AsyncDecodedBatchStream._closed</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._pending">AsyncDecodedBatchStream._pending</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._close_waiter">AsyncDecodedBatchStream._close_waiter</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.__aiter__">AsyncDecodedBatchStream.__aiter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.__anext__">AsyncDecodedBatchStream.__anext__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.aclose">AsyncDecodedBatchStream.aclose()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.__aenter__">AsyncDecodedBatchStream.__aenter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.__aexit__">AsyncDecodedBatchStream.__aexit__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.scan_parquet_async">scan_parquet_async()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.CONVERTER_ENTRY_POINT_GROUP">CONVERTER_ENTRY_POINT_GROUP</a>

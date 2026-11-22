@@ -1,0 +1,74 @@
+fsspec_data.tests.test_async_scan
+=================================
+
+.. py:module:: fsspec_data.tests.test_async_scan
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_async_scan.store
+   fsspec_data.tests.test_async_scan.until
+   fsspec_data.tests.test_async_scan.scan
+   fsspec_data.tests.test_async_scan.test_selection_schema_and_only_requested_column_reads
+   fsspec_data.tests.test_async_scan.test_slow_consumer_does_not_prefetch
+   fsspec_data.tests.test_async_scan.test_task_cancellation_closes_pending_network_read
+   fsspec_data.tests.test_async_scan.test_deadline_stops_io_and_raises_timeout
+   fsspec_data.tests.test_async_scan.test_close_cancels_pending_next_and_rejects_overlapping_reads
+   fsspec_data.tests.test_async_scan.test_context_manager_exception_closes_stream
+   fsspec_data.tests.test_async_scan.test_buffer_limits_report_failure_and_cleanup
+   fsspec_data.tests.test_async_scan.test_storage_failures_preserve_kind_and_retry_safety
+   fsspec_data.tests.test_async_scan.test_empty_selection_and_zero_rows
+   fsspec_data.tests.test_async_scan.test_invalid_options_do_not_contact_storage
+   fsspec_data.tests.test_async_scan.test_key_with_bucket_prefix_is_not_stripped_twice
+   fsspec_data.tests.test_async_scan.test_cancelling_close_waiter_does_not_cancel_cleanup
+   fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_close
+   fsspec_data.tests.test_async_scan.test_deadline_includes_idle_consumer_time
+   fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed
+
+
+Module Contents
+---------------
+
+.. py:function:: store()
+
+.. py:function:: until(predicate)
+   :async:
+
+
+.. py:function:: scan(store, **kwargs)
+   :async:
+
+
+.. py:function:: test_selection_schema_and_only_requested_column_reads(store)
+
+.. py:function:: test_slow_consumer_does_not_prefetch(store)
+
+.. py:function:: test_task_cancellation_closes_pending_network_read(store, during_open)
+
+.. py:function:: test_deadline_stops_io_and_raises_timeout(store, during_open)
+
+.. py:function:: test_close_cancels_pending_next_and_rejects_overlapping_reads(store)
+
+.. py:function:: test_context_manager_exception_closes_stream(store)
+
+.. py:function:: test_buffer_limits_report_failure_and_cleanup(store, options)
+
+.. py:function:: test_storage_failures_preserve_kind_and_retry_safety(store)
+
+.. py:function:: test_empty_selection_and_zero_rows(store, kwargs)
+
+.. py:function:: test_invalid_options_do_not_contact_storage(store, kwargs)
+
+.. py:function:: test_key_with_bucket_prefix_is_not_stripped_twice(store)
+
+.. py:function:: test_cancelling_close_waiter_does_not_cancel_cleanup()
+
+.. py:function:: test_ready_batch_is_not_delivered_after_close()
+
+.. py:function:: test_deadline_includes_idle_consumer_time(store)
+
+.. py:function:: test_independent_scans_continue_after_one_is_closed(store)
+

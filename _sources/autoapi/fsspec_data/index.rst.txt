@@ -11,6 +11,7 @@ Submodules
    :maxdepth: 1
 
    /autoapi/fsspec_data/_version/index
+   /autoapi/fsspec_data/async_scan/index
    /autoapi/fsspec_data/backends/index
    /autoapi/fsspec_data/confluent/index
    /autoapi/fsspec_data/converters/index
@@ -49,6 +50,7 @@ Classes
 
 .. autoapisummary::
 
+   fsspec_data.AsyncDecodedBatchStream
    fsspec_data.Converter
    fsspec_data.ConverterRegistry
    fsspec_data.DataSource
@@ -82,6 +84,7 @@ Functions
 
 .. autoapisummary::
 
+   fsspec_data.scan_parquet_async
    fsspec_data.plan_schema
    fsspec_data.json_schema_to_arrow
    fsspec_data.resolve_schema
@@ -89,6 +92,70 @@ Functions
 
 Package Contents
 ----------------
+
+.. py:class:: AsyncDecodedBatchStream(schema: pyarrow.Schema, native: Any)
+
+   Demand-driven Arrow batches; use ``aclose`` or an async context manager.
+
+
+   .. py:attribute:: schema
+
+
+   .. py:attribute:: _native
+
+
+   .. py:attribute:: _closed
+      :value: False
+
+
+
+   .. py:attribute:: _pending
+      :value: False
+
+
+
+   .. py:attribute:: _close_waiter
+      :type:  asyncio.Future[None] | None
+      :value: None
+
+
+
+   .. py:method:: __aiter__() -> AsyncDecodedBatchStream
+
+
+   .. py:method:: __anext__() -> pyarrow.RecordBatch
+      :async:
+
+
+
+   .. py:method:: aclose() -> None
+      :async:
+
+
+      Cancel reads and wait for cleanup. Cleanup continues if this await is cancelled.
+
+
+
+   .. py:method:: __aenter__() -> Self
+      :async:
+
+
+
+   .. py:method:: __aexit__(exc_type: type[BaseException] | None, exc: BaseException | None, traceback: types.TracebackType | None) -> None
+      :async:
+
+
+
+.. py:function:: scan_parquet_async(url: str, *, storage_options: collections.abc.Mapping[str, str | bool | int | float] | None = None, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, max_range_bytes: int = 64 * 1024 * 1024, max_batch_bytes: int = 64 * 1024 * 1024, read_chunk_size: int = 1024 * 1024, deadline: float | None = None) -> AsyncDecodedBatchStream
+   :async:
+
+
+   Open a native S3 Parquet scan. ``deadline`` uses ``asyncio`` loop time.
+
+   ``url`` is ``s3://bucket/key`` or ``s3-rs://bucket/key``. Storage options use
+   fsspec-rs's flat names, such as ``anon``, ``region`` and ``endpoint_url``.
+   The stream owns its file. Decoding allocations are outside the buffer limits.
+
 
 .. py:data:: CONVERTER_ENTRY_POINT_GROUP
    :value: 'fsspec_data.converters'

@@ -1,0 +1,104 @@
+fsspec_data.async_scan
+======================
+
+.. py:module:: fsspec_data.async_scan
+
+.. autoapi-nested-parse::
+
+   Async Parquet batches read through native fsspec-rs S3 handles.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.async_scan._rust
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.async_scan.AsyncDecodedBatchStream
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.async_scan.scan_parquet_async
+
+
+Module Contents
+---------------
+
+.. py:data:: _rust
+
+.. py:class:: AsyncDecodedBatchStream(schema: pyarrow.Schema, native: Any)
+
+   Demand-driven Arrow batches; use ``aclose`` or an async context manager.
+
+
+   .. py:attribute:: schema
+
+
+   .. py:attribute:: _native
+
+
+   .. py:attribute:: _closed
+      :value: False
+
+
+
+   .. py:attribute:: _pending
+      :value: False
+
+
+
+   .. py:attribute:: _close_waiter
+      :type:  asyncio.Future[None] | None
+      :value: None
+
+
+
+   .. py:method:: __aiter__() -> AsyncDecodedBatchStream
+
+
+   .. py:method:: __anext__() -> pyarrow.RecordBatch
+      :async:
+
+
+
+   .. py:method:: aclose() -> None
+      :async:
+
+
+      Cancel reads and wait for cleanup. Cleanup continues if this await is cancelled.
+
+
+
+   .. py:method:: __aenter__() -> Self
+      :async:
+
+
+
+   .. py:method:: __aexit__(exc_type: type[BaseException] | None, exc: BaseException | None, traceback: types.TracebackType | None) -> None
+      :async:
+
+
+
+.. py:function:: scan_parquet_async(url: str, *, storage_options: collections.abc.Mapping[str, str | bool | int | float] | None = None, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, max_range_bytes: int = 64 * 1024 * 1024, max_batch_bytes: int = 64 * 1024 * 1024, read_chunk_size: int = 1024 * 1024, deadline: float | None = None) -> AsyncDecodedBatchStream
+   :async:
+
+
+   Open a native S3 Parquet scan. ``deadline`` uses ``asyncio`` loop time.
+
+   ``url`` is ``s3://bucket/key`` or ``s3-rs://bucket/key``. Storage options use
+   fsspec-rs's flat names, such as ``anon``, ``region`` and ``endpoint_url``.
+   The stream owns its file. Decoding allocations are outside the buffer limits.
+
+
