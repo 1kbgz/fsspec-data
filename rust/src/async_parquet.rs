@@ -67,8 +67,16 @@ fn worker_stopped() -> InterchangeError {
 }
 
 impl AsyncDecodedStream {
+    fn finish(&mut self) {
+        self.finished = true;
+        self.requests.close_channel();
+        self.batches.close();
+        while self.batches.try_recv().is_ok() {}
+    }
+
     pub async fn close(mut self) -> Result<()> {
         self.control.stop.cancel();
+        self.finish();
         match self.done.take() {
             Some(done) => done.await.map_err(|_| worker_stopped())?,
             None => Ok(()),
@@ -90,7 +98,7 @@ impl Stream for AsyncDecodedStream {
             return Poll::Ready(None);
         }
         if let Err(error) = self.control.check() {
-            self.finished = true;
+            self.finish();
             return Poll::Ready(Some(Err(error)));
         }
         if !self.pending {
@@ -101,12 +109,14 @@ impl Stream for AsyncDecodedStream {
         match self.batches.poll_next_unpin(cx) {
             Poll::Ready(Some(batch)) => {
                 self.pending = false;
-                self.finished = batch.is_err();
+                if batch.is_err() {
+                    self.finish();
+                }
                 Poll::Ready(Some(batch))
             }
             Poll::Ready(None) => {
                 let result = futures::ready!(self.done.as_mut().unwrap().poll_unpin(cx));
-                self.finished = true;
+                self.finish();
                 self.done.take();
                 match result.unwrap_or_else(|_| Err(worker_stopped())) {
                     Ok(()) => Poll::Ready(None),

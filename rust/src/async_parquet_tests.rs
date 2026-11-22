@@ -521,3 +521,41 @@ fn range_limit_counts_all_chunks_before_reading() {
         assert!(reader.ranges(vec![0..6, 6..10]).await.is_ok());
     });
 }
+
+#[test]
+fn cancellation_releases_queued_batch_memory_before_stream_drop() {
+    block_on(async {
+        let array = Arc::new(Int32Array::from(vec![1, 2, 3]));
+        let allocation = Arc::downgrade(&array);
+        let batch = RecordBatch::try_from_iter([("a", array as ArrayRef)]).unwrap();
+        let schema = batch.schema();
+        let (sender, batches) = mpsc::unbounded();
+        sender.unbounded_send(Ok(batch)).unwrap();
+        let (requests, _receiver) = mpsc::unbounded();
+        let (done, finished) = oneshot::channel();
+        let cancellation = CancellationToken::new();
+        let mut stream = AsyncDecodedStream {
+            schema,
+            requests,
+            batches,
+            done: Some(finished),
+            control: Arc::new(Control {
+                cancellation: cancellation.clone(),
+                stop: CancellationToken::new(),
+                deadline: None,
+            }),
+            pending: true,
+            finished: false,
+        };
+        assert!(allocation.upgrade().is_some());
+        cancellation.cancel();
+        assert!(matches!(
+            stream.next().await,
+            Some(Err(InterchangeError::StreamCancelled))
+        ));
+        assert!(allocation.upgrade().is_none());
+        assert!(stream.next().await.is_none());
+        done.send(Ok(())).unwrap();
+        stream.close().await.unwrap();
+    });
+}
