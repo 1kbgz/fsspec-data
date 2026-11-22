@@ -116,7 +116,7 @@ where
     }
 }
 
-fn interchange_error(error: ParquetError) -> InterchangeError {
+pub(crate) fn interchange_error(error: ParquetError) -> InterchangeError {
     match error {
         ParquetError::External(source) => match source.downcast::<InterchangeError>() {
             Ok(error) => *error,

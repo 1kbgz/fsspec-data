@@ -832,3 +832,49 @@ Abort, failure, and recovery never delete parts or descriptors. Published histor
 readable. Reclaiming orphan attempts requires a separate collector that proves their
 publication slots are permanently occupied and observes retention. Generic automatic
 retries are disabled for sink-generated errors (`retry_safe = false`).
+
+## Rust asynchronous Parquet scans
+
+`ParquetCodec::decode_async(file, selection, options, cancellation).await` returns an
+`AsyncDecodedStream` implementing `futures::Stream<Item = Result<RecordBatch>>`. This is a
+Rust API; Python `DataSource` scans remain synchronous.
+
+The method takes ownership of a seekable `fsspec_rs::AsyncFsFile`. It supports the core
+async handles and C ABI handles wrapped by `fsspec_sys`. The provider must preserve a
+consistent object across reads; native fsspec-rs S3 handles pin the ETag and size.
+An object replacement returns the provider's structured conflict error.
+
+`ScanSelection` selects top-level columns, including requested order and duplicates,
+and a source row offset. `AsyncScanOptions::stream` supplies batch size, output row limit,
+and cumulative output byte limit. Selection skips unneeded row groups and column chunks.
+Schema metadata is preserved, including for an empty column selection.
+
+Additional `AsyncScanOptions` fields:
+
+| Field             | Default | Meaning                                                                                                                                                 |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `max_range_bytes` | 64 MiB  | Aggregate compressed ranges requested for one row group or footer; checked before allocation or I/O. Larger requests fail with `RangeLimitExceeded`.    |
+| `max_batch_bytes` | 64 MiB  | Maximum projected output batch; checked after decoding with Arrow's `get_array_memory_size`. Larger batches fail with `ByteLimitExceeded`.              |
+| `read_chunk_size` | 1 MiB   | Maximum individual file read. Must fit the provider's read limit and byte budget. Native S3 reserves twice this amount for result and staging buffers.  |
+| `deadline`        | `None`  | Absolute `std::time::Instant` covering metadata loading, reads, decoding and idle time between consumer polls. Expiry returns `StreamDeadlineExceeded`. |
+
+Each scan uses one worker thread for Parquet metadata parsing and batch decoding. File I/O
+uses the provider's async implementation and runtime. The caller needs no Tokio runtime.
+One consumer request produces at most one batch; the worker does not prefetch another
+batch while the consumer is idle. Separate scans do not share reads or buffers.
+
+Compressed row-group data, parsed metadata, a temporary file-read buffer and a decoded
+batch can coexist. These limits are not a total memory cap. Parquet's internal allocations,
+provider transport allocations, and batches retained by callers are outside these limits.
+The batch limit detects excessive output after allocation; it does not prevent it.
+
+`CancellationToken::cancel()` wakes pending reads and idle scans. Cancellation drops the
+pending I/O future and returns `StreamCancelled`; decoding already running on the worker
+finishes its current poll before the cancellation or deadline is observed. No subsequent
+batch is delivered after cancellation is observed.
+
+EOF, errors, cancellation and dropping the stream close the owned file. Dropping the
+initialization future also requests cleanup. `stream.close().await` cancels the scan and
+waits for provider cleanup, including after EOF or a scan error. Cleanup is not cut short
+by the scan deadline and can wait for the provider. Normal EOF waits for cleanup and
+reports a close error; an earlier scan error takes precedence during iteration.

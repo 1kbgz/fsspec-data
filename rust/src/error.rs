@@ -97,6 +97,12 @@ pub enum InterchangeError {
     InvalidBatchSize,
     #[error("batch stream was cancelled")]
     StreamCancelled,
+    #[error("batch stream deadline exceeded")]
+    StreamDeadlineExceeded,
+    #[error("async scan buffer limits must be greater than zero")]
+    InvalidScanLimits,
+    #[error("Parquet ranges exceed byte limit {limit}: attempted {attempted}")]
+    RangeLimitExceeded { limit: usize, attempted: usize },
     #[error("decoded batch memory exceeds byte limit {limit}: attempted {attempted}")]
     ByteLimitExceeded { limit: usize, attempted: usize },
     #[error("schema reference: {0}")]
