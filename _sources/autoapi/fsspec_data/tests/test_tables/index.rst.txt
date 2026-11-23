@@ -1,0 +1,76 @@
+fsspec_data.tests.test_tables
+=============================
+
+.. py:module:: fsspec_data.tests.test_tables
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_tables.batch
+   fsspec_data.tests.test_tables.values
+   fsspec_data.tests.test_tables.test_publication_append_finish_and_saved_generations
+   fsspec_data.tests.test_tables.test_retry_keys_positions_and_reopen
+   fsspec_data.tests.test_tables.test_abort_close_drop_and_context_exception_preserve_prior_commits
+   fsspec_data.tests.test_tables.test_concurrent_publishers_only_one_wins
+   fsspec_data.tests.test_tables.test_snapshot_scan_across_parts_and_limits
+   fsspec_data.tests.test_tables.test_parts_checked_on_demand_and_orphans_ignored
+   fsspec_data.tests.test_tables.test_parquet_schema_checked_against_manifest
+   fsspec_data.tests.test_tables.test_recovery_and_empty_table
+   fsspec_data.tests.test_tables.test_invalid_writer_limits
+   fsspec_data.tests.test_tables.s3_store
+   fsspec_data.tests.test_tables.test_uncertain_publication_can_be_resolved_without_duplicate_rows
+   fsspec_data.tests.test_tables.test_marker_failure_does_not_undo_complete_publication
+   fsspec_data.tests.test_tables.test_recovery_after_restart_can_resubmit_exact_candidate
+   fsspec_data.tests.test_tables.test_relative_local_path_remains_bound_after_chdir
+   fsspec_data.tests.test_tables.test_writer_schema_and_memory_validation_leaves_no_publication
+   fsspec_data.tests.test_tables.test_context_exit_preserves_exception_if_publication_cannot_be_aborted
+   fsspec_data.tests.test_tables.test_schema_metadata_round_trip
+   fsspec_data.tests.test_tables.test_scan_rejects_unsupported_encoding_options
+
+
+Module Contents
+---------------
+
+.. py:function:: batch(start=0, count=5)
+
+.. py:function:: values(snapshot, **options)
+
+.. py:function:: test_publication_append_finish_and_saved_generations(tmp_path)
+
+.. py:function:: test_retry_keys_positions_and_reopen(tmp_path)
+
+.. py:function:: test_abort_close_drop_and_context_exception_preserve_prior_commits(tmp_path)
+
+.. py:function:: test_concurrent_publishers_only_one_wins(tmp_path)
+
+.. py:function:: test_snapshot_scan_across_parts_and_limits(tmp_path)
+
+.. py:function:: test_parts_checked_on_demand_and_orphans_ignored(tmp_path)
+
+.. py:function:: test_parquet_schema_checked_against_manifest(tmp_path)
+
+.. py:function:: test_recovery_and_empty_table(tmp_path)
+
+.. py:function:: test_invalid_writer_limits(tmp_path, options)
+
+.. py:function:: s3_store()
+
+.. py:function:: test_uncertain_publication_can_be_resolved_without_duplicate_rows(s3_store)
+
+.. py:function:: test_marker_failure_does_not_undo_complete_publication(s3_store)
+
+.. py:function:: test_recovery_after_restart_can_resubmit_exact_candidate(s3_store)
+
+.. py:function:: test_relative_local_path_remains_bound_after_chdir(tmp_path, monkeypatch)
+
+.. py:function:: test_writer_schema_and_memory_validation_leaves_no_publication(tmp_path)
+
+.. py:function:: test_context_exit_preserves_exception_if_publication_cannot_be_aborted(s3_store)
+
+.. py:function:: test_schema_metadata_round_trip(tmp_path)
+
+.. py:function:: test_scan_rejects_unsupported_encoding_options(tmp_path, changes)
+

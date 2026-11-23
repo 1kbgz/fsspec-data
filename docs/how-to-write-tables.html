@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to write and read saved table versions &#8212; fsspec-data v0.9.0</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/fuma.css?v=ca04d621" />
+    <link rel="stylesheet" type="text/css" href="../_static/fuma-code.css?v=a950e949" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../_static/fonts/fuma-fonts.css?v=c2892c73" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/custom.css?v=88c24c6a" />
+    <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
+    <script data-searchlite-index="searchlite-index.json" defer="defer" src="../_static/searchlite.js?v=a5320898"></script>
+    <script defer="defer" src="../_static/fuma.js?v=9c325f6c"></script>
+    <script src="../_static/js/custom.js?v=956e5d78"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Manifest table reference" href="manifest-tables.html" />
+    <link rel="prev" title="How to integrate Rust batch streams" href="how-to-rust.html" />
+    <script>
+      (function () {
+        var root = document.documentElement;
+        try {
+          var stored = localStorage.getItem("fuma-theme");
+          if (stored) {
+            root.classList.add(stored === "dark" ? "dark" : "light");
+            root.style.colorScheme = stored === "dark" ? "dark" : "light";
+          }
+          if (localStorage.getItem("fuma-sidebar") === "collapsed") root.dataset.sidebarCollapsed = "true";
+          if (localStorage.getItem("fuma-toc") === "collapsed") root.dataset.tocCollapsed = "true";
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+<body class="fd-body" data-layout="docs" data-toc-style="normal" data-open-level="0">
+<div id="fd-layout"><header id="fd-subnav">
+  <div class="fd-subnav-inner">
+    <button type="button" class="fd-icon-button fd-sidebar-toggle" aria-controls="fd-sidebar" aria-expanded="false" aria-label="Toggle navigation" title="Toggle navigation">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+    </button><a class="fd-brand" href="../index.html"><span class="fd-brand-name">fsspec-data v0.9.0</span>
+</a>
+
+    <div class="fd-nav-actions">
+      <button type="button" class="fd-icon-button" data-fd-search-open aria-label="Search" title="Search"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <a class="fd-icon-button" href="https://github.com/1kbgz/fsspec-data" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></a>
+      <button type="button" class="fd-icon-button fd-theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon fd-icon-light"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon fd-icon-dark"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<aside id="fd-sidebar" aria-label="Documentation">
+  <div class="fd-sidebar-header">
+    <div class="fd-sidebar-brand-row"><a class="fd-brand" href="../index.html"><span class="fd-brand-name">fsspec-data v0.9.0</span>
+</a>
+      <button type="button" class="fd-icon-button fd-sidebar-collapse" aria-label="Collapse sidebar" title="Collapse sidebar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
+    </div>
+    <button type="button" class="fd-search-trigger" data-fd-search-open title="Search">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Search</span><kbd class="fd-kbd">/</kbd>
+    </button>
+  </div>
+
+  <nav class="fd-sidebar-nav">
+    <div class="fd-sidebar-group">
+      
+<ul class="fd-tree">
+  <li class="fd-tree-item">
+    <a class="fd-link" href="tutorial.html">
+      <span class="fd-link-text">Convert tabular data</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="how-to-integrate.html">
+      <span class="fd-link-text">How to connect a batch producer or consumer</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="how-to-chain-filesystems.html">
+      <span class="fd-link-text">How to convert a file through an fsspec chain</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="how-to-resolve-schemas.html">
+      <span class="fd-link-text">How to resolve schemas from files and registries</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="how-to-convert-resources.html">
+      <span class="fd-link-text">How to convert Xarray and Zarr resources</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="how-to-rust.html">
+      <span class="fd-link-text">How to integrate Rust batch streams</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link fd-current" href="#">
+      <span class="fd-link-text">How to write and read saved table versions</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="manifest-tables.html">
+      <span class="fd-link-text">Manifest table reference</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="api.html">
+      <span class="fd-link-text">Interchange API reference</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="resources.html">
+      <span class="fd-link-text">Schema and converter reference</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="explanation.html">
+      <span class="fd-link-text">Interchange design</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <details class="fd-folder">
+      <summary class="fd-folder-summary" title="Toggle section: API Reference">
+        <a class="fd-link" href="../autoapi/index.html">
+          <span class="fd-link-text">API Reference</span>
+        </a>
+        <span class="fd-folder-marker" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg></span>
+      </summary>
+      
+<ul class="fd-tree">
+  <li class="fd-tree-item">
+    <details class="fd-folder">
+      <summary class="fd-folder-summary" title="Toggle section: fsspec_data">
+        <a class="fd-link" href="../autoapi/fsspec_data/index.html">
+          <span class="fd-link-text">fsspec_data</span>
+        </a>
+        <span class="fd-folder-marker" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg></span>
+      </summary>
+      
+<ul class="fd-tree">
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/_version/index.html">
+      <span class="fd-link-text">fsspec_data._version</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/async_scan/index.html">
+      <span class="fd-link-text">fsspec_data.async_scan</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <details class="fd-folder">
+      <summary class="fd-folder-summary" title="Toggle section: fsspec_data.backends">
+        <a class="fd-link" href="../autoapi/fsspec_data/backends/index.html">
+          <span class="fd-link-text">fsspec_data.backends</span>
+        </a>
+        <span class="fd-folder-marker" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg></span>
+      </summary>
+      
+<ul class="fd-tree">
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/backends/base/index.html">
+      <span class="fd-link-text">fsspec_data.backends.base</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/backends/http/index.html">
+      <span class="fd-link-text">fsspec_data.backends.http</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/backends/sqlalchemy/index.html">
+      <span class="fd-link-text">fsspec_data.backends.sqlalchemy</span>
+    </a>
+  </li>
+</ul>
+    </details>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/confluent/index.html">
+      <span class="fd-link-text">fsspec_data.confluent</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/converters/index.html">
+      <span class="fd-link-text">fsspec_data.converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/describe/index.html">
+      <span class="fd-link-text">fsspec_data.describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/interchange/index.html">
+      <span class="fd-link-text">fsspec_data.interchange</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/json_schema/index.html">
+      <span class="fd-link-text">fsspec_data.json_schema</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/s3/index.html">
+      <span class="fd-link-text">fsspec_data.s3</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/scan_identity/index.html">
+      <span class="fd-link-text">fsspec_data.scan_identity</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/schema/index.html">
+      <span class="fd-link-text">fsspec_data.schema</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tables/index.html">
+      <span class="fd-link-text">fsspec_data.tables</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <details class="fd-folder">
+      <summary class="fd-folder-summary" title="Toggle section: fsspec_data.tests">
+        <a class="fd-link" href="../autoapi/fsspec_data/tests/index.html">
+          <span class="fd-link-text">fsspec_data.tests</span>
+        </a>
+        <span class="fd-folder-marker" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg></span>
+      </summary>
+      
+<ul class="fd-tree">
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/conftest/index.html">
+      <span class="fd-link-text">fsspec_data.tests.conftest</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_all/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_all</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_async_scan/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_async_scan</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_async_sources/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_async_sources</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_converters/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_converters</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_describe/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_scan_identity/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_scan_identity</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_schema/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_schema</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_tables/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_tables</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_view/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_view</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_view_conversion/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_view_conversion</span>
+    </a>
+  </li>
+</ul>
+    </details>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/view/index.html">
+      <span class="fd-link-text">fsspec_data.view</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/xarray_zarr/index.html">
+      <span class="fd-link-text">fsspec_data.xarray_zarr</span>
+    </a>
+  </li>
+</ul>
+    </details>
+  </li>
+</ul>
+    </details>
+  </li>
+</ul>
+    </div>
+  </nav>
+
+  <div class="fd-sidebar-footer">
+    <div class="fd-toolbar">
+      <a class="fd-toolbar-item" href="https://github.com/1kbgz/fsspec-data" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></a>
+      <div class="fd-theme-switch" role="group" aria-label="Theme">
+        <button type="button" class="fd-theme-option" data-fd-theme="light" aria-label="Light theme" title="Light theme"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button>
+        <button type="button" class="fd-theme-option" data-fd-theme="dark" aria-label="Dark theme" title="Dark theme"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg></button>
+      </div>
+    </div>
+  </div>
+</aside>
+<button type="button" id="fd-sidebar-restore" class="fd-icon-button" aria-label="Expand sidebar" title="Expand sidebar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></button>
+<div class="fd-sidebar-scrim" hidden></div>
+  <div id="fd-toc-popover">
+    <button type="button" class="fd-toc-trigger" aria-expanded="false" aria-controls="fd-toc-mobile" title="On this page">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg><span>On this page</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div id="fd-toc-mobile" hidden><ul class="fd-toc-list">
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#publish-batches">Publish batches</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#append-and-finish">Append and finish</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#read-a-saved-version">Read a saved version</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#recover-an-uncertain-publication">Recover an uncertain publication</a>
+  </li>
+</ul>
+</div>
+  </div>
+
+  <main id="fd-main">
+    <article class="fd-page">
+      <div class="fd-prose">
+  <section class="tex2jax_ignore mathjax_ignore" id="how-to-write-and-read-saved-table-versions">
+<h1>How to write and read saved table versions<a class="headerlink" href="#how-to-write-and-read-saved-table-versions" title="Link to this heading">¶</a></h1>
+<p>Use <code class="docutils literal notranslate"><span class="pre">ManifestTable</span></code> to publish Parquet batches and reopen a saved version. Install
+<code class="docutils literal notranslate"><span class="pre">fsspec-data</span></code> and use a new local directory for this example. For S3, replace the path
+with <code class="docutils literal notranslate"><span class="pre">s3://bucket/prefix</span></code> and pass <code class="docutils literal notranslate"><span class="pre">storage_options</span></code> to the constructor. The store must
+provide atomic create-if-absent and consistent reads; deployment certification remains
+separate from this API.</p>
+<section id="publish-batches">
+<h2>Publish batches<a class="headerlink" href="#publish-batches" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">ManifestTable</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">ManifestTable</span><span class="p">(</span><span class="s2">"events"</span><span class="p">)</span>
+<span class="n">first</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">({</span><span class="s2">"value"</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]})</span>
+
+<span class="k">with</span> <span class="n">table</span><span class="o">.</span><span class="n">open_writer</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">write_batch</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">expected_position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"request-1"</span><span class="p">)</span>
+
+<span class="n">saved</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">saved</span><span class="o">.</span><span class="n">num_rows</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">saved</span><span class="o">.</span><span class="n">complete</span>
+</pre></div>
+</div>
+<p>A clean context exit commits the data and closes the writer. An exception aborts its
+unpublished work. Earlier commits remain visible. Use a stable request key when retrying
+a batch, with its original expected position; the writer acknowledges an identical retry
+without appending it twice.</p>
+</section>
+<section id="append-and-finish">
+<h2>Append and finish<a class="headerlink" href="#append-and-finish" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">second</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">({</span><span class="s2">"value"</span><span class="p">:</span> <span class="p">[</span><span class="mi">30</span><span class="p">]})</span>
+
+<span class="k">with</span> <span class="n">table</span><span class="o">.</span><span class="n">open_writer</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"append"</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">write_batch</span><span class="p">(</span><span class="n">second</span><span class="p">,</span> <span class="n">expected_position</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"request-2"</span><span class="p">)</span>
+    <span class="n">receipt</span> <span class="o">=</span> <span class="n">writer</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+
+<span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">complete</span>
+<span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">progress</span> <span class="o">==</span> <span class="mi">3</span>
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">commit()</span></code> for intermediate checkpoints and <code class="docutils literal notranslate"><span class="pre">finish()</span></code> when the table is complete.
+Checkpoint <code class="docutils literal notranslate"><span class="pre">PublicationReceipt.progress</span></code> after success. <code class="docutils literal notranslate"><span class="pre">writer.position</span></code> also includes
+unpublished rows and is not a durable checkpoint. A complete table rejects appends;
+<code class="docutils literal notranslate"><span class="pre">mode=&quot;replace&quot;</span></code> starts new table contents while retaining old saved versions.</p>
+</section>
+<section id="read-a-saved-version">
+<h2>Read a saved version<a class="headerlink" href="#read-a-saved-version" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">old</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">saved</span><span class="o">.</span><span class="n">generation</span><span class="p">)</span>
+<span class="n">latest</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
+
+<span class="n">old_rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">batch</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">old</span><span class="o">.</span><span class="n">scan</span><span class="p">()]</span>
+<span class="n">new_rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">batch</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">latest</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"value"</span><span class="p">],</span> <span class="n">row_offset</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+
+<span class="k">assert</span> <span class="n">old_rows</span> <span class="o">==</span> <span class="p">[{</span><span class="s2">"value"</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]}]</span>
+<span class="k">assert</span> <span class="nb">sum</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">num_rows</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">latest</span><span class="o">.</span><span class="n">scan</span><span class="p">())</span> <span class="o">==</span> <span class="mi">3</span>
+</pre></div>
+</div>
+<p>Snapshots remain pinned after subsequent publications. Scans read only listed parts,
+one at a time, verifying their checksums before decoding. Set <code class="docutils literal notranslate"><span class="pre">max_part_bytes</span></code> when
+constructing the table to cap encoded part reads. Use <code class="docutils literal notranslate"><span class="pre">batch_size</span></code>, <code class="docutils literal notranslate"><span class="pre">row_limit</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">byte_limit</span></code> to bound scan output; decoder allocations are not a process memory cap.
+Cancel a scan with <code class="docutils literal notranslate"><span class="pre">stream.cancel()</span></code> if stopping early.</p>
+</section>
+<section id="recover-an-uncertain-publication">
+<h2>Recover an uncertain publication<a class="headerlink" href="#recover-an-uncertain-publication" title="Link to this heading">¶</a></h2>
+<p>Persist the current recovery token before each <code class="docutils literal notranslate"><span class="pre">commit()</span></code> or <code class="docutils literal notranslate"><span class="pre">finish()</span></code>. The token changes
+after successful publication. Store it with the table URL and the configuration needed to
+reopen that source; it does not contain credentials.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">RecoveryToken</span>
+
+<span class="n">pending</span> <span class="o">=</span> <span class="n">ManifestTable</span><span class="p">(</span><span class="s2">"recoverable-events"</span><span class="p">)</span>
+<span class="n">writer</span> <span class="o">=</span> <span class="n">pending</span><span class="o">.</span><span class="n">open_writer</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write_batch</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">expected_position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"request-1"</span><span class="p">)</span>
+<span class="n">Path</span><span class="p">(</span><span class="s2">"pending.json"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">writer</span><span class="o">.</span><span class="n">recovery_token</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+<span class="n">receipt</span> <span class="o">=</span> <span class="n">writer</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c1"># The same recovery call works after restarting the process.</span>
+<span class="n">token</span> <span class="o">=</span> <span class="n">RecoveryToken</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"pending.json"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+<span class="n">receipt</span> <span class="o">=</span> <span class="n">ManifestTable</span><span class="p">(</span><span class="s2">"recoverable-events"</span><span class="p">)</span><span class="o">.</span><span class="n">recover</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If observation reports <code class="docutils literal notranslate"><span class="pre">error.kind</span> <span class="pre">==</span> <span class="pre">&quot;unknown_outcome&quot;</span></code>, the request may still complete.
+Use <code class="docutils literal notranslate"><span class="pre">table.recover(token,</span> <span class="pre">retry=True)</span></code> to resubmit the exact saved candidate. Pass the original
+<code class="docutils literal notranslate"><span class="pre">SinkOptions</span></code> as <code class="docutils literal notranslate"><span class="pre">options=</span></code> if changing default limits. With a live writer, use
+<code class="docutils literal notranslate"><span class="pre">writer.resolve(retry=True)</span></code> so its in-memory state also advances. Retrying recovery does
+not append rows again. A competing winner raises <code class="docutils literal notranslate"><span class="pre">conflict</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">finish()</span></code> may return a successful receipt with <code class="docutils literal notranslate"><span class="pre">marker_error</span></code> when the manifest was published
+but <code class="docutils literal notranslate"><span class="pre">_SUCCESS</span></code> could not be written. The table is complete; <code class="docutils literal notranslate"><span class="pre">table.recover(receipt.recovery)</span></code>
+retries marker repair. See <a class="reference internal" href="manifest-tables.html"><span class="std std-doc">manifest table reference</span></a> for limits,
+error attributes, and recovery behavior.</p>
+</section>
+</section>
+
+
+      </div>
+<nav class="fd-pagination" aria-label="Pagination">
+  <a class="fd-pagination-card fd-pagination-prev" href="how-to-rust.html" title="Previous: How to integrate Rust batch streams">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m15 18-6-6 6-6"/></svg>
+    <span class="fd-pagination-text">
+      <span class="fd-pagination-label">Previous</span>
+      <span class="fd-pagination-title">How to integrate Rust batch streams</span>
+    </span>
+  </a>
+  <a class="fd-pagination-card fd-pagination-next" href="manifest-tables.html" title="Next: Manifest table reference">
+    <span class="fd-pagination-text">
+      <span class="fd-pagination-label">Next</span>
+      <span class="fd-pagination-title">Manifest table reference</span>
+    </span>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="m9 18 6-6-6-6"/></svg>
+  </a>
+</nav>
+<footer id="fd-footer">
+  <p class="fd-footer-meta"><span>&#169; the fsspec-data authors</span><span>Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.</span>
+  </p>
+</footer>
+    </article>
+  </main>
+<nav id="fd-toc" aria-label="On this page">
+  <div class="fd-toc-header">
+    <p class="fd-toc-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>On this page</p>
+    <button type="button" class="fd-icon-button fd-toc-collapse" aria-label="Collapse page navigation" title="Collapse page navigation" aria-controls="fd-toc" aria-expanded="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></svg></button>
+  </div>
+  <div class="fd-toc-body"><svg class="fd-toc-rail" aria-hidden="true" preserveAspectRatio="none">
+      <path class="fd-toc-track" fill="none" />
+      <path class="fd-toc-thumb" fill="none" />
+    </svg><ul class="fd-toc-list">
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#publish-batches">Publish batches</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#append-and-finish">Append and finish</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#read-a-saved-version">Read a saved version</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#recover-an-uncertain-publication">Recover an uncertain publication</a>
+  </li>
+</ul>
+
+  </div>
+  <div class="fd-toc-actions">
+    <a class="fd-toc-action" href="https://github.com/1kbgz/fsspec-data/edit/HEAD/docs/how-to-write-tables.md" target="_blank" rel="noopener" title="Edit this page"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg><span>Edit this page</span></a>
+    <a class="fd-toc-action" href="../_sources/docs/how-to-write-tables.md.txt" rel="nofollow" title="View source"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg><span>View source</span></a>
+  </div>
+</nav>
+<button type="button" id="fd-toc-restore" class="fd-icon-button" aria-label="Expand page navigation" title="Expand page navigation" aria-controls="fd-toc" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></svg></button>
+</div>
+<dialog id="fd-search-dialog" aria-label="Search">
+  <form class="fd-search-panel" method="dialog" role="search">
+    <div class="fd-search-field">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="fd-icon "><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="fd-search-input" autocomplete="off" spellcheck="false" placeholder="Search documentation..." aria-label="Search" />
+      <kbd class="fd-kbd">Esc</kbd>
+    </div>
+    <div id="fd-search-results" role="listbox" aria-label="Search results"></div>
+    <p id="fd-search-empty" class="fd-search-empty" hidden>No results found.</p>
+  </form>
+</dialog>
+  </body>
+</html>

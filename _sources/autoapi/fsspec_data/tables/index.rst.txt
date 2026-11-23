@@ -1,0 +1,306 @@
+fsspec_data.tables
+==================
+
+.. py:module:: fsspec_data.tables
+
+.. autoapi-nested-parse::
+
+   Versioned Parquet tables published through immutable manifests.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.tables._rust
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.tables.SinkOptions
+   fsspec_data.tables.RecoveryToken
+   fsspec_data.tables.BatchReceipt
+   fsspec_data.tables.PublicationReceipt
+   fsspec_data.tables.ManifestTable
+   fsspec_data.tables.TableWriter
+   fsspec_data.tables.TableSnapshot
+
+
+Module Contents
+---------------
+
+.. py:data:: _rust
+
+.. py:class:: SinkOptions
+
+   Part buffering and publication limits; memory_limit is not a process RSS cap.
+
+
+   .. py:attribute:: target_part_bytes
+      :type:  int
+      :value: 8388608
+
+
+
+   .. py:attribute:: memory_limit
+      :type:  int
+      :value: 67108864
+
+
+
+   .. py:attribute:: max_manifest_bytes
+      :type:  int
+      :value: 8388608
+
+
+
+   .. py:attribute:: max_history_reads
+      :type:  int
+      :value: 256
+
+
+
+   .. py:attribute:: partition_values
+      :type:  collections.abc.Mapping[str, Any]
+
+
+.. py:class:: RecoveryToken
+
+   Persist before publication; restore using the same storage configuration.
+
+
+   .. py:attribute:: root
+      :type:  str
+
+
+   .. py:attribute:: namespace_id
+      :type:  str
+
+
+   .. py:attribute:: table_id
+      :type:  str
+
+
+   .. py:attribute:: generation
+      :type:  int
+
+
+   .. py:attribute:: publication_id
+      :type:  str
+
+
+   .. py:method:: to_json() -> str
+
+
+   .. py:method:: from_json(value: str) -> Self
+      :classmethod:
+
+
+
+.. py:class:: BatchReceipt
+
+   .. py:attribute:: key
+      :type:  str
+
+
+   .. py:attribute:: start
+      :type:  int
+
+
+   .. py:attribute:: end
+      :type:  int
+
+
+   .. py:attribute:: fingerprint
+      :type:  str
+
+
+.. py:class:: PublicationReceipt
+
+   .. py:attribute:: recovery
+      :type:  RecoveryToken
+
+
+   .. py:attribute:: sha256
+      :type:  str
+
+
+   .. py:attribute:: progress
+      :type:  int
+
+
+   .. py:attribute:: num_rows
+      :type:  int
+
+
+   .. py:attribute:: complete
+      :type:  bool
+
+
+   .. py:attribute:: marker_error
+      :type:  dict[str, str] | None
+
+
+   .. py:method:: _from_json(value: str) -> Self
+      :classmethod:
+
+
+
+.. py:class:: ManifestTable(root: str | os.PathLike[str], *, storage_options: collections.abc.Mapping[str, str | bool | int | float] | None = None, max_manifest_bytes: int = 8 * 1024 * 1024, max_part_bytes: int = 64 * 1024 * 1024, max_manifest_reads: int = 256)
+
+   One partition on native local or S3 storage, with retained saved generations.
+
+   Reads and writes are synchronous. Storage must provide durable, atomic
+   create-if-absent and consistent reads; capability support is not certification.
+
+
+   .. py:attribute:: _native
+
+
+   .. py:method:: snapshot(generation: int | None = None) -> TableSnapshot
+
+      Resolve latest publication or a saved generation without directory listing.
+
+
+
+   .. py:method:: open_writer(schema: pyarrow.Schema, *, mode: Literal['create', 'append', 'replace'] = 'create', options: SinkOptions | None = None) -> TableWriter
+
+
+   .. py:method:: recover(token: RecoveryToken, *, retry: bool = False, options: SinkOptions | None = None) -> PublicationReceipt
+
+      Observe publication, or resubmit its exact saved candidate with retry=True.
+
+
+
+.. py:class:: TableWriter(native: Any, schema: pyarrow.Schema)
+
+   Positioned Arrow writes; clean context exit commits, exceptional exit aborts.
+
+
+   .. py:attribute:: _native
+
+
+   .. py:attribute:: schema
+
+
+   .. py:attribute:: _closed
+      :value: False
+
+
+
+   .. py:property:: position
+      :type: int
+
+
+      Accepted rows, including unpublished work. Checkpoint receipt.progress instead.
+
+
+   .. py:property:: recovery_token
+      :type: RecoveryToken
+
+
+      Token for the current publication attempt; changes after a successful commit.
+
+
+   .. py:method:: write_batch(batch: pyarrow.RecordBatch, *, expected_position: int, key: str) -> BatchReceipt
+
+
+   .. py:method:: flush() -> None
+
+      Stage complete parts without publishing them.
+
+
+
+   .. py:method:: commit() -> PublicationReceipt
+
+      Publish accepted work and keep the table open.
+
+
+
+   .. py:method:: finish() -> PublicationReceipt
+
+      Publish accepted work and mark the table complete.
+
+
+
+   .. py:method:: _publish(complete: bool) -> PublicationReceipt
+
+
+   .. py:method:: resolve(*, retry: bool = False) -> PublicationReceipt
+
+      Resolve an uncertain publication on this writer before continuing.
+
+
+
+   .. py:method:: abort() -> None
+
+      Discard unpublished work; earlier commits remain visible.
+
+
+
+   .. py:method:: close() -> None
+
+      Abort pending work without completing the table.
+
+
+
+   .. py:method:: __enter__() -> Self
+
+
+   .. py:method:: __exit__(exc_type: type[BaseException] | None, exc: BaseException | None, traceback: types.TracebackType | None) -> None
+
+
+.. py:class:: TableSnapshot(native: Any)
+
+   Frozen published metadata and checksum-verified, demand-driven part reads.
+
+
+   .. py:attribute:: _native
+
+
+   .. py:property:: schema
+      :type: pyarrow.Schema
+
+
+
+   .. py:property:: metadata
+      :type: dict[str, Any]
+
+
+      Return an independent copy of the validated manifest metadata.
+
+
+   .. py:property:: generation
+      :type: int
+
+
+
+   .. py:property:: num_rows
+      :type: int
+
+
+
+   .. py:property:: progress
+      :type: int
+
+
+
+   .. py:property:: complete
+      :type: bool
+
+
+
+   .. py:method:: scan(*, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None) -> fsspec_data.interchange.DecodedBatchStream
+
+      Read only listed parts, checking each encoded part before decoding it.
+
+      Selection and output limits apply across parts. A part is read in full;
+      max_part_bytes bounds encoded input, not decoder allocations.
+
+
+
