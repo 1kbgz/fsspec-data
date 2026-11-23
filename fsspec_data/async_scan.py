@@ -15,24 +15,33 @@ from typing import Any, Self
 import pyarrow as pa
 from fsspec import AbstractFileSystem
 
+from .scan_identity import ScanIdentity
+
 _rust = import_module(".fsspec_data", __package__)
 
 
 class AsyncDecodedBatchStream:
     """Demand-driven Arrow batches; use ``aclose`` or an async context manager."""
 
-    def __init__(self, schema: pa.Schema, native: Any) -> None:
+    def __init__(self, schema: pa.Schema, native: Any, identity: ScanIdentity | None = None) -> None:
         self.schema = schema
+        self._identity = identity
+        self._owner: Any = None
         self._native = native
         self._closed = False
         self._pending = False
         self._close_waiter: asyncio.Future[None] | None = None
 
+    @property
+    def identity(self) -> ScanIdentity | None:
+        """Resolved native S3 request identity; None for providers without identity support."""
+        return self._identity
+
     def __aiter__(self) -> AsyncDecodedBatchStream:
         return self
 
     async def __anext__(self) -> pa.RecordBatch:
-        if self._closed:
+        if self._closed or self._source_closed():
             raise StopAsyncIteration
         if self._pending:
             raise RuntimeError("another batch request is already pending")
@@ -46,10 +55,13 @@ class AsyncDecodedBatchStream:
             raise
         finally:
             self._pending = False
-        if self._closed or batch is None:
+        if self._closed or self._source_closed() or batch is None:
             await self.aclose()
             raise StopAsyncIteration
         return batch
+
+    def _source_closed(self) -> bool:
+        return self._owner is not None and self._owner._close_waiter is not None
 
     async def aclose(self) -> None:
         """Cancel reads and wait for cleanup. Cleanup continues if this await is cancelled."""
@@ -59,7 +71,7 @@ class AsyncDecodedBatchStream:
         await asyncio.shield(self._close_waiter)
 
     async def __aenter__(self) -> Self:
-        if self._closed:
+        if self._closed or self._source_closed():
             raise RuntimeError("scan is closed")
         return self
 
@@ -172,17 +184,30 @@ async def scan_parquet_async(
         bucket, _, key = path.partition("/")
         if not bucket or not key:
             raise ValueError("S3 URL must include a bucket and object key")
-        options = {}
-        for name, value in (storage_options or {}).items():
-            if not isinstance(value, (str, bool, int, float)):
-                raise TypeError("storage_options values must be strings, booleans or numbers")
-            options[name] = str(value).lower() if isinstance(value, bool) else str(value)
+        options = _s3_options(storage_options)
         timeout = None if deadline is None else max(0.0, deadline - loop.time())
         native = _rust.async_parquet_scan(bucket, f"s3://{bucket}/{key}", options, *arguments, timeout)
+    return await _open_scan(native)
+
+
+def _s3_options(storage_options: Mapping[str, str | bool | int | float] | None) -> dict[str, str]:
+    options = {}
+    for name, value in (storage_options or {}).items():
+        if not isinstance(value, (str, bool, int, float)):
+            raise TypeError("storage_options values must be strings, booleans or numbers")
+        options[name] = str(value).lower() if isinstance(value, bool) else str(value)
+    return options
+
+
+async def _open_scan(native: Any, owner: Any = None) -> AsyncDecodedBatchStream:
     try:
-        schema = await native.open()
+        schema, identity = await native.open()
+        if owner is not None and owner._close_waiter is not None:
+            raise RuntimeError("source is closed")
+        stream = AsyncDecodedBatchStream(schema, native, None if identity is None else ScanIdentity._from_native(identity))
+        stream._owner = owner
+        return stream
     except BaseException:
         with suppress(Exception, asyncio.CancelledError):
             await asyncio.shield(native.close())
         raise
-    return AsyncDecodedBatchStream(schema, native)

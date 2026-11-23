@@ -8,7 +8,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
-from fsspec_data import AsyncDecodedBatchStream, scan_parquet_async
+from fsspec_data import AsyncDecodedBatchStream, S3ParquetSource, ScanIdentity, scan_parquet_async
 
 
 @pytest.fixture
@@ -21,6 +21,7 @@ def store():
         etag='"v1"',
         requests=[],
         paths=[],
+        signatures=[],
         block=None,
         started=threading.Event(),
         peer_closed=threading.Event(),
@@ -36,6 +37,7 @@ def store():
             request = (self.command, self.headers.get("Range"), self.headers.get("If-Match"))
             state.requests.append(request)
             state.paths.append(self.path)
+            state.signatures.append(self.headers.get("Authorization"))
             if state.block == self.command:
                 state.started.set()
                 while not state.release.wait(0.01):
@@ -345,5 +347,270 @@ def test_independent_scans_continue_after_one_is_closed(store):
         await first.aclose()
         async with second:
             assert sum([batch.num_rows async for batch in second]) == 12
+
+    asyncio.run(run())
+
+
+def test_configured_source_reuses_identity_from_opened_file_without_extra_head(store):
+    async def run():
+        options = dict(store.options)
+        async with S3ParquetSource("test", storage_options=options) as source:
+            options["endpoint_url"] = "http://127.0.0.1:1"
+            async with await source.scan_async("rows.parquet", columns=["b", "a", "b"], row_offset=2) as first:
+                key = first.identity
+                assert isinstance(key, ScanIdentity)
+                batches = [batch async for batch in first]
+                assert pa.Table.from_batches(batches).column(0).to_pylist() == list(range(22, 32))
+            async with await source.scan_async("s3-rs://test/rows.parquet", columns=["b", "a", "b"], row_offset=2) as second:
+                assert second.identity == key
+                assert {key: "request"}[second.identity] == "request"
+                with pytest.raises(AttributeError):
+                    object.__setattr__(second, "identity", None)
+            assert first.identity == key
+        assert sum(method == "HEAD" for method, _, _ in store.requests) == 2
+        assert all(condition == '"v1"' for method, _, condition in store.requests if method == "GET")
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize(
+    "changed",
+    [
+        {"columns": ["b", "a"]},
+        {"columns": []},
+        {"row_offset": 1},
+        {"batch_size": 1},
+        {"row_limit": 0},
+        {"byte_limit": 4096},
+    ],
+)
+def test_configured_scan_identity_uses_actual_selection_and_limits(store, changed):
+    async def run():
+        async with (
+            S3ParquetSource("test", storage_options=store.options) as source,
+            await source.scan_async("rows.parquet") as first,
+            await source.scan_async("rows.parquet", **changed) as second,
+        ):
+            assert first.identity != second.identity
+
+    asyncio.run(run())
+
+
+def test_replacement_changes_identity_and_existing_handle_rejects_new_object(store):
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options) as source:
+            first = await source.scan_async("rows.parquet")
+            identity = first.identity
+            store.etag = '"v2"'
+            async with await source.scan_async("rows.parquet") as second:
+                assert identity != second.identity
+                assert sum([batch.num_rows async for batch in second]) == 12
+            with pytest.raises(OSError) as raised:
+                await anext(first)
+            assert vars(raised.value)["kind"] == "conflict"
+            assert first.identity == identity
+
+    asyncio.run(run())
+
+
+def test_clients_and_one_shot_helpers_have_independent_source_scopes(store):
+    async def run():
+        signed_options = {**store.options, "anon": False, "key": "test-key", "secret": "test-secret"}
+        async with (
+            S3ParquetSource("test", storage_options=store.options) as anonymous,
+            S3ParquetSource("test", storage_options=signed_options) as signed,
+            await anonymous.scan_async("rows.parquet") as first,
+            await signed.scan_async("rows.parquet") as second,
+        ):
+            assert first.identity != second.identity
+            assert repr(second.identity) == "ScanIdentity(...)"
+        async with await scan(store) as first, await scan(store) as second:
+            assert first.identity is not None
+            assert first.identity != second.identity
+
+    asyncio.run(run())
+
+
+def test_same_identity_keeps_consumer_deadlines_and_close_independent(store):
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options) as source:
+            first = await source.scan_async("rows.parquet", deadline=asyncio.get_running_loop().time() + 0.5)
+            second = await source.scan_async("rows.parquet", read_chunk_size=128)
+            assert first.identity == second.identity
+            await asyncio.sleep(0.55)
+            with pytest.raises(TimeoutError):
+                await anext(first)
+            await first.aclose()
+            async with second:
+                assert sum([batch.num_rows async for batch in second]) == 12
+            async with await source.scan_async("rows.parquet") as third:
+                assert third.identity == second.identity
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("during_open", [False, True])
+def test_closing_source_cancels_and_drains_scans(store, during_open):
+    async def run():
+        source = S3ParquetSource("test", storage_options=store.options)
+        stream = None if during_open else await source.scan_async("rows.parquet")
+        store.block = "HEAD" if during_open else "GET"
+        if during_open:
+            reading = asyncio.create_task(source.scan_async("rows.parquet"))
+        else:
+            assert stream is not None
+            reading = asyncio.create_task(anext(stream))
+        await until(store.started.is_set)
+        await source.aclose()
+        with pytest.raises(asyncio.CancelledError):
+            await reading
+        await until(store.peer_closed.is_set)
+        await source.aclose()
+        with pytest.raises(RuntimeError, match="source is closed"):
+            await source.scan_async("rows.parquet")
+        with pytest.raises(RuntimeError, match="source is closed"):
+            await source.__aenter__()
+        if stream is not None:
+            with pytest.raises(StopAsyncIteration):
+                await anext(stream)
+            await stream.aclose()
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("during_open", [False, True])
+def test_cancelling_one_configured_scan_leaves_source_usable(store, during_open):
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options) as source:
+            first = None if during_open else await source.scan_async("rows.parquet")
+            store.block = "HEAD" if during_open else "GET"
+            if during_open:
+                reading = asyncio.create_task(source.scan_async("rows.parquet"))
+            else:
+                assert first is not None
+                reading = asyncio.create_task(anext(first))
+            await until(store.started.is_set)
+            reading.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await reading
+            await until(store.peer_closed.is_set)
+            store.block = None
+            async with await source.scan_async("rows.parquet") as second:
+                assert sum([batch.num_rows async for batch in second]) == 12
+            if first is not None:
+                await first.aclose()
+
+    asyncio.run(run())
+
+
+def test_configured_source_rejects_other_bucket_before_io(store):
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options) as source:
+            with pytest.raises(ValueError):
+                await source.scan_async("s3://other/rows.parquet")
+            assert not store.requests
+            async with await source.scan_async("test/rows.parquet") as stream:
+                assert stream.identity is not None
+        assert set(store.paths) == {"/test/test/rows.parquet"}
+
+    asyncio.run(run())
+
+
+def test_ready_batch_is_not_delivered_after_source_close():
+    async def run():
+        ready = asyncio.get_running_loop().create_future()
+        closed = asyncio.get_running_loop().create_future()
+        closed.set_result(None)
+
+        class Native:
+            def next(self):
+                return ready
+
+            def close(self):
+                return closed
+
+        stream = AsyncDecodedBatchStream(pa.schema([("a", pa.int64())]), Native())
+        owner = SimpleNamespace(_close_waiter=None)
+        stream._owner = owner
+        reading = asyncio.create_task(anext(stream))
+        await asyncio.sleep(0)
+        ready.set_result(pa.record_batch({"a": [1]}))
+        owner._close_waiter = closed
+        with pytest.raises(StopAsyncIteration):
+            await reading
+
+    asyncio.run(run())
+
+
+def test_configured_source_captures_environment_credentials_at_construction(store, monkeypatch):
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "first-test-key")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "first-test-secret")
+    monkeypatch.delenv("AWS_SESSION_TOKEN", raising=False)
+
+    async def run():
+        options = {**store.options, "anon": False}
+        async with S3ParquetSource("test", storage_options=options) as first_source:
+            monkeypatch.setenv("AWS_ACCESS_KEY_ID", "second-test-key")
+            monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "second-test-secret")
+            async with await first_source.scan_async("rows.parquet") as first:
+                first_identity = first.identity
+            assert all("Credential=first-test-key/" in signature for signature in store.signatures)
+            store.signatures.clear()
+            async with S3ParquetSource("test", storage_options=options) as second_source, await second_source.scan_async("rows.parquet") as second:
+                assert second.identity != first_identity
+            assert all("Credential=second-test-key/" in signature for signature in store.signatures)
+
+    asyncio.run(run())
+
+
+def test_open_failure_does_not_close_configured_source(store):
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options) as source:
+            with pytest.raises(ValueError):
+                await source.scan_async("rows.parquet", columns=["missing"])
+            async with await source.scan_async("rows.parquet") as stream:
+                assert sum([batch.num_rows async for batch in stream]) == 12
+
+    asyncio.run(run())
+
+
+def test_object_key_and_size_are_part_of_resolved_identity(store):
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options) as source:
+            async with await source.scan_async("rows.parquet") as first:
+                identity = first.identity
+            async with await source.scan_async("other.parquet") as other:
+                assert other.identity != identity
+            sink = pa.BufferOutputStream()
+            pq.write_table(pa.table({"a": range(20)}), sink)
+            store.data = sink.getvalue().to_pybytes()
+            async with await source.scan_async("rows.parquet") as resized:
+                assert resized.identity != identity
+
+    asyncio.run(run())
+
+
+def test_cancelling_source_close_waiter_preserves_cleanup():
+    async def run():
+        cleanup = asyncio.get_running_loop().create_future()
+        calls = []
+
+        class Native:
+            def close(self):
+                calls.append(True)
+                return cleanup
+
+        source = object.__new__(S3ParquetSource)
+        source._native = Native()
+        source._close_waiter = None
+        closing = asyncio.create_task(source.aclose())
+        await asyncio.sleep(0)
+        closing.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await closing
+        assert not cleanup.cancelled()
+        cleanup.set_result(None)
+        await source.aclose()
+        assert calls == [True]
 
     asyncio.run(run())

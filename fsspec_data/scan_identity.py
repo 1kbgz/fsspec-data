@@ -95,3 +95,9 @@ class ScanIdentity:
 
     def __repr__(self) -> str:
         return "ScanIdentity(...)"
+
+    @classmethod
+    def _from_native(cls, native: Any) -> ScanIdentity:
+        identity = object.__new__(cls)
+        object.__setattr__(identity, "_native", native)
+        return identity

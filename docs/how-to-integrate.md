@@ -123,3 +123,28 @@ Keep the filesystem open until its scans finish. The scan closes its own file, a
 the filesystem's existing credentials and configuration. Sync-only filesystems raise
 `NotImplementedError`. Check the [file provider contract](api.md#python-asynchronous-parquet-scans)
 when implementing an async filesystem.
+
+## Reuse a native S3 source across scans
+
+Keep a `S3ParquetSource` open when repeated scans should use the same client and credential
+context. Read `stream.identity` to compare requests after the source has opened and pinned
+the object:
+
+```python
+from fsspec_data import S3ParquetSource
+
+
+async def consume():
+    async with S3ParquetSource("bucket") as source:
+        async with await source.scan_async("orders.parquet", columns=["order_id"]) as first:
+            identity = first.identity
+            async for batch in first:
+                print(batch.num_rows)
+        async with await source.scan_async("orders.parquet", columns=["order_id"]) as second:
+            print(second.identity == identity)
+```
+
+The comparison is true when the pinned ETag/size and request are unchanged. Each scan still
+performs its own reads. Recreate the source after changing credentials or effective
+permissions. See the [source reference](api.md#configured-s3-parquet-sources) for ownership,
+shared I/O budgets and shutdown behavior.

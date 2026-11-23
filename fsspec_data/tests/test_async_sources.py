@@ -127,6 +127,7 @@ def test_file_source_selection_uses_original_loop_and_context(async_seek):
         token = TENANT.set("source-user")
         try:
             stream = await FileDataSource(fs).scan_async("orders.parquet", columns=["b", "a", "b"], row_offset=5, row_limit=2, batch_size=1)
+            assert stream.identity is None
             TENANT.set("other-user")
             assert stream.schema.metadata == {b"source": b"foreign"}
             async with stream:

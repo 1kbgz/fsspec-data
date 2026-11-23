@@ -1,17 +1,19 @@
-use std::sync::Arc;
+use std::future::IntoFuture;
+use std::sync::{Arc, Mutex as StdMutex, Weak};
 use std::time::{Duration, Instant};
 
 use arrow::array::RecordBatch;
 use arrow::pyarrow::PyArrowType;
 use fsspec_data::{
     AsyncDecodedStream, AsyncScanOptions, CancellationToken, InterchangeError, ParquetCodec,
-    ScanSelection, StreamOptions,
+    ScanIdentity, ScanSelection, SourceIdentity, StreamOptions,
 };
-use fsspec_rs::async_files::{AsyncContext, AsyncFilesystem, Limits};
+use fsspec_rs::async_files::{AsyncContext, AsyncFile, AsyncFilesystem, Limits};
 use fsspec_rs::async_io::{Operation, Value};
 use fsspec_rs::{AsyncFsFile, ErrorKind, FsError, FsOptions, OperationError};
 
 use super::async_file::PythonAsyncFile;
+use super::scan_identity::PythonScanIdentity;
 use futures::StreamExt;
 use pyo3::exceptions::{
     PyConnectionError, PyFileExistsError, PyFileNotFoundError, PyNotImplementedError, PyOSError,
@@ -31,17 +33,71 @@ impl Drop for CancelOnDrop {
 
 struct State {
     stream: Option<AsyncDecodedStream>,
+    file: Option<AsyncFile>,
+    pending: Option<Operation>,
     opened: bool,
     closed: bool,
 }
 
 enum Source {
     S3 {
-        context: AsyncContext,
-        fs: AsyncFilesystem,
+        source: Arc<S3Source>,
         path: String,
+        owned: bool,
     },
     Python(PythonAsyncFile),
+}
+
+#[derive(Default)]
+struct SourceScans {
+    closed: bool,
+    scans: Vec<Weak<Session>>,
+}
+
+struct S3Source {
+    context: AsyncContext,
+    fs: AsyncFilesystem,
+    identity: SourceIdentity,
+    scans: StdMutex<SourceScans>,
+    close_lock: Mutex<()>,
+}
+
+impl S3Source {
+    fn new(bucket: &str, options: &FsOptions) -> PyResult<Arc<Self>> {
+        let context = AsyncContext::new(Limits::default()).map_err(storage_error)?;
+        let fs = AsyncFilesystem::s3(bucket, options, &context).map_err(storage_error)?;
+        Ok(Arc::new(Self {
+            context,
+            fs,
+            identity: SourceIdentity::new(),
+            scans: StdMutex::default(),
+            close_lock: Mutex::new(()),
+        }))
+    }
+
+    async fn close_resources(&self) -> PyResult<()> {
+        let fs = finish(self.fs.close(None)).await.map(|_| ());
+        let context = finish(self.context.close(None)).await.map(|_| ());
+        fs.and(context)
+    }
+
+    async fn close(&self) -> PyResult<()> {
+        let _guard = self.close_lock.lock().await;
+        let scans: Vec<_> = {
+            let mut state = self.scans.lock().unwrap();
+            state.closed = true;
+            state.scans.iter().filter_map(Weak::upgrade).collect()
+        };
+        for session in &scans {
+            session.cancellation.cancel();
+        }
+        let mut result = Ok(());
+        for session in scans {
+            let closed = session.close().await;
+            result = result.and(closed);
+        }
+        result.and(self.close_resources().await)
+    }
 }
 
 struct Session {
@@ -53,6 +109,25 @@ struct Session {
 }
 
 impl Session {
+    async fn operation(&self, state: &mut State, operation: Operation) -> PyResult<Value> {
+        state.pending = Some(operation.clone());
+        let result = match futures::future::select(
+            Box::pin(operation.clone().into_future()),
+            Box::pin(self.cancellation.cancelled()),
+        )
+        .await
+        {
+            futures::future::Either::Left((result, _)) => result.map_err(storage_error),
+            futures::future::Either::Right(_) => Err(cancelled("scan closed".into())),
+        };
+        if let Ok(Value::File(file)) = &result {
+            state.file = Some(file.clone());
+        }
+        operation.drain().await;
+        state.pending = None;
+        result
+    }
+
     async fn decode(&self, file: impl AsyncFsFile + 'static) -> PyResult<AsyncDecodedStream> {
         ParquetCodec
             .decode_async(
@@ -72,19 +147,28 @@ impl Session {
             return Ok(());
         }
         state.closed = true;
+        if let Some(operation) = state.pending.take() {
+            operation.cancel();
+            operation.drain().await;
+        }
         let stream_result = match state.stream.take() {
             Some(stream) => stream.close().await.map_err(scan_error),
             None => Ok(()),
         };
+        let file_result = match state.file.take() {
+            Some(file) => finish(file.close(None)).await.map(|_| ()),
+            None => Ok(()),
+        };
         let source_result = match &self.source {
-            Source::S3 { fs, context, .. } => {
-                let fs_result = finish(fs.close(None)).await.map(|_| ());
-                let context_result = finish(context.close(None)).await.map(|_| ());
-                fs_result.and(context_result)
-            }
+            Source::S3 {
+                source,
+                owned: true,
+                ..
+            } => source.close_resources().await,
+            Source::S3 { .. } => Ok(()),
             Source::Python(file) => file.clone().close().await.map_err(storage_error),
         };
-        stream_result.and(source_result)
+        stream_result.and(file_result).and(source_result)
     }
 }
 
@@ -117,23 +201,46 @@ impl NativeAsyncParquetScan {
                 return Err(PyRuntimeError::new_err("scan is already opened or closed"));
             }
             state.opened = true;
-            let stream = match &session.source {
-                Source::S3 { fs, path, .. } => {
+            let (stream, identity) = match &session.source {
+                Source::S3 { source, path, .. } => {
                     let timeout = session
                         .options
                         .deadline
                         .map(|deadline| deadline.saturating_duration_since(Instant::now()));
-                    let Value::File(file) = finish(fs.open_read(path, timeout)).await? else {
+                    let operation = source.fs.open_read(path, timeout).map_err(storage_error)?;
+                    let Value::File(file) = session.operation(&mut state, operation).await? else {
                         unreachable!()
                     };
-                    session.decode(file).await?
+                    let timeout = session
+                        .options
+                        .deadline
+                        .map(|deadline| deadline.saturating_duration_since(Instant::now()));
+                    let operation = file.info(timeout).map_err(storage_error)?;
+                    let Value::Info(info) = session.operation(&mut state, operation).await? else {
+                        unreachable!()
+                    };
+                    let identity = ScanIdentity::new(
+                        source.identity.clone(),
+                        info.name,
+                        serde_json::json!({"etag": info.extra["etag"], "size": info.size}),
+                        session.selection.clone(),
+                        session.options.stream,
+                        serde_json::Value::Null,
+                        serde_json::Value::Null,
+                        serde_json::json!({"codec": "parquet"}),
+                    )
+                    .map_err(scan_error)?;
+                    (
+                        session.decode(file).await?,
+                        Some(PythonScanIdentity(identity)),
+                    )
                 }
-                Source::Python(file) => session.decode(file.clone()).await?,
+                Source::Python(file) => (session.decode(file.clone()).await?, None),
             };
             let schema = PyArrowType(stream.schema.as_ref().clone());
             state.stream = Some(stream);
             guard.0.take();
-            Ok(schema)
+            Ok((schema, identity))
         })
     }
 
@@ -191,14 +298,87 @@ fn async_parquet_scan(
         read_chunk_size,
         timeout,
     )?;
-    let context = AsyncContext::new(Limits::default()).map_err(storage_error)?;
-    let fs = AsyncFilesystem::s3(bucket, &storage_options, &context).map_err(storage_error)?;
+    let source = S3Source::new(bucket, &storage_options)?;
     Ok(new_scan(
-        Source::S3 { context, fs, path },
+        Source::S3 {
+            source,
+            path,
+            owned: true,
+        },
         columns,
         row_offset,
         options,
     ))
+}
+
+#[pyclass]
+struct NativeS3ParquetSource {
+    source: Arc<S3Source>,
+}
+
+#[pymethods]
+impl NativeS3ParquetSource {
+    #[new]
+    fn new(bucket: &str, storage_options: FsOptions) -> PyResult<Self> {
+        Ok(Self {
+            source: S3Source::new(bucket, &storage_options)?,
+        })
+    }
+
+    #[pyo3(signature = (path, columns, row_offset, batch_size, row_limit, byte_limit, max_range_bytes, max_batch_bytes, read_chunk_size, timeout))]
+    #[allow(clippy::too_many_arguments)]
+    fn scan(
+        &self,
+        path: String,
+        columns: Option<Vec<String>>,
+        row_offset: usize,
+        batch_size: usize,
+        row_limit: Option<usize>,
+        byte_limit: Option<usize>,
+        max_range_bytes: usize,
+        max_batch_bytes: usize,
+        read_chunk_size: usize,
+        timeout: Option<f64>,
+    ) -> PyResult<NativeAsyncParquetScan> {
+        let options = scan_options(
+            batch_size,
+            row_limit,
+            byte_limit,
+            max_range_bytes,
+            max_batch_bytes,
+            read_chunk_size,
+            timeout,
+        )?;
+        let mut state = self.source.scans.lock().unwrap();
+        if state.closed {
+            return Err(PyRuntimeError::new_err("source is closed"));
+        }
+        let scan = new_scan(
+            Source::S3 {
+                source: self.source.clone(),
+                path,
+                owned: false,
+            },
+            columns,
+            row_offset,
+            options,
+        );
+        state.scans.retain(|scan| scan.strong_count() > 0);
+        state.scans.push(Arc::downgrade(&scan.session));
+        Ok(scan)
+    }
+
+    fn close<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.source.scans.lock().unwrap().closed = true;
+        let source = self.source.clone();
+        let cleanup =
+            pyo3_async_runtimes::tokio::get_runtime().spawn(async move { source.close().await });
+        pyo3_async_runtimes::tokio::future_into_py(py, async move {
+            cleanup
+                .await
+                .map_err(|error| PyRuntimeError::new_err(error.to_string()))?
+        })
+    }
 }
 
 #[pyfunction]
@@ -242,6 +422,8 @@ fn new_scan(
             source,
             state: Mutex::new(State {
                 stream: None,
+                file: None,
+                pending: None,
                 opened: false,
                 closed: false,
             }),
@@ -345,6 +527,7 @@ fn storage_error(error: OperationError) -> PyErr {
 }
 
 pub(super) fn register(module: &Bound<'_, PyModule>) -> PyResult<()> {
+    module.add_class::<NativeS3ParquetSource>()?;
     module.add_function(wrap_pyfunction!(async_parquet_scan, module)?)?;
     module.add_function(wrap_pyfunction!(async_parquet_file, module)?)
 }
