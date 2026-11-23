@@ -23,6 +23,7 @@ from .interchange import (
     plan_schema,
 )
 from .json_schema import json_schema_to_arrow
+from .scan_identity import ScanIdentity, SourceIdentity
 from .schema import (
     DEFAULT_SCHEMA_RESOLVERS,
     ResolvedSchema,
@@ -64,12 +65,14 @@ __all__ = [
     "Node",
     "PlannedBatchStream",
     "ResolvedSchema",
+    "ScanIdentity",
     "SchemaDocument",
     "SchemaFormat",
     "SchemaPolicy",
     "SchemaProvenance",
     "SchemaRef",
     "SchemaResolverRegistry",
+    "SourceIdentity",
     "ViewEntry",
     "__version__",
     "json_schema_to_arrow",

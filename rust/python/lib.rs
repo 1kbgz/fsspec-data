@@ -1,5 +1,6 @@
 mod async_file;
 mod async_parquet;
+mod scan_identity;
 
 use std::collections::HashMap;
 use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
@@ -525,6 +526,7 @@ fn to_python_error(error: InterchangeError) -> PyErr {
 #[pymodule]
 fn fsspec_data(m: &Bound<PyModule>) -> PyResult<()> {
     async_parquet::register(m)?;
+    scan_identity::register(m)?;
     m.add_function(wrap_pyfunction!(avro_arrow_schema, m)?)?;
     m.add_function(wrap_pyfunction!(codec_capabilities, m)?)?;
     m.add_function(wrap_pyfunction!(decode_batches, m)?)?;
