@@ -40,6 +40,12 @@ Functions
    fsspec_data.tests.test_async_scan.test_open_failure_does_not_close_configured_source
    fsspec_data.tests.test_async_scan.test_object_key_and_size_are_part_of_resolved_identity
    fsspec_data.tests.test_async_scan.test_cancelling_source_close_waiter_preserves_cleanup
+   fsspec_data.tests.test_async_scan.test_shared_scans_reduce_requests_and_warm_cache_while_preserving_results
+   fsspec_data.tests.test_async_scan.test_small_cache_evicts_and_bounds_physical_ranges
+   fsspec_data.tests.test_async_scan.test_cache_never_bypasses_new_scan_authorization_or_retains_failed_reads
+   fsspec_data.tests.test_async_scan.test_cached_snapshot_cannot_be_reused_by_replacement_or_another_source
+   fsspec_data.tests.test_async_scan.test_shared_read_survives_one_consumers_deadline
+   fsspec_data.tests.test_async_scan.test_invalid_cache_budget_is_rejected_before_io
 
 
 Module Contents
@@ -110,4 +116,16 @@ Module Contents
 .. py:function:: test_object_key_and_size_are_part_of_resolved_identity(store)
 
 .. py:function:: test_cancelling_source_close_waiter_preserves_cleanup()
+
+.. py:function:: test_shared_scans_reduce_requests_and_warm_cache_while_preserving_results(store)
+
+.. py:function:: test_small_cache_evicts_and_bounds_physical_ranges(store)
+
+.. py:function:: test_cache_never_bypasses_new_scan_authorization_or_retains_failed_reads(store)
+
+.. py:function:: test_cached_snapshot_cannot_be_reused_by_replacement_or_another_source(store)
+
+.. py:function:: test_shared_read_survives_one_consumers_deadline(store)
+
+.. py:function:: test_invalid_cache_budget_is_rejected_before_io(store, cache_bytes)
 

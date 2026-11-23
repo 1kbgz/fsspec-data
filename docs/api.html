@@ -482,6 +482,9 @@
   <li class="fd-toc-item" data-depth="1">
     <a href="#configured-s3-parquet-sources">Configured S3 Parquet sources</a>
   </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#shared-ranges-and-memory-limits">Shared ranges and memory limits</a>
+  </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#scan-identity">Scan identity</a>
   </li>
@@ -1500,7 +1503,7 @@ context-manager exit.</p>
 </section>
 <section id="configured-s3-parquet-sources">
 <h2>Configured S3 Parquet sources<a class="headerlink" href="#configured-s3-parquet-sources" title="Link to this heading">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">S3ParquetSource(bucket,</span> <span class="pre">storage_options=None)</span></code> retains one native S3 client, I/O context
+<p><code class="docutils literal notranslate"><span class="pre">S3ParquetSource(bucket,</span> <span class="pre">storage_options=None,</span> <span class="pre">cache_bytes=64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024)</span></code> retains one native S3 client, I/O context
 and opaque source token. Options follow <code class="docutils literal notranslate"><span class="pre">scan_parquet_async</span></code>. Configuration is read when
 the source is constructed; mutating the input mapping or environment does not rebuild its
 client. Create a new source when changing configuration or effective authorization.</p>
@@ -1511,20 +1514,47 @@ that key. Selection, limits and deadlines match <code class="docutils literal no
 file and cancellation state. Native admission and I/O byte budgets are shared by the
 source’s context; decoder limits remain per scan.</p>
 <p>Use the source within one asyncio loop. It supports <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">with</span></code> and <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">source.aclose()</span></code>.
-Closing cancels and drains its pending opens and scans, then closes the client and context.
+Closing cancels and drains its pending opens and scans, clears shared ranges, then closes the client and context.
 Repeated close waits for the same cleanup, including after cancellation of a close waiter.
 New scans on a closed source raise <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code>. Closing or cancelling a single scan
 leaves the source and other scans usable.</p>
 <p>Native S3 streams expose a read-only <code class="docutils literal notranslate"><span class="pre">identity:</span> <span class="pre">ScanIdentity</span></code>. It includes the source token,
 the opened handle’s normalized object key, pinned ETag and size, actual columns/row offset,
 batch/row/byte limits, and Parquet codec. Metadata comes from the opened handle without
-another network request. Reads continue to check ETag and size; identity does not replace
+another network request. Network reads continue to check ETag and size; identity does not replace
 those checks or claim S3 version-ID pinning. Filters and resume positions are null because
 this scan API does not execute them. Deadlines and execution buffer limits remain per scan.</p>
 <p>Matching requests on one configured source compare equal. Separate source instances and
 one-shot helper calls have distinct source tokens, even with identical options. Identity
 remains available after stream close. Python file providers return <code class="docutils literal notranslate"><span class="pre">identity</span> <span class="pre">is</span> <span class="pre">None</span></code>
-until their snapshot contract is integrated. Equal identities do not currently share reads.</p>
+until their snapshot contract is integrated.</p>
+<section id="shared-ranges-and-memory-limits">
+<h3>Shared ranges and memory limits<a class="headerlink" href="#shared-ranges-and-memory-limits" title="Link to this heading">¶</a></h3>
+<p>Configured sources share raw byte ranges by normalized object key, pinned ETag and size
+within that source’s credential context. Different selections may reuse the same raw bytes;
+their decoders, output ordering, limits and logical identities remain independent. Every
+new scan opens its own handle and performs HEAD, including when its data is cached.
+Separate sources never share ranges. One-shot helpers and Python file providers use their
+existing independent reads.</p>
+<p><code class="docutils literal notranslate"><span class="pre">cache_bytes</span></code> bounds the combined reservations for pending fetches and retained shared
+data. Zero disables sharing and caching. Completed, unused ranges are evicted in least
+recently used order. Reads wait for capacity when entries are in use; logical reads larger
+than the budget are split. Entry count is capped at 1024, with at most eight active fetches.
+The native I/O context separately budgets output/staging buffers. Per-consumer copies,
+decoder allocations, metadata and transport internals are outside <code class="docutils literal notranslate"><span class="pre">cache_bytes</span></code>; it is
+not a process memory limit.</p>
+<p>A 1 ms dispatch window lets pending overlapping or adjacent ranges combine without reading
+gaps. Combined fetches are at most 8 MiB and must fit the shared budget. Once a fetch has
+started, later requests reuse the covered portion and fetch only missing segments. Each
+consumer still receives at most its <code class="docutils literal notranslate"><span class="pre">read_chunk_size</span></code> per file read. Coalescing can add
+latency for a cold, low-latency workload; <code class="docutils literal notranslate"><span class="pre">cache_bytes=0</span></code> provides a comparison baseline.</p>
+<p>Cancellation or a deadline removes only that consumer. The last consumer cancels an
+unfinished fetch and waits for its cleanup; other consumers can continue using a fetch
+started with the cancelled scan’s handle. Failed reads are not retained for subsequent
+reuse. Source shutdown drains pending work and releases cached data. Cached bytes remain
+part of the originally opened snapshot; cache misses use its conditional handle, so data
+from a replacement cannot be mixed into that snapshot.</p>
+</section>
 </section>
 <section id="scan-identity">
 <h2>Scan identity<a class="headerlink" href="#scan-identity" title="Link to this heading">¶</a></h2>
@@ -1822,6 +1852,9 @@ separately by any future read-sharing implementation.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#configured-s3-parquet-sources">Configured S3 Parquet sources</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#shared-ranges-and-memory-limits">Shared ranges and memory limits</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#scan-identity">Scan identity</a>

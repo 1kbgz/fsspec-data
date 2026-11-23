@@ -474,10 +474,25 @@ the object:</p>
             <span class="nb">print</span><span class="p">(</span><span class="n">second</span><span class="o">.</span><span class="n">identity</span> <span class="o">==</span> <span class="n">identity</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The comparison is true when the pinned ETag/size and request are unchanged. Each scan still
-performs its own reads. Recreate the source after changing credentials or effective
+<p>The comparison is true when the pinned ETag/size and request are unchanged. Scans share
+raw ranges within the source while decoding their results independently. Recreate the source after changing credentials or effective
 permissions. See the <a class="reference internal" href="api.html#configured-s3-parquet-sources"><span class="std std-ref">source reference</span></a> for ownership,
 shared I/O budgets and shutdown behavior.</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">cache_bytes</span></code> on the source to bound pending and retained shared data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">=</span> <span class="n">S3ParquetSource</span><span class="p">(</span><span class="s2">"bucket"</span><span class="p">,</span> <span class="n">cache_bytes</span><span class="o">=</span><span class="mi">16</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">cache_bytes=0</span></code> to disable sharing and compare request counts. Install the <code class="docutils literal notranslate"><span class="pre">develop</span></code>
+extra and run the local S3-compatible pytest-benchmark suite:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>benchmarks<span class="w"> </span>--benchmark-json<span class="o">=</span>benchmark.json
+</pre></div>
+</div>
+<p>The four cases compare cold and warm scans with caching enabled and disabled. Each round
+uses a fresh source; warm-cache setup runs outside the timed region. The benchmark checks
+row counts and checksums. HEAD/GET counts and transferred bytes for each measured round
+are stored in <code class="docutils literal notranslate"><span class="pre">extra_info.requests_per_round</span></code> alongside standard pytest-benchmark timing
+results, so benched can import the JSON. Local timing includes decoding, HTTP server and
+coalescing overhead; use your deployment for latency measurements.</p>
 </section>
 </section>
 

@@ -144,7 +144,27 @@ async def consume():
             print(second.identity == identity)
 ```
 
-The comparison is true when the pinned ETag/size and request are unchanged. Each scan still
-performs its own reads. Recreate the source after changing credentials or effective
+The comparison is true when the pinned ETag/size and request are unchanged. Scans share
+raw ranges within the source while decoding their results independently. Recreate the source after changing credentials or effective
 permissions. See the [source reference](api.md#configured-s3-parquet-sources) for ownership,
 shared I/O budgets and shutdown behavior.
+
+Set `cache_bytes` on the source to bound pending and retained shared data:
+
+```python
+source = S3ParquetSource("bucket", cache_bytes=16 * 1024 * 1024)
+```
+
+Use `cache_bytes=0` to disable sharing and compare request counts. Install the `develop`
+extra and run the local S3-compatible pytest-benchmark suite:
+
+```bash
+python -m pytest benchmarks --benchmark-json=benchmark.json
+```
+
+The four cases compare cold and warm scans with caching enabled and disabled. Each round
+uses a fresh source; warm-cache setup runs outside the timed region. The benchmark checks
+row counts and checksums. HEAD/GET counts and transferred bytes for each measured round
+are stored in `extra_info.requests_per_round` alongside standard pytest-benchmark timing
+results, so benched can import the JSON. Local timing includes decoding, HTTP server and
+coalescing overhead; use your deployment for latency measurements.

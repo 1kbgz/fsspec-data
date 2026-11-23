@@ -20,7 +20,7 @@ Classes
 Module Contents
 ---------------
 
-.. py:class:: S3ParquetSource(bucket: str, *, storage_options: collections.abc.Mapping[str, str | bool | int | float] | None = None)
+.. py:class:: S3ParquetSource(bucket: str, *, storage_options: collections.abc.Mapping[str, str | bool | int | float] | None = None, cache_bytes: int = 64 * 1024 * 1024)
 
    Bases: :py:obj:`fsspec_data.describe.DataSource`
 
@@ -30,6 +30,7 @@ Module Contents
    Use an async context manager or ``aclose`` to close its scans and client. Other
    DataSource operations are unsupported. Recreate after changing configuration or
    effective authorization; requests within this source retain its initial client.
+   ``cache_bytes`` bounds pending and retained shared ranges; zero disables the cache.
 
 
    .. py:attribute:: _bucket
