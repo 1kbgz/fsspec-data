@@ -947,7 +947,7 @@ context-manager exit.
 
 ## Configured S3 Parquet sources
 
-`S3ParquetSource(bucket, storage_options=None)` retains one native S3 client, I/O context
+`S3ParquetSource(bucket, storage_options=None, cache_bytes=64 * 1024 * 1024)` retains one native S3 client, I/O context
 and opaque source token. Options follow `scan_parquet_async`. Configuration is read when
 the source is constructed; mutating the input mapping or environment does not rebuild its
 client. Create a new source when changing configuration or effective authorization.
@@ -960,7 +960,7 @@ file and cancellation state. Native admission and I/O byte budgets are shared by
 source's context; decoder limits remain per scan.
 
 Use the source within one asyncio loop. It supports `async with` and `await source.aclose()`.
-Closing cancels and drains its pending opens and scans, then closes the client and context.
+Closing cancels and drains its pending opens and scans, clears shared ranges, then closes the client and context.
 Repeated close waits for the same cleanup, including after cancellation of a close waiter.
 New scans on a closed source raise `RuntimeError`. Closing or cancelling a single scan
 leaves the source and other scans usable.
@@ -968,14 +968,44 @@ leaves the source and other scans usable.
 Native S3 streams expose a read-only `identity: ScanIdentity`. It includes the source token,
 the opened handle's normalized object key, pinned ETag and size, actual columns/row offset,
 batch/row/byte limits, and Parquet codec. Metadata comes from the opened handle without
-another network request. Reads continue to check ETag and size; identity does not replace
+another network request. Network reads continue to check ETag and size; identity does not replace
 those checks or claim S3 version-ID pinning. Filters and resume positions are null because
 this scan API does not execute them. Deadlines and execution buffer limits remain per scan.
 
 Matching requests on one configured source compare equal. Separate source instances and
 one-shot helper calls have distinct source tokens, even with identical options. Identity
 remains available after stream close. Python file providers return `identity is None`
-until their snapshot contract is integrated. Equal identities do not currently share reads.
+until their snapshot contract is integrated.
+
+### Shared ranges and memory limits
+
+Configured sources share raw byte ranges by normalized object key, pinned ETag and size
+within that source's credential context. Different selections may reuse the same raw bytes;
+their decoders, output ordering, limits and logical identities remain independent. Every
+new scan opens its own handle and performs HEAD, including when its data is cached.
+Separate sources never share ranges. One-shot helpers and Python file providers use their
+existing independent reads.
+
+`cache_bytes` bounds the combined reservations for pending fetches and retained shared
+data. Zero disables sharing and caching. Completed, unused ranges are evicted in least
+recently used order. Reads wait for capacity when entries are in use; logical reads larger
+than the budget are split. Entry count is capped at 1024, with at most eight active fetches.
+The native I/O context separately budgets output/staging buffers. Per-consumer copies,
+decoder allocations, metadata and transport internals are outside `cache_bytes`; it is
+not a process memory limit.
+
+A 1 ms dispatch window lets pending overlapping or adjacent ranges combine without reading
+gaps. Combined fetches are at most 8 MiB and must fit the shared budget. Once a fetch has
+started, later requests reuse the covered portion and fetch only missing segments. Each
+consumer still receives at most its `read_chunk_size` per file read. Coalescing can add
+latency for a cold, low-latency workload; `cache_bytes=0` provides a comparison baseline.
+
+Cancellation or a deadline removes only that consumer. The last consumer cancels an
+unfinished fetch and waits for its cleanup; other consumers can continue using a fetch
+started with the cancelled scan's handle. Failed reads are not retained for subsequent
+reuse. Source shutdown drains pending work and releases cached data. Cached bytes remain
+part of the originally opened snapshot; cache misses use its conditional handle, so data
+from a replacement cannot be mixed into that snapshot.
 
 ## Scan identity
 

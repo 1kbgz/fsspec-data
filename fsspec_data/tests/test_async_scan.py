@@ -614,3 +614,117 @@ def test_cancelling_source_close_waiter_preserves_cleanup():
         assert calls == [True]
 
     asyncio.run(run())
+
+
+def test_shared_scans_reduce_requests_and_warm_cache_while_preserving_results(store):
+    async def consume(source, columns):
+        async with await source.scan_async("rows.parquet", columns=columns, batch_size=2) as stream:
+            return pa.Table.from_batches([batch async for batch in stream])
+
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options, cache_bytes=0) as source:
+            baseline = await asyncio.gather(*(consume(source, ["a", "b"]) for _ in range(4)))
+        baseline_gets = sum(method == "GET" for method, _, _ in store.requests)
+        store.requests.clear()
+        async with S3ParquetSource("test", storage_options=store.options, cache_bytes=64 * 1024) as source:
+            shared = await asyncio.gather(*(consume(source, ["a", "b"]) for _ in range(4)))
+            shared_gets = sum(method == "GET" for method, _, _ in store.requests)
+            assert shared_gets < baseline_gets
+            assert all(table.equals(baseline[0]) for table in shared)
+            before = len(store.requests)
+            assert (await consume(source, ["a", "b"])).equals(baseline[0])
+            assert [method for method, _, _ in store.requests[before:]] == ["HEAD"]
+            # Different logical selections retain independent output while sharing raw bytes.
+            selected = await consume(source, ["b", "a", "b"])
+            assert selected.column(0).to_pylist() == list(range(20, 32))
+            assert selected.column(0).equals(selected.column(2))
+            assert sum(method == "GET" for method, _, _ in store.requests) == shared_gets
+
+    asyncio.run(run())
+
+
+def test_small_cache_evicts_and_bounds_physical_ranges(store):
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options, cache_bytes=128) as source:
+            for _ in range(2):
+                before = len(store.requests)
+                async with await source.scan_async("rows.parquet", columns=["a"]) as stream:
+                    table = pa.Table.from_batches([batch async for batch in stream])
+                assert table.column(0).to_pylist() == list(range(12))
+                assert any(method == "GET" for method, _, _ in store.requests[before:])
+        for method, bounds, _ in store.requests:
+            if method == "GET":
+                start, end = map(int, bounds.removeprefix("bytes=").split("-"))
+                assert end - start + 1 <= 128
+
+    asyncio.run(run())
+
+
+def test_cache_never_bypasses_new_scan_authorization_or_retains_failed_reads(store):
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options) as source:
+            first = await source.scan_async("rows.parquet")
+            store.status = 403
+            with pytest.raises(PermissionError):
+                await anext(first)
+            store.status = 200
+            async with await source.scan_async("rows.parquet") as second:
+                assert sum([batch.num_rows async for batch in second]) == 12
+            store.status = 403
+            before = len(store.requests)
+            with pytest.raises(PermissionError):
+                await source.scan_async("rows.parquet")
+            assert [method for method, _, _ in store.requests[before:]] == ["HEAD"]
+
+    asyncio.run(run())
+
+
+def test_cached_snapshot_cannot_be_reused_by_replacement_or_another_source(store):
+    async def consume(source):
+        async with await source.scan_async("rows.parquet", columns=["a"]) as stream:
+            return pa.Table.from_batches([batch async for batch in stream]).column(0).to_pylist()
+
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options) as source:
+            assert await consume(source) == list(range(12))
+            store.etag = '"replacement"'
+            sink = pa.BufferOutputStream()
+            pq.write_table(pa.table({"a": range(100, 112)}), sink)
+            store.data = sink.getvalue().to_pybytes()
+            before = len(store.requests)
+            assert await consume(source) == list(range(100, 112))
+            assert any(method == "GET" for method, _, _ in store.requests[before:])
+            before = len(store.requests)
+            async with S3ParquetSource("test", storage_options=store.options) as other:
+                assert await consume(other) == list(range(100, 112))
+            assert any(method == "GET" for method, _, _ in store.requests[before:])
+
+    asyncio.run(run())
+
+
+def test_shared_read_survives_one_consumers_deadline(store):
+    async def run():
+        async with S3ParquetSource("test", storage_options=store.options) as source:
+            first = await source.scan_async("rows.parquet", deadline=asyncio.get_running_loop().time() + 0.5)
+            second = await source.scan_async("rows.parquet")
+            store.block = "GET"
+            reading_first = asyncio.create_task(anext(first))
+            reading_second = asyncio.create_task(anext(second))
+            await until(store.started.is_set)
+            with pytest.raises(TimeoutError):
+                await reading_first
+            assert not reading_second.done()
+            store.release.set()
+            assert (await reading_second).column(0).to_pylist() == list(range(4))
+            async with second:
+                assert sum([batch.num_rows async for batch in second]) == 8
+            await first.aclose()
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("cache_bytes", [-1, 1.5])
+def test_invalid_cache_budget_is_rejected_before_io(store, cache_bytes):
+    with pytest.raises((OverflowError, TypeError, ValueError)):
+        S3ParquetSource("test", storage_options=store.options, cache_bytes=cache_bytes)
+    assert not store.requests

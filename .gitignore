@@ -64,6 +64,8 @@ junit.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+.benchmarks/
+benchmark.json
 
 # Django
 *.log

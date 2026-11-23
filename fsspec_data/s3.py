@@ -19,11 +19,14 @@ class S3ParquetSource(DataSource):
     Use an async context manager or ``aclose`` to close its scans and client. Other
     DataSource operations are unsupported. Recreate after changing configuration or
     effective authorization; requests within this source retain its initial client.
+    ``cache_bytes`` bounds pending and retained shared ranges; zero disables the cache.
     """
 
-    def __init__(self, bucket: str, *, storage_options: Mapping[str, str | bool | int | float] | None = None) -> None:
+    def __init__(
+        self, bucket: str, *, storage_options: Mapping[str, str | bool | int | float] | None = None, cache_bytes: int = 64 * 1024 * 1024
+    ) -> None:
         self._bucket = bucket
-        self._native = _rust.NativeS3ParquetSource(bucket, _s3_options(storage_options))
+        self._native = _rust.NativeS3ParquetSource(bucket, _s3_options(storage_options), cache_bytes)
         self._close_waiter: asyncio.Future[None] | None = None
 
     async def scan_async(
