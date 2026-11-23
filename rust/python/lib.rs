@@ -1,6 +1,7 @@
 mod async_file;
 mod async_parquet;
 mod scan_identity;
+mod shared_reads;
 
 use std::collections::HashMap;
 use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};

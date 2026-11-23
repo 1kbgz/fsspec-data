@@ -14,6 +14,7 @@ use fsspec_rs::{AsyncFsFile, ErrorKind, FsError, FsOptions, OperationError};
 
 use super::async_file::PythonAsyncFile;
 use super::scan_identity::PythonScanIdentity;
+use super::shared_reads::RangeCache;
 use futures::StreamExt;
 use pyo3::exceptions::{
     PyConnectionError, PyFileExistsError, PyFileNotFoundError, PyNotImplementedError, PyOSError,
@@ -55,6 +56,7 @@ struct SourceScans {
 }
 
 struct S3Source {
+    cache: Arc<RangeCache>,
     context: AsyncContext,
     fs: AsyncFilesystem,
     identity: SourceIdentity,
@@ -63,10 +65,14 @@ struct S3Source {
 }
 
 impl S3Source {
-    fn new(bucket: &str, options: &FsOptions) -> PyResult<Arc<Self>> {
+    fn new(bucket: &str, options: &FsOptions, cache_bytes: usize) -> PyResult<Arc<Self>> {
         let context = AsyncContext::new(Limits::default()).map_err(storage_error)?;
         let fs = AsyncFilesystem::s3(bucket, options, &context).map_err(storage_error)?;
         Ok(Arc::new(Self {
+            cache: RangeCache::new(
+                cache_bytes,
+                pyo3_async_runtimes::tokio::get_runtime().handle().clone(),
+            ),
             context,
             fs,
             identity: SourceIdentity::new(),
@@ -76,6 +82,7 @@ impl S3Source {
     }
 
     async fn close_resources(&self) -> PyResult<()> {
+        self.cache.close().await;
         let fs = finish(self.fs.close(None)).await.map(|_| ());
         let context = finish(self.context.close(None)).await.map(|_| ());
         fs.and(context)
@@ -221,7 +228,7 @@ impl NativeAsyncParquetScan {
                     };
                     let identity = ScanIdentity::new(
                         source.identity.clone(),
-                        info.name,
+                        info.name.clone(),
                         serde_json::json!({"etag": info.extra["etag"], "size": info.size}),
                         session.selection.clone(),
                         session.options.stream,
@@ -230,8 +237,9 @@ impl NativeAsyncParquetScan {
                         serde_json::json!({"codec": "parquet"}),
                     )
                     .map_err(scan_error)?;
+                    state.file = None;
                     (
-                        session.decode(file).await?,
+                        session.decode(source.cache.file(file, info)).await?,
                         Some(PythonScanIdentity(identity)),
                     )
                 }
@@ -298,7 +306,7 @@ fn async_parquet_scan(
         read_chunk_size,
         timeout,
     )?;
-    let source = S3Source::new(bucket, &storage_options)?;
+    let source = S3Source::new(bucket, &storage_options, 0)?;
     Ok(new_scan(
         Source::S3 {
             source,
@@ -319,9 +327,9 @@ struct NativeS3ParquetSource {
 #[pymethods]
 impl NativeS3ParquetSource {
     #[new]
-    fn new(bucket: &str, storage_options: FsOptions) -> PyResult<Self> {
+    fn new(bucket: &str, storage_options: FsOptions, cache_bytes: usize) -> PyResult<Self> {
         Ok(Self {
-            source: S3Source::new(bucket, &storage_options)?,
+            source: S3Source::new(bucket, &storage_options, cache_bytes)?,
         })
     }
 

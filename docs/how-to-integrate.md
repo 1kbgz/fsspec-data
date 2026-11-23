@@ -144,7 +144,20 @@ async def consume():
             print(second.identity == identity)
 ```
 
-The comparison is true when the pinned ETag/size and request are unchanged. Each scan still
-performs its own reads. Recreate the source after changing credentials or effective
+The comparison is true when the pinned ETag/size and request are unchanged. Scans share
+raw ranges within the source while decoding their results independently. Recreate the source after changing credentials or effective
 permissions. See the [source reference](api.md#configured-s3-parquet-sources) for ownership,
 shared I/O budgets and shutdown behavior.
+
+Set `cache_bytes` on the source to bound pending and retained shared data:
+
+```python
+source = S3ParquetSource("bucket", cache_bytes=16 * 1024 * 1024)
+```
+
+Use `cache_bytes=0` to disable sharing and compare request counts. From an installed
+checkout, run `python benchmarks/shared_s3_scans.py --rows 100000 --scans 4` for a local
+S3-compatible benchmark. It checks row counts and a checksum, then reports HEAD/GET counts,
+transferred bytes and elapsed time for cold and repeated scans with caching enabled and
+disabled. Local timing includes decoding, HTTP server and coalescing overhead; use your
+deployment for latency measurements.
