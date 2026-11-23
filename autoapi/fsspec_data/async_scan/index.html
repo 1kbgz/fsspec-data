@@ -236,6 +236,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../tests/test_async_sources/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_async_sources</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
     </a>
@@ -349,6 +354,30 @@
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.__aexit__">AsyncDecodedBatchStream.__aexit__()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider">_AsyncFileProvider</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider.file">_AsyncFileProvider.file</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._pending">_AsyncFileProvider._pending</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._closed">_AsyncFileProvider._closed</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._close_task">_AsyncFileProvider._close_task</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._call">_AsyncFileProvider._call()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._close">_AsyncFileProvider._close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._finish_close">_AsyncFileProvider._finish_close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.async_scan.scan_parquet_async">scan_parquet_async()</a>
   </li>
 </ul>
@@ -373,7 +402,7 @@
       <div class="fd-prose">
   <section id="module-fsspec_data.async_scan">
 <span id="fsspec-data-async-scan"></span><h1>fsspec_data.async_scan<a class="headerlink" href="#module-fsspec_data.async_scan" title="Link to this heading">¶</a></h1>
-<p>Async Parquet batches read through native fsspec-rs S3 handles.</p>
+<p>Async Parquet batches from native S3 and asynchronous Python filesystems.</p>
 <section id="attributes">
 <h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -391,6 +420,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.async_scan.AsyncDecodedBatchStream" title="fsspec_data.async_scan.AsyncDecodedBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncDecodedBatchStream</span></code></a></p></td>
 <td><p>Demand-driven Arrow batches; use <code class="docutils literal notranslate"><span class="pre">aclose</span></code> or an async context manager.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.async_scan._AsyncFileProvider" title="fsspec_data.async_scan._AsyncFileProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_AsyncFileProvider</span></code></a></p></td>
+<td><p>Keep foreign file calls and cancellation cleanup on the caller's loop.</p></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -398,8 +430,8 @@
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.async_scan.scan_parquet_async" title="fsspec_data.async_scan.scan_parquet_async"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scan_parquet_async</span></code></a>(url, *[, storage_options, columns, ...]) → AsyncDecodedBatchStream</p></td>
-<td><p>Open a native S3 Parquet scan. <code class="docutils literal notranslate"><span class="pre">deadline</span></code> uses <code class="docutils literal notranslate"><span class="pre">asyncio</span></code> loop time.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.async_scan.scan_parquet_async" title="fsspec_data.async_scan.scan_parquet_async"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scan_parquet_async</span></code></a>(url, *[, fs, storage_options, ...]) → AsyncDecodedBatchStream</p></td>
+<td><p>Open a Parquet scan on native S3 or a filesystem with <code class="docutils literal notranslate"><span class="pre">open_async</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -468,13 +500,54 @@
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.async_scan._AsyncFileProvider">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.async_scan.</span></span><span class="sig-name descname"><span class="pre">_AsyncFileProvider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#_AsyncFileProvider"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan._AsyncFileProvider" title="Link to this definition">¶</a></dt>
+<dd><p>Keep foreign file calls and cancellation cleanup on the caller’s loop.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.async_scan._AsyncFileProvider.file">
+<span class="sig-name descname"><span class="pre">file</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#fsspec_data.async_scan._AsyncFileProvider.file" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.async_scan._AsyncFileProvider._pending">
+<span class="sig-name descname"><span class="pre">_pending</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">asyncio.Task</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#fsspec_data.async_scan._AsyncFileProvider._pending" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.async_scan._AsyncFileProvider._closed">
+<span class="sig-name descname"><span class="pre">_closed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#fsspec_data.async_scan._AsyncFileProvider._closed" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.async_scan._AsyncFileProvider._close_task">
+<span class="sig-name descname"><span class="pre">_close_task</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">asyncio.Task</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.async_scan._AsyncFileProvider._close_task" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.async_scan._AsyncFileProvider._call">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#_AsyncFileProvider._call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan._AsyncFileProvider._call" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.async_scan._AsyncFileProvider._close">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#_AsyncFileProvider._close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan._AsyncFileProvider._close" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.async_scan._AsyncFileProvider._finish_close">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_finish_close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#_AsyncFileProvider._finish_close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan._AsyncFileProvider._finish_close" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="fsspec_data.async_scan.scan_parquet_async">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.async_scan.</span></span><span class="sig-name descname"><span class="pre">scan_parquet_async</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_range_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_batch_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.async_scan.AsyncDecodedBatchStream" title="fsspec_data.async_scan.AsyncDecodedBatchStream"><span class="pre">AsyncDecodedBatchStream</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#scan_parquet_async"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan.scan_parquet_async" title="Link to this definition">¶</a></dt>
-<dd><p>Open a native S3 Parquet scan. <code class="docutils literal notranslate"><span class="pre">deadline</span></code> uses <code class="docutils literal notranslate"><span class="pre">asyncio</span></code> loop time.</p>
-<p><code class="docutils literal notranslate"><span class="pre">url</span></code> is <code class="docutils literal notranslate"><span class="pre">s3://bucket/key</span></code> or <code class="docutils literal notranslate"><span class="pre">s3-rs://bucket/key</span></code>. Storage options use
-fsspec-rs’s flat names, such as <code class="docutils literal notranslate"><span class="pre">anon</span></code>, <code class="docutils literal notranslate"><span class="pre">region</span></code> and <code class="docutils literal notranslate"><span class="pre">endpoint_url</span></code>.
-The stream owns its file. Decoding allocations are outside the buffer limits.</p>
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.async_scan.</span></span><span class="sig-name descname"><span class="pre">scan_parquet_async</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">fsspec.AbstractFileSystem</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_range_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_batch_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.async_scan.AsyncDecodedBatchStream" title="fsspec_data.async_scan.AsyncDecodedBatchStream"><span class="pre">AsyncDecodedBatchStream</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#scan_parquet_async"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan.scan_parquet_async" title="Link to this definition">¶</a></dt>
+<dd><p>Open a Parquet scan on native S3 or a filesystem with <code class="docutils literal notranslate"><span class="pre">open_async</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">deadline</span></code> uses asyncio loop time. With <code class="docutils literal notranslate"><span class="pre">fs</span></code>, only the opened file is owned
+by the scan; its reads and close must be awaitable, its size known, and seeks
+must be asynchronous or operate on a cached cursor without I/O.</p>
 </dd></dl>
 
 </section>
@@ -560,6 +633,30 @@ The stream owns its file. Decoding allocations are outside the buffer limits.</p
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.__aexit__">AsyncDecodedBatchStream.__aexit__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider">_AsyncFileProvider</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider.file">_AsyncFileProvider.file</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._pending">_AsyncFileProvider._pending</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._closed">_AsyncFileProvider._closed</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._close_task">_AsyncFileProvider._close_task</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._call">_AsyncFileProvider._call()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._close">_AsyncFileProvider._close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan._AsyncFileProvider._finish_close">_AsyncFileProvider._finish_close()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.async_scan.scan_parquet_async">scan_parquet_async()</a>

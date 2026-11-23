@@ -640,6 +640,11 @@ window.runMermaid = runMermaid;</script>
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../../autoapi/fsspec_data/tests/test_async_sources/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_async_sources</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../../autoapi/fsspec_data/tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
     </a>
@@ -730,6 +735,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">fsspec</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractFileSystem</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">.async_scan</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncDecodedBatchStream</span><span class="p">,</span> <span class="n">scan_parquet_async</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.interchange</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_REGISTRY</span><span class="p">,</span> <span class="n">DataFormat</span><span class="p">,</span> <span class="n">DecodedBatchStream</span><span class="p">,</span> <span class="n">_rust</span>
 
 
@@ -867,6 +873,26 @@ window.runMermaid = runMermaid;</script>
             <span class="n">schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">schema</span><span class="p">,</span> <span class="n">native</span> <span class="o">=</span> <span class="n">_rust</span><span class="o">.</span><span class="n">project_batches</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="nb">iter</span><span class="p">(</span><span class="n">source</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">row_limit</span><span class="p">,</span> <span class="n">byte_limit</span><span class="p">,</span> <span class="n">row_offset</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">DecodedBatchStream</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">native</span><span class="p">,</span> <span class="n">on_cancel</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">"cancel"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="DataSource.scan_async">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/index.html#fsspec_data.describe.DataSource.scan_async">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">scan_async</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">row_offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">row_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">byte_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_range_bytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">max_batch_bytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">read_chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">deadline</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncDecodedBatchStream</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Scan asynchronously with selection and limits; requires backend support."""</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"this data source does not support asynchronous scans"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DataSource.open_raw">
@@ -1017,6 +1043,40 @@ window.runMermaid = runMermaid;</script>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">row_limit</span><span class="o">=</span><span class="n">row_limit</span><span class="p">,</span>
             <span class="n">byte_limit</span><span class="o">=</span><span class="n">byte_limit</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FileDataSource.scan_async">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/index.html#fsspec_data.describe.FileDataSource.scan_async">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">scan_async</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">row_offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">row_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">byte_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_range_bytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">max_batch_bytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">read_chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">deadline</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncDecodedBatchStream</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Read Parquet through this filesystem's async opener without sync metadata I/O."""</span>
+        <span class="k">if</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">from_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">!=</span> <span class="n">DataFormat</span><span class="o">.</span><span class="n">PARQUET</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"asynchronous file scans currently require Parquet"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">scan_parquet_async</span><span class="p">(</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+            <span class="n">row_offset</span><span class="o">=</span><span class="n">row_offset</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">row_limit</span><span class="o">=</span><span class="n">row_limit</span><span class="p">,</span>
+            <span class="n">byte_limit</span><span class="o">=</span><span class="n">byte_limit</span><span class="p">,</span>
+            <span class="n">max_range_bytes</span><span class="o">=</span><span class="n">max_range_bytes</span><span class="p">,</span>
+            <span class="n">max_batch_bytes</span><span class="o">=</span><span class="n">max_batch_bytes</span><span class="p">,</span>
+            <span class="n">read_chunk_size</span><span class="o">=</span><span class="n">read_chunk_size</span><span class="p">,</span>
+            <span class="n">deadline</span><span class="o">=</span><span class="n">deadline</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 

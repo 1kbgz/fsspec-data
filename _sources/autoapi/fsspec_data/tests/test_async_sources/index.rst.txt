@@ -1,0 +1,278 @@
+fsspec_data.tests.test_async_sources
+====================================
+
+.. py:module:: fsspec_data.tests.test_async_sources
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_async_sources.TENANT
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_async_sources.AsyncFile
+   fsspec_data.tests.test_async_sources.AsyncFS
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_async_sources.parquet_bytes
+   fsspec_data.tests.test_async_sources.test_file_source_selection_uses_original_loop_and_context
+   fsspec_data.tests.test_async_sources.test_cancellation_waits_for_foreign_read_cleanup
+   fsspec_data.tests.test_async_sources.test_closing_scan_drains_read_before_closing_foreign_file
+   fsspec_data.tests.test_async_sources.test_async_opener_is_cancelled_and_owns_partial_open_cleanup
+   fsspec_data.tests.test_async_sources.test_deadline_covers_opener_and_foreign_reads
+   fsspec_data.tests.test_async_sources.test_no_prefetch_and_scans_do_not_close_shared_filesystem
+   fsspec_data.tests.test_async_sources.test_python_provider_error_identity_and_attributes_are_preserved
+   fsspec_data.tests.test_async_sources.test_invalid_provider_or_options_still_close_owned_file
+   fsspec_data.tests.test_async_sources.test_aclose_provider_error_is_preserved_without_repeating_close
+   fsspec_data.tests.test_async_sources.test_unsupported_sources_do_not_fall_back_to_sync_calls
+   fsspec_data.tests.test_async_sources.test_async_data_source_can_resolve_its_own_table_paths
+
+
+Module Contents
+---------------
+
+.. py:data:: TENANT
+
+.. py:function:: parquet_bytes()
+
+.. py:class:: AsyncFile(data, *, async_seek=False)
+
+   .. py:attribute:: data
+
+
+   .. py:attribute:: size
+
+
+   .. py:attribute:: position
+      :value: 0
+
+
+
+   .. py:attribute:: async_seek
+      :value: False
+
+
+
+   .. py:attribute:: calls
+      :value: []
+
+
+
+   .. py:attribute:: read_gate
+
+
+   .. py:attribute:: read_started
+
+
+   .. py:attribute:: cleanup_started
+
+
+   .. py:attribute:: cleanup_gate
+
+
+   .. py:attribute:: close_started
+
+
+   .. py:attribute:: close_gate
+
+
+   .. py:attribute:: active
+      :value: 0
+
+
+
+   .. py:attribute:: closed
+      :value: 0
+
+
+
+   .. py:attribute:: error
+      :value: None
+
+
+
+   .. py:attribute:: extra_bytes
+      :value: False
+
+
+
+   .. py:method:: record(method)
+
+
+   .. py:method:: read(size)
+      :async:
+
+
+
+   .. py:method:: seek(offset, whence=0)
+
+
+   .. py:method:: seek_async(offset)
+      :async:
+
+
+
+   .. py:method:: close()
+      :async:
+
+
+
+.. py:class:: AsyncFS(data=None, *, async_seek=False)
+
+   Bases: :py:obj:`fsspec.AbstractFileSystem`
+
+
+   An abstract super-class for pythonic file-systems
+
+   Implementations are expected to be compatible with or, better, subclass
+   from here.
+
+   Create and configure file-system instance
+
+   Instances may be cachable, so if similar enough arguments are seen
+   a new instance is not required. The token attribute exists to allow
+   implementations to cache instances if they wish.
+
+   A reasonable default should be provided if there are no arguments.
+
+   Subclasses should call this method.
+
+   :param use_listings_cache: passed to ``DirCache``, if the implementation supports
+                              directory listing caching. Pass use_listings_cache=False
+                              to disable such caching.
+   :param listings_expiry_time: passed to ``DirCache``, if the implementation supports
+                                directory listing caching. Pass use_listings_cache=False
+                                to disable such caching.
+   :param max_paths: passed to ``DirCache``, if the implementation supports
+                     directory listing caching. Pass use_listings_cache=False
+                     to disable such caching.
+   :param skip_instance_cache: If this is a cachable implementation, pass True here to force
+                               creating a new instance even if a matching instance exists, and prevent
+                               storing this instance.
+   :type skip_instance_cache: bool
+   :param asynchronous:
+   :type asynchronous: bool
+   :param loop:
+   :type loop: asyncio-compatible IOLoop or None
+
+
+   .. py:attribute:: cachable
+      :value: False
+
+
+
+   .. py:attribute:: data
+
+
+   .. py:attribute:: async_seek
+      :value: False
+
+
+
+   .. py:attribute:: files
+      :value: []
+
+
+
+   .. py:attribute:: paths
+      :value: []
+
+
+
+   .. py:attribute:: open_started
+
+
+   .. py:attribute:: open_gate
+
+
+   .. py:attribute:: configure
+
+
+   .. py:method:: info(path, **kwargs)
+
+      Give details of entry at path
+
+      Returns a single dictionary, with exactly the same information as ``ls``
+      would with ``detail=True``.
+
+      The default implementation calls ls and could be overridden by a
+      shortcut. kwargs are passed on to ```ls()``.
+
+      Some file systems might not be able to measure the file's size, in
+      which case, the returned dict will include ``'size': None``.
+
+      :returns: * **dict with keys** (*name (full path in the FS), size (in bytes), type (file,*)
+                * *directory, or something else) and other FS-specific keys.*
+
+
+
+   .. py:method:: open(path, mode='rb', block_size=None, cache_options=None, compression=None, **kwargs)
+
+      Return a file-like object from the filesystem
+
+      The resultant instance must function correctly in a context ``with``
+      block.
+
+      :param path: Target file
+      :type path: str
+      :param mode: See builtin ``open()``
+                   Mode "x" (exclusive write) may be implemented by the backend. Even if
+                   it is, whether  it is checked up front or on commit, and whether it is
+                   atomic is implementation-dependent.
+      :type mode: str like 'rb', 'w'
+      :param block_size: Some indication of buffering - this is a value in bytes
+      :type block_size: int
+      :param cache_options: Extra arguments to pass through to the cache.
+      :type cache_options: dict, optional
+      :param compression: If given, open file using compression codec. Can either be a compression
+                          name (a key in ``fsspec.compression.compr``) or "infer" to guess the
+                          compression from the filename suffix.
+      :type compression: string or None
+      :param encoding:
+      :type encoding: passed on to TextIOWrapper for text mode
+      :param errors:
+      :type errors: passed on to TextIOWrapper for text mode
+      :param newline:
+      :type newline: passed on to TextIOWrapper for text mode
+
+
+
+   .. py:method:: open_async(path, mode='rb', **kwargs)
+      :async:
+
+
+
+.. py:function:: test_file_source_selection_uses_original_loop_and_context(async_seek)
+
+.. py:function:: test_cancellation_waits_for_foreign_read_cleanup(during_open)
+
+.. py:function:: test_closing_scan_drains_read_before_closing_foreign_file()
+
+.. py:function:: test_async_opener_is_cancelled_and_owns_partial_open_cleanup()
+
+.. py:function:: test_deadline_covers_opener_and_foreign_reads(during_opener)
+
+.. py:function:: test_no_prefetch_and_scans_do_not_close_shared_filesystem()
+
+.. py:function:: test_python_provider_error_identity_and_attributes_are_preserved()
+
+.. py:function:: test_invalid_provider_or_options_still_close_owned_file(invalid)
+
+.. py:function:: test_aclose_provider_error_is_preserved_without_repeating_close()
+
+.. py:function:: test_unsupported_sources_do_not_fall_back_to_sync_calls()
+
+.. py:function:: test_async_data_source_can_resolve_its_own_table_paths()
+

@@ -236,6 +236,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_async_sources/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_async_sources</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
     </a>
@@ -1377,8 +1382,13 @@ reports a close error; an earlier scan error takes precedence during iteration.<
 <h2>Python asynchronous Parquet scans<a class="headerlink" href="#python-asynchronous-parquet-scans" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">scan_parquet_async(url,</span> <span class="pre">**options)</span></code> returns an <code class="docutils literal notranslate"><span class="pre">AsyncDecodedBatchStream</span></code> with an
 Arrow <code class="docutils literal notranslate"><span class="pre">schema</span></code> and async iteration yielding <code class="docutils literal notranslate"><span class="pre">pyarrow.RecordBatch</span></code> values. This API reads
-<code class="docutils literal notranslate"><span class="pre">s3://bucket/key</span></code> and <code class="docutils literal notranslate"><span class="pre">s3-rs://bucket/key</span></code> through native fsspec-rs handles. Other protocols
-and Python <code class="docutils literal notranslate"><span class="pre">DataSource</span></code> implementations are not supported by this entry point.</p>
+<code class="docutils literal notranslate"><span class="pre">s3://bucket/key</span></code> and <code class="docutils literal notranslate"><span class="pre">s3-rs://bucket/key</span></code> through native fsspec-rs handles by default.
+Passing <code class="docutils literal notranslate"><span class="pre">fs=</span></code> uses that configured Python filesystem’s <code class="docutils literal notranslate"><span class="pre">open_async</span></code> instead.</p>
+<p><code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">source.scan_async(path,</span> <span class="pre">**options)</span></code> provides the same selection, limits and stream
+contract on <code class="docutils literal notranslate"><span class="pre">DataSource</span></code>. The base implementation raises <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>.
+<code class="docutils literal notranslate"><span class="pre">FileDataSource</span></code> supports Parquet paths through its filesystem’s <code class="docutils literal notranslate"><span class="pre">open_async</span></code>; it does not
+call synchronous <code class="docutils literal notranslate"><span class="pre">describe</span></code>, <code class="docutils literal notranslate"><span class="pre">info</span></code> or <code class="docutils literal notranslate"><span class="pre">open</span></code>. Other source implementations can override
+<code class="docutils literal notranslate"><span class="pre">scan_async</span></code> to resolve their own table paths.</p>
 <p>Options:</p>
 <table class="docutils align-default">
 <thead>
@@ -1388,61 +1398,74 @@ and Python <code class="docutils literal notranslate"><span class="pre">DataSour
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">storage_options</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fs</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Configured filesystem with an async <code class="docutils literal notranslate"><span class="pre">open_async(path,</span> <span class="pre">mode=&quot;rb&quot;)</span></code>. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">storage_options</span></code>; supplied by <code class="docutils literal notranslate"><span class="pre">FileDataSource</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">storage_options</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Flat fsspec-rs S3 options, such as <code class="docutils literal notranslate"><span class="pre">anon</span></code>, <code class="docutils literal notranslate"><span class="pre">region</span></code>, <code class="docutils literal notranslate"><span class="pre">endpoint_url</span></code>, <code class="docutils literal notranslate"><span class="pre">key</span></code>, <code class="docutils literal notranslate"><span class="pre">secret</span></code> and <code class="docutils literal notranslate"><span class="pre">token</span></code>. Values are strings, booleans or numbers. Environment and credential defaults follow fsspec-rs.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">columns</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">columns</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Top-level column names in output order. Duplicates and an empty selection are supported.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">row_offset</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">row_offset</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
 <td><p>Source rows to skip before applying output limits.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1024</span></code></p></td>
 <td><p>Maximum rows per batch. Must be positive.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">row_limit</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">row_limit</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Maximum output rows; zero produces no batches.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">byte_limit</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">byte_limit</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Cumulative Arrow batch memory limit after selection.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_range_bytes</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_range_bytes</span></code></p></td>
 <td><p>64 MiB</p></td>
 <td><p>Aggregate compressed row-group or footer range limit, checked before allocation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_batch_bytes</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_batch_bytes</span></code></p></td>
 <td><p>64 MiB</p></td>
 <td><p>Single projected batch limit, checked after decoding.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">read_chunk_size</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">read_chunk_size</span></code></p></td>
 <td><p>1 MiB</p></td>
 <td><p>Maximum individual file read; positive and at most 8 MiB.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">deadline</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">deadline</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Absolute deadline in <code class="docutils literal notranslate"><span class="pre">asyncio.get_running_loop().time()</span></code> units. Includes opening the file, metadata, reads, decoding and idle consumer time.</p></td>
 </tr>
 </tbody>
 </table>
 <p>Buffer accounting and decoder allocation limits follow the
-<a class="reference internal" href="#rust-asynchronous-parquet-scans"><span class="xref myst">Rust async scan contract</span></a>. Each scan owns an independent
+<a class="reference internal" href="#rust-asynchronous-parquet-scans"><span class="xref myst">Rust async scan contract</span></a>. Native S3 scans own an independent
 filesystem, file and I/O context. The native context uses the fsspec-rs defaults of 64
 operations, 64 MiB of buffered I/O and an 8 MiB maximum read; S3 reserves both output and
 staging capacity. Decode work runs on the Rust scan worker. PyO3 connects Rust futures to
 the calling asyncio loop, without using Python executor threads for waits.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">fs=</span></code>, the scan owns the opened file and leaves the filesystem open. The file must
+provide a cached nonnegative integer <code class="docutils literal notranslate"><span class="pre">size</span></code>, awaitable <code class="docutils literal notranslate"><span class="pre">read(n)</span></code> returning at most <code class="docutils literal notranslate"><span class="pre">n</span></code>
+bytes, <code class="docutils literal notranslate"><span class="pre">seek(offset,</span> <span class="pre">0)</span></code>, and awaitable <code class="docutils literal notranslate"><span class="pre">aclose()</span></code> or <code class="docutils literal notranslate"><span class="pre">close()</span></code>. Seeking may be asynchronous
+or update a cached cursor synchronously without I/O. Calls run on the opening task’s
+asyncio loop with its captured context variables. Pending calls are cancelled and awaited
+before closing the file. The opener is responsible for cleaning up partially opened files
+if opening fails or is cancelled. Providers must preserve the file’s size and contents
+throughout a scan, using immutable objects or version checks. Provider caches and internal
+allocations are outside the scan’s buffer limits. There is no synchronous I/O fallback.</p>
 <p><code class="docutils literal notranslate"><span class="pre">AsyncDecodedBatchStream</span></code> supports <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">for</span></code>, <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">with</span></code>, and <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">stream.aclose()</span></code>.
 It permits one pending batch request. Overlapping <code class="docutils literal notranslate"><span class="pre">__anext__</span></code> calls raise <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code>.
 The producer does not prefetch another batch while the consumer is idle. Breaking out of
 <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">for</span></code> requires <code class="docutils literal notranslate"><span class="pre">aclose()</span></code> or an enclosing <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">with</span></code> to wait for cleanup.</p>
 <p>EOF and scan errors close the stream. Task cancellation during opening or iteration
 cancels native work and raises <code class="docutils literal notranslate"><span class="pre">asyncio.CancelledError</span></code>. <code class="docutils literal notranslate"><span class="pre">aclose()</span></code> cancels pending work,
-waits for file/filesystem/context cleanup and is safe to repeat. Cleanup continues if its
+waits for owned resources to close and is safe to repeat. Cleanup continues if its
 awaiter is cancelled; another <code class="docutils literal notranslate"><span class="pre">aclose()</span></code> waits for that same cleanup. Cleanup is not cut
 short by the scan deadline. Dropping the stream requests native cancellation without
 waiting for cleanup.</p>
@@ -1450,7 +1473,8 @@ waiting for cleanup.</p>
 use standard Python exceptions, including <code class="docutils literal notranslate"><span class="pre">FileNotFoundError</span></code>, <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code>,
 <code class="docutils literal notranslate"><span class="pre">ConnectionError</span></code>, <code class="docutils literal notranslate"><span class="pre">TimeoutError</span></code> and <code class="docutils literal notranslate"><span class="pre">OSError</span></code>. Storage exceptions retain fsspec-rs’s
 <code class="docutils literal notranslate"><span class="pre">kind</span></code> string and <code class="docutils literal notranslate"><span class="pre">retry_safe</span></code> flag. Object replacement raises <code class="docutils literal notranslate"><span class="pre">OSError</span></code> with
-<code class="docutils literal notranslate"><span class="pre">kind</span> <span class="pre">==</span> <span class="pre">&quot;conflict&quot;</span></code>. A consumer exception takes precedence over cleanup errors during
+<code class="docutils literal notranslate"><span class="pre">kind</span> <span class="pre">==</span> <span class="pre">&quot;conflict&quot;</span></code>. Python provider exceptions preserve their original type and attributes.
+A consumer exception takes precedence over cleanup errors during
 context-manager exit.</p>
 </section>
 </section>

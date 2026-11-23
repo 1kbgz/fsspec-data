@@ -101,3 +101,25 @@ Cancel the consuming asyncio task to stop pending reads. If you manage the strea
 an async context manager, await `stream.aclose()` in a `finally` block. See the
 [async scan reference](api.md#python-asynchronous-parquet-scans) for buffer limits, deadline
 semantics and supported protocols.
+
+## Scan through a configured async filesystem
+
+Pass your existing filesystem to `FileDataSource` when it supports `open_async`. Call this
+function from the loop used by that filesystem:
+
+```python
+from fsspec_data import FileDataSource
+
+
+async def consume(fs, path):
+    source = FileDataSource(fs)
+    async with await source.scan_async(path, columns=["order_id", "amount"]) as stream:
+        async for batch in stream:
+            print(batch.num_rows)
+```
+
+Alternatively, call `await scan_parquet_async(path, fs=fs, columns=["order_id", "amount"])`.
+Keep the filesystem open until its scans finish. The scan closes its own file, and uses
+the filesystem's existing credentials and configuration. Sync-only filesystems raise
+`NotImplementedError`. Check the [file provider contract](api.md#python-asynchronous-parquet-scans)
+when implementing an async filesystem.

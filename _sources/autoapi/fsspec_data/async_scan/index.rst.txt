@@ -5,7 +5,7 @@ fsspec_data.async_scan
 
 .. autoapi-nested-parse::
 
-   Async Parquet batches read through native fsspec-rs S3 handles.
+   Async Parquet batches from native S3 and asynchronous Python filesystems.
 
 
 
@@ -23,6 +23,7 @@ Classes
 .. autoapisummary::
 
    fsspec_data.async_scan.AsyncDecodedBatchStream
+   fsspec_data.async_scan._AsyncFileProvider
 
 
 Functions
@@ -91,14 +92,53 @@ Module Contents
 
 
 
-.. py:function:: scan_parquet_async(url: str, *, storage_options: collections.abc.Mapping[str, str | bool | int | float] | None = None, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, max_range_bytes: int = 64 * 1024 * 1024, max_batch_bytes: int = 64 * 1024 * 1024, read_chunk_size: int = 1024 * 1024, deadline: float | None = None) -> AsyncDecodedBatchStream
+.. py:class:: _AsyncFileProvider(file: Any)
+
+   Keep foreign file calls and cancellation cleanup on the caller's loop.
+
+
+   .. py:attribute:: file
+      :type:  Any
+
+
+   .. py:attribute:: _pending
+      :type:  set[asyncio.Task[Any]]
+
+
+   .. py:attribute:: _closed
+      :value: False
+
+
+
+   .. py:attribute:: _close_task
+      :type:  asyncio.Task[None] | None
+      :value: None
+
+
+
+   .. py:method:: _call(method: str, argument: int) -> Any
+      :async:
+
+
+
+   .. py:method:: _close() -> None
+      :async:
+
+
+
+   .. py:method:: _finish_close() -> None
+      :async:
+
+
+
+.. py:function:: scan_parquet_async(url: str, *, fs: fsspec.AbstractFileSystem | None = None, storage_options: collections.abc.Mapping[str, str | bool | int | float] | None = None, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, max_range_bytes: int = 64 * 1024 * 1024, max_batch_bytes: int = 64 * 1024 * 1024, read_chunk_size: int = 1024 * 1024, deadline: float | None = None) -> AsyncDecodedBatchStream
    :async:
 
 
-   Open a native S3 Parquet scan. ``deadline`` uses ``asyncio`` loop time.
+   Open a Parquet scan on native S3 or a filesystem with ``open_async``.
 
-   ``url`` is ``s3://bucket/key`` or ``s3-rs://bucket/key``. Storage options use
-   fsspec-rs's flat names, such as ``anon``, ``region`` and ``endpoint_url``.
-   The stream owns its file. Decoding allocations are outside the buffer limits.
+   ``deadline`` uses asyncio loop time. With ``fs``, only the opened file is owned
+   by the scan; its reads and close must be awaitable, its size known, and seeks
+   must be asynchronous or operate on a cached cursor without I/O.
 
 

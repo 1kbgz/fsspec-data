@@ -236,6 +236,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_async_sources/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_async_sources</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
     </a>
@@ -311,6 +316,9 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#read-s3-parquet-without-blocking-asyncio">Read S3 Parquet without blocking asyncio</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#scan-through-a-configured-async-filesystem">Scan through a configured async filesystem</a>
   </li>
 </ul>
 </div>
@@ -410,6 +418,26 @@ an async context manager, await <code class="docutils literal notranslate"><span
 <a class="reference internal" href="api.html#python-asynchronous-parquet-scans"><span class="std std-ref">async scan reference</span></a> for buffer limits, deadline
 semantics and supported protocols.</p>
 </section>
+<section id="scan-through-a-configured-async-filesystem">
+<h2>Scan through a configured async filesystem<a class="headerlink" href="#scan-through-a-configured-async-filesystem" title="Link to this heading">¶</a></h2>
+<p>Pass your existing filesystem to <code class="docutils literal notranslate"><span class="pre">FileDataSource</span></code> when it supports <code class="docutils literal notranslate"><span class="pre">open_async</span></code>. Call this
+function from the loop used by that filesystem:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileDataSource</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">consume</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">FileDataSource</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="k">await</span> <span class="n">source</span><span class="o">.</span><span class="n">scan_async</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"order_id"</span><span class="p">,</span> <span class="s2">"amount"</span><span class="p">])</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">num_rows</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, call <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">scan_parquet_async(path,</span> <span class="pre">fs=fs,</span> <span class="pre">columns=[&quot;order_id&quot;,</span> <span class="pre">&quot;amount&quot;])</span></code>.
+Keep the filesystem open until its scans finish. The scan closes its own file, and uses
+the filesystem’s existing credentials and configuration. Sync-only filesystems raise
+<code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>. Check the <a class="reference internal" href="api.html#python-asynchronous-parquet-scans"><span class="std std-ref">file provider contract</span></a>
+when implementing an async filesystem.</p>
+</section>
 </section>
 
 
@@ -456,6 +484,9 @@ semantics and supported protocols.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#read-s3-parquet-without-blocking-asyncio">Read S3 Parquet without blocking asyncio</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#scan-through-a-configured-async-filesystem">Scan through a configured async filesystem</a>
   </li>
 </ul>
 
