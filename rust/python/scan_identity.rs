@@ -20,7 +20,7 @@ impl PythonSourceIdentity {
 
 #[pyclass(name = "ScanIdentity", frozen, eq, hash)]
 #[derive(PartialEq, Eq, Hash)]
-struct PythonScanIdentity(ScanIdentity);
+pub(super) struct PythonScanIdentity(pub(super) ScanIdentity);
 
 #[pymethods]
 impl PythonScanIdentity {

@@ -23,6 +23,7 @@ from .interchange import (
     plan_schema,
 )
 from .json_schema import json_schema_to_arrow
+from .s3 import S3ParquetSource
 from .scan_identity import ScanIdentity, SourceIdentity
 from .schema import (
     DEFAULT_SCHEMA_RESOLVERS,
@@ -65,6 +66,7 @@ __all__ = [
     "Node",
     "PlannedBatchStream",
     "ResolvedSchema",
+    "S3ParquetSource",
     "ScanIdentity",
     "SchemaDocument",
     "SchemaFormat",
