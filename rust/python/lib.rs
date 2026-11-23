@@ -2,6 +2,7 @@ mod async_file;
 mod async_parquet;
 mod scan_identity;
 mod shared_reads;
+mod tables;
 
 use std::collections::HashMap;
 use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
@@ -502,6 +503,7 @@ fn plan_schema(
 
 fn to_python_error(error: InterchangeError) -> PyErr {
     match error {
+        InterchangeError::Operation(error) => async_parquet::storage_error(error),
         InterchangeError::UnsupportedPolicy(_)
         | InterchangeError::CodecNotRegistered(_)
         | InterchangeError::CodecWriterNotSupported(_) => {
@@ -527,6 +529,7 @@ fn to_python_error(error: InterchangeError) -> PyErr {
 #[pymodule]
 fn fsspec_data(m: &Bound<PyModule>) -> PyResult<()> {
     async_parquet::register(m)?;
+    tables::register(m)?;
     scan_identity::register(m)?;
     m.add_function(wrap_pyfunction!(avro_arrow_schema, m)?)?;
     m.add_function(wrap_pyfunction!(codec_capabilities, m)?)?;

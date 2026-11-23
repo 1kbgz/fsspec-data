@@ -23,6 +23,8 @@ batch iteration, and encoded output.
 For application work, [connect a batch producer or consumer](docs/how-to-integrate.md),
 [convert a file through an fsspec chain](docs/how-to-chain-filesystems.md), or
 [resolve schemas from files and registries](docs/how-to-resolve-schemas.md).
+[Write and read saved table versions](docs/how-to-write-tables.md) covers manifest-published
+Parquet tables, positioned writes, and recovery.
 [Convert Xarray and Zarr resources](docs/how-to-convert-resources.md) covers native
 resource routes and converter registration.
 

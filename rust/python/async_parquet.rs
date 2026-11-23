@@ -508,7 +508,7 @@ fn scan_error(error: InterchangeError) -> PyErr {
     }
 }
 
-fn storage_error(error: OperationError) -> PyErr {
+pub(super) fn storage_error(error: OperationError) -> PyErr {
     if let OperationError::FileSystem(FsError::IoError(ref io)) = error {
         if let Some(error) = io.get_ref().and_then(|inner| inner.downcast_ref::<PyErr>()) {
             return Python::attach(|py| error.clone_ref(py));
