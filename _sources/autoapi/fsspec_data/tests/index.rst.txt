@@ -16,6 +16,7 @@ Submodules
    /autoapi/fsspec_data/tests/test_async_sources/index
    /autoapi/fsspec_data/tests/test_converters/index
    /autoapi/fsspec_data/tests/test_describe/index
+   /autoapi/fsspec_data/tests/test_scan_identity/index
    /autoapi/fsspec_data/tests/test_schema/index
    /autoapi/fsspec_data/tests/test_view/index
    /autoapi/fsspec_data/tests/test_view_conversion/index

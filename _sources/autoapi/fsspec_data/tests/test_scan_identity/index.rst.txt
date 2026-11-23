@@ -1,0 +1,46 @@
+fsspec_data.tests.test_scan_identity
+====================================
+
+.. py:module:: fsspec_data.tests.test_scan_identity
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_scan_identity.request
+   fsspec_data.tests.test_scan_identity.test_source_tokens_separate_credential_contexts_and_survive_copy
+   fsspec_data.tests.test_scan_identity.test_request_differences_prevent_reuse
+   fsspec_data.tests.test_scan_identity.test_nested_object_order_is_canonical_but_arrays_and_types_are_distinct
+   fsspec_data.tests.test_scan_identity.test_unpinned_requests_are_distinct_but_copy_preserves_identity
+   fsspec_data.tests.test_scan_identity.test_mutating_inputs_does_not_change_stored_identity
+   fsspec_data.tests.test_scan_identity.test_repr_hides_paths_predicates_and_provider_options
+   fsspec_data.tests.test_scan_identity.test_invalid_json_cannot_silently_collapse_different_requests
+   fsspec_data.tests.test_scan_identity.test_integer_boundaries_are_exact
+   fsspec_data.tests.test_scan_identity.test_invalid_scan_limits_are_rejected
+
+
+Module Contents
+---------------
+
+.. py:function:: request(source, **changes)
+
+.. py:function:: test_source_tokens_separate_credential_contexts_and_survive_copy()
+
+.. py:function:: test_request_differences_prevent_reuse(change)
+
+.. py:function:: test_nested_object_order_is_canonical_but_arrays_and_types_are_distinct()
+
+.. py:function:: test_unpinned_requests_are_distinct_but_copy_preserves_identity()
+
+.. py:function:: test_mutating_inputs_does_not_change_stored_identity()
+
+.. py:function:: test_repr_hides_paths_predicates_and_provider_options()
+
+.. py:function:: test_invalid_json_cannot_silently_collapse_different_requests(value)
+
+.. py:function:: test_integer_boundaries_are_exact()
+
+.. py:function:: test_invalid_scan_limits_are_rejected(options)
+

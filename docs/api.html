@@ -206,6 +206,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/scan_identity/index.html">
+      <span class="fd-link-text">fsspec_data.scan_identity</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/schema/index.html">
       <span class="fd-link-text">fsspec_data.schema</span>
     </a>
@@ -248,6 +253,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_describe/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_scan_identity/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_scan_identity</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -463,6 +473,9 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#python-asynchronous-parquet-scans">Python asynchronous Parquet scans</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#scan-identity">Scan identity</a>
   </li>
 </ul>
 </div>
@@ -1477,6 +1490,105 @@ use standard Python exceptions, including <code class="docutils literal notransl
 A consumer exception takes precedence over cleanup errors during
 context-manager exit.</p>
 </section>
+<section id="scan-identity">
+<h2>Scan identity<a class="headerlink" href="#scan-identity" title="Link to this heading">¶</a></h2>
+<p>Rust and Python export <code class="docutils literal notranslate"><span class="pre">SourceIdentity</span></code> and <code class="docutils literal notranslate"><span class="pre">ScanIdentity</span></code>. They are immutable equality
+and hash keys for resolved scan requests. These types do not execute scans, cache results,
+or share reads, and existing scan methods do not construct them automatically.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SourceIdentity::new()</span></code> in Rust, or <code class="docutils literal notranslate"><span class="pre">SourceIdentity()</span></code> in Python, creates an opaque token
+for one source configuration and credential context. Retain the token for requests in that
+context. A different configuration, tenant, credential set or effective authorization
+requires a new token, even when it uses the same filesystem object. Tokens contain no
+credentials and have no serialization contract. They are intended for in-process use.</p>
+<p>Python construction:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScanIdentity</span><span class="p">,</span> <span class="n">SourceIdentity</span>
+
+<span class="n">source</span> <span class="o">=</span> <span class="n">SourceIdentity</span><span class="p">()</span>
+<span class="n">identity</span> <span class="o">=</span> <span class="n">ScanIdentity</span><span class="p">(</span>
+    <span class="n">source</span><span class="p">,</span>
+    <span class="s2">"orders"</span><span class="p">,</span>
+    <span class="n">snapshot</span><span class="o">=</span><span class="p">{</span><span class="s2">"namespace_id"</span><span class="p">:</span> <span class="s2">"warehouse"</span><span class="p">,</span> <span class="s2">"table_id"</span><span class="p">:</span> <span class="s2">"orders-uuid"</span><span class="p">,</span> <span class="s2">"generation"</span><span class="p">:</span> <span class="mi">7</span><span class="p">},</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"order_id"</span><span class="p">,</span> <span class="s2">"amount"</span><span class="p">],</span>
+    <span class="n">row_offset</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">row_limit</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The snapshot must describe the version actually pinned by the provider. Manifest snapshots
+include namespace ID, table ID and generation; a generation number alone cannot distinguish
+replacement tables. Object snapshots can use a provider-checked version ID or ETag. The
+constructor does not verify a snapshot against storage. A missing or null snapshot gives
+each construction a distinct identity, so a mutable path cannot match an earlier request
+by default. Copying or cloning an existing identity preserves it.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Python parameter</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Identity meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">source</span></code></p></td>
+<td><p>Required</p></td>
+<td><p>Opaque source and credential scope.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">path</span></code></p></td>
+<td><p>Required</p></td>
+<td><p>Exact path; no protocol stripping, case folding or path normalization.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">snapshot</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Provider-defined JSON description of the pinned version. Null disables matching independently constructed requests.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">columns</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Ordered column names, including duplicates. All columns (<code class="docutils literal notranslate"><span class="pre">None</span></code>) differs from no columns (<code class="docutils literal notranslate"><span class="pre">[]</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">row_offset</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+<td><p>Rows skipped before output limits.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1024</span></code></p></td>
+<td><p>Positive maximum rows per batch; affects batch boundaries.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">row_limit</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Output row limit. Zero differs from no limit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">byte_limit</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Cumulative output byte limit.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">filter</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Provider-defined JSON predicate; compared without interpretation or execution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">start_position</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Provider-defined JSON resume position, including its source/version context where applicable.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">backend_options</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Additional result-affecting settings, including schema and codec options. Credentials belong to the source scope, not this value.</p></td>
+</tr>
+</tbody>
+</table>
+<p>JSON object key order is ignored recursively. Arrays, column order, duplicates, strings and
+JSON types remain significant. Filters are not rewritten for semantic equivalence.
+Order-sensitive settings, such as schema field order, must be represented as arrays.
+Python accepts JSON scalars, lists and dictionaries with string keys; integers must fit signed or
+unsigned 64 bits and floats must be finite. Other inputs are rejected rather than coerced.
+Inputs are copied, so later mutation cannot change an identity already used as a key.</p>
+<p>Rust construction uses <code class="docutils literal notranslate"><span class="pre">ScanIdentity::new(source,</span> <span class="pre">path,</span> <span class="pre">snapshot,</span> <span class="pre">selection,</span> <span class="pre">options,</span> <span class="pre">filter,</span> <span class="pre">start_position,</span> <span class="pre">backend_options)</span></code>: <code class="docutils literal notranslate"><span class="pre">selection</span></code> is <code class="docutils literal notranslate"><span class="pre">ScanSelection</span></code>, <code class="docutils literal notranslate"><span class="pre">options</span></code> is
+<code class="docutils literal notranslate"><span class="pre">StreamOptions</span></code>, and the snapshot, filter, position and backend options are <code class="docutils literal notranslate"><span class="pre">serde_json::Value</span></code>.
+Rust and Python use the same comparison implementation. Debug/repr output omits request
+contents, including paths and predicate values. Hash values are not persistent IDs.</p>
+<p>Cancellation, deadlines and execution buffer limits remain per consumer. Equal logical
+identities do not authorize sharing cancellation state, bypassing a consumer’s limits,
+or skipping authorization and version checks. These execution rules must be enforced
+separately by any future read-sharing implementation.</p>
+</section>
 </section>
 
 
@@ -1670,6 +1782,9 @@ context-manager exit.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#python-asynchronous-parquet-scans">Python asynchronous Parquet scans</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#scan-identity">Scan identity</a>
   </li>
 </ul>
 

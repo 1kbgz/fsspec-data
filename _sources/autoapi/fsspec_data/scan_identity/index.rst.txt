@@ -1,0 +1,78 @@
+fsspec_data.scan_identity
+=========================
+
+.. py:module:: fsspec_data.scan_identity
+
+.. autoapi-nested-parse::
+
+   Immutable comparison keys for scan requests; no caching or read sharing.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.scan_identity._rust
+   fsspec_data.scan_identity.JsonValue
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.scan_identity.SourceIdentity
+   fsspec_data.scan_identity.ScanIdentity
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.scan_identity._json
+
+
+Module Contents
+---------------
+
+.. py:data:: _rust
+
+.. py:type:: JsonValue
+   :canonical: None | bool | int | float | str | list[Any] | dict[str, Any]
+
+
+.. py:function:: _json(value: JsonValue) -> str
+
+.. py:class:: SourceIdentity
+
+   One source configuration and credential context; retain this token for reuse.
+
+   Create a fresh token when configuration or effective authorization changes.
+   Tokens are process-local, opaque, and contain no credentials.
+
+
+   .. py:attribute:: _native
+      :type:  Any
+
+
+   .. py:method:: __repr__() -> str
+
+
+.. py:class:: ScanIdentity(source: SourceIdentity, path: str, *, snapshot: JsonValue = None, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, filter: JsonValue = None, start_position: JsonValue = None, backend_options: JsonValue = None)
+
+   Compare resolved scan requests without exposing contents in repr.
+
+   JSON objects compare independently of key order; arrays retain order. A missing
+   snapshot makes each construction distinct. Filters are compared, not executed.
+
+
+   .. py:attribute:: _native
+      :type:  Any
+
+
+   .. py:method:: __repr__() -> str
+
+

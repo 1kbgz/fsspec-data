@@ -206,6 +206,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="scan_identity/index.html">
+      <span class="fd-link-text">fsspec_data.scan_identity</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="schema/index.html">
       <span class="fd-link-text">fsspec_data.schema</span>
     </a>
@@ -248,6 +253,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="tests/test_describe/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_describe</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="tests/test_scan_identity/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_scan_identity</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -777,6 +787,24 @@
     <a href="#fsspec_data.json_schema_to_arrow">json_schema_to_arrow()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.ScanIdentity">ScanIdentity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.ScanIdentity._native">ScanIdentity._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.ScanIdentity.__repr__">ScanIdentity.__repr__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.SourceIdentity">SourceIdentity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.SourceIdentity._native">SourceIdentity._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.SourceIdentity.__repr__">SourceIdentity.__repr__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.DEFAULT_SCHEMA_RESOLVERS">DEFAULT_SCHEMA_RESOLVERS</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
@@ -1043,6 +1071,7 @@
 <li class="toctree-l1"><a class="reference internal" href="describe/index.html">fsspec_data.describe</a></li>
 <li class="toctree-l1"><a class="reference internal" href="interchange/index.html">fsspec_data.interchange</a></li>
 <li class="toctree-l1"><a class="reference internal" href="json_schema/index.html">fsspec_data.json_schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scan_identity/index.html">fsspec_data.scan_identity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="schema/index.html">fsspec_data.schema</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/index.html">fsspec_data.tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="view/index.html">fsspec_data.view</a></li>
@@ -1145,6 +1174,12 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaPolicy" title="fsspec_data.SchemaPolicy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaPolicy</span></code></a></p></td>
 <td><p>str(object='') -&gt; str</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.ScanIdentity" title="fsspec_data.ScanIdentity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScanIdentity</span></code></a></p></td>
+<td><p>Compare resolved scan requests without exposing contents in repr.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SourceIdentity" title="fsspec_data.SourceIdentity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SourceIdentity</span></code></a></p></td>
+<td><p>One source configuration and credential context; retain this token for reuse.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.ResolvedSchema" title="fsspec_data.ResolvedSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResolvedSchema</span></code></a></p></td>
 <td><p></p></td>
@@ -2023,6 +2058,42 @@ provided field must be used or dropped unless <code class="docutils literal notr
 <dt class="sig sig-object py" id="fsspec_data.json_schema_to_arrow">
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">json_schema_to_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Schema</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/json_schema.html#json_schema_to_arrow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.json_schema_to_arrow" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.ScanIdentity">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">ScanIdentity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.SourceIdentity" title="fsspec_data.SourceIdentity"><span class="pre">SourceIdentity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">snapshot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">JsonValue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">JsonValue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">JsonValue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">JsonValue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/scan_identity.html#ScanIdentity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.ScanIdentity" title="Link to this definition">¶</a></dt>
+<dd><p>Compare resolved scan requests without exposing contents in repr.</p>
+<p>JSON objects compare independently of key order; arrays retain order. A missing
+snapshot makes each construction distinct. Filters are compared, not executed.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.ScanIdentity._native">
+<span class="sig-name descname"><span class="pre">_native</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#fsspec_data.ScanIdentity._native" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.ScanIdentity.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/scan_identity.html#ScanIdentity.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.ScanIdentity.__repr__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.SourceIdentity">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">SourceIdentity</span></span><a class="reference internal" href="../../_modules/fsspec_data/scan_identity.html#SourceIdentity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.SourceIdentity" title="Link to this definition">¶</a></dt>
+<dd><p>One source configuration and credential context; retain this token for reuse.</p>
+<p>Create a fresh token when configuration or effective authorization changes.
+Tokens are process-local, opaque, and contain no credentials.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.SourceIdentity._native">
+<span class="sig-name descname"><span class="pre">_native</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#fsspec_data.SourceIdentity._native" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.SourceIdentity.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/scan_identity.html#SourceIdentity.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.SourceIdentity.__repr__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="fsspec_data.DEFAULT_SCHEMA_RESOLVERS">
@@ -3049,6 +3120,24 @@ or a format name. <code class="docutils literal notranslate"><span class="pre">u
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.json_schema_to_arrow">json_schema_to_arrow()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.ScanIdentity">ScanIdentity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.ScanIdentity._native">ScanIdentity._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.ScanIdentity.__repr__">ScanIdentity.__repr__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.SourceIdentity">SourceIdentity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.SourceIdentity._native">SourceIdentity._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.SourceIdentity.__repr__">SourceIdentity.__repr__()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.DEFAULT_SCHEMA_RESOLVERS">DEFAULT_SCHEMA_RESOLVERS</a>
