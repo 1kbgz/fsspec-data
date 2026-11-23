@@ -27,7 +27,9 @@ unreferenced parts are retained; this API performs no garbage collection or dele
 `create` requires no live table, `append` requires an incomplete table with matching schema
 and partition values, and `replace` requires an existing table. Replacement creates a new
 table identity and retains earlier generations. Schema evolution and cross-partition
-transactions are not implemented.
+transactions are not implemented. Writer schemas support booleans, signed/unsigned integers,
+Float32/64, strings, binary, dates, timestamps, valid Time32/64 units, durations, and Decimal128.
+Nested and dictionary fields and other scalar types are rejected as unsupported.
 
 `recover` checks the token's root against this table. The caller must restore the same source
 and credential context. `retry=False` observes publication and repairs a completion marker;
