@@ -883,13 +883,20 @@ reports a close error; an earlier scan error takes precedence during iteration.
 
 `await scan_parquet_async(url, **options)` returns an `AsyncDecodedBatchStream` with an
 Arrow `schema` and async iteration yielding `pyarrow.RecordBatch` values. This API reads
-`s3://bucket/key` and `s3-rs://bucket/key` through native fsspec-rs handles. Other protocols
-and Python `DataSource` implementations are not supported by this entry point.
+`s3://bucket/key` and `s3-rs://bucket/key` through native fsspec-rs handles by default.
+Passing `fs=` uses that configured Python filesystem's `open_async` instead.
+
+`await source.scan_async(path, **options)` provides the same selection, limits and stream
+contract on `DataSource`. The base implementation raises `NotImplementedError`.
+`FileDataSource` supports Parquet paths through its filesystem's `open_async`; it does not
+call synchronous `describe`, `info` or `open`. Other source implementations can override
+`scan_async` to resolve their own table paths.
 
 Options:
 
 | Parameter         | Default | Meaning                                                                                                                                                                                          |
 | ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `fs`              | `None`  | Configured filesystem with an async `open_async(path, mode="rb")`. Mutually exclusive with `storage_options`; supplied by `FileDataSource`.                                                      |
 | `storage_options` | `None`  | Flat fsspec-rs S3 options, such as `anon`, `region`, `endpoint_url`, `key`, `secret` and `token`. Values are strings, booleans or numbers. Environment and credential defaults follow fsspec-rs. |
 | `columns`         | `None`  | Top-level column names in output order. Duplicates and an empty selection are supported.                                                                                                         |
 | `row_offset`      | `0`     | Source rows to skip before applying output limits.                                                                                                                                               |
@@ -902,11 +909,21 @@ Options:
 | `deadline`        | `None`  | Absolute deadline in `asyncio.get_running_loop().time()` units. Includes opening the file, metadata, reads, decoding and idle consumer time.                                                     |
 
 Buffer accounting and decoder allocation limits follow the
-[Rust async scan contract](#rust-asynchronous-parquet-scans). Each scan owns an independent
+[Rust async scan contract](#rust-asynchronous-parquet-scans). Native S3 scans own an independent
 filesystem, file and I/O context. The native context uses the fsspec-rs defaults of 64
 operations, 64 MiB of buffered I/O and an 8 MiB maximum read; S3 reserves both output and
 staging capacity. Decode work runs on the Rust scan worker. PyO3 connects Rust futures to
 the calling asyncio loop, without using Python executor threads for waits.
+
+With `fs=`, the scan owns the opened file and leaves the filesystem open. The file must
+provide a cached nonnegative integer `size`, awaitable `read(n)` returning at most `n`
+bytes, `seek(offset, 0)`, and awaitable `aclose()` or `close()`. Seeking may be asynchronous
+or update a cached cursor synchronously without I/O. Calls run on the opening task's
+asyncio loop with its captured context variables. Pending calls are cancelled and awaited
+before closing the file. The opener is responsible for cleaning up partially opened files
+if opening fails or is cancelled. Providers must preserve the file's size and contents
+throughout a scan, using immutable objects or version checks. Provider caches and internal
+allocations are outside the scan's buffer limits. There is no synchronous I/O fallback.
 
 `AsyncDecodedBatchStream` supports `async for`, `async with`, and `await stream.aclose()`.
 It permits one pending batch request. Overlapping `__anext__` calls raise `RuntimeError`.
@@ -915,7 +932,7 @@ The producer does not prefetch another batch while the consumer is idle. Breakin
 
 EOF and scan errors close the stream. Task cancellation during opening or iteration
 cancels native work and raises `asyncio.CancelledError`. `aclose()` cancels pending work,
-waits for file/filesystem/context cleanup and is safe to repeat. Cleanup continues if its
+waits for owned resources to close and is safe to repeat. Cleanup continues if its
 awaiter is cancelled; another `aclose()` waits for that same cleanup. Cleanup is not cut
 short by the scan deadline. Dropping the stream requests native cancellation without
 waiting for cleanup.
@@ -924,5 +941,6 @@ Deadlines raise `TimeoutError`; buffer limit failures raise `ValueError`. Storag
 use standard Python exceptions, including `FileNotFoundError`, `PermissionError`,
 `ConnectionError`, `TimeoutError` and `OSError`. Storage exceptions retain fsspec-rs's
 `kind` string and `retry_safe` flag. Object replacement raises `OSError` with
-`kind == "conflict"`. A consumer exception takes precedence over cleanup errors during
+`kind == "conflict"`. Python provider exceptions preserve their original type and attributes.
+A consumer exception takes precedence over cleanup errors during
 context-manager exit.
