@@ -29,7 +29,7 @@ impl CancellationToken {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct StreamOptions {
     pub batch_size: usize,
     pub row_limit: Option<usize>,
@@ -47,7 +47,7 @@ impl Default for StreamOptions {
 }
 
 /// Selection applied before output row and byte limits.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct ScanSelection {
     /// Top-level columns in output order, including duplicates; None selects all.
     pub columns: Option<Vec<String>>,

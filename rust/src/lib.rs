@@ -14,6 +14,7 @@ mod parquet_range_tests;
 mod parquet_ranges;
 pub mod parts;
 mod plan;
+mod scan_identity;
 mod schema;
 pub mod sink;
 mod stream;
@@ -37,6 +38,7 @@ pub use plan::{
     CastRegistry, DataFormat, FieldAddition, FieldDescriptor, FieldMapping, InterchangePlan,
     InterchangeRequest, PlannedStream, ProjectionOptions, SchemaPolicy, DEFAULT_CAST_REGISTRY,
 };
+pub use scan_identity::{ScanIdentity, SourceIdentity};
 pub use schema::{
     schema_from_fields, ResolvedSchema, SchemaDecoder, SchemaDocument, SchemaFormat,
     SchemaProvenance, SchemaProvider, SchemaReference, SchemaResolverRegistry, SharedFileSystem,

@@ -944,3 +944,69 @@ use standard Python exceptions, including `FileNotFoundError`, `PermissionError`
 `kind == "conflict"`. Python provider exceptions preserve their original type and attributes.
 A consumer exception takes precedence over cleanup errors during
 context-manager exit.
+
+## Scan identity
+
+Rust and Python export `SourceIdentity` and `ScanIdentity`. They are immutable equality
+and hash keys for resolved scan requests. These types do not execute scans, cache results,
+or share reads, and existing scan methods do not construct them automatically.
+
+`SourceIdentity::new()` in Rust, or `SourceIdentity()` in Python, creates an opaque token
+for one source configuration and credential context. Retain the token for requests in that
+context. A different configuration, tenant, credential set or effective authorization
+requires a new token, even when it uses the same filesystem object. Tokens contain no
+credentials and have no serialization contract. They are intended for in-process use.
+
+Python construction:
+
+```python
+from fsspec_data import ScanIdentity, SourceIdentity
+
+source = SourceIdentity()
+identity = ScanIdentity(
+    source,
+    "orders",
+    snapshot={"namespace_id": "warehouse", "table_id": "orders-uuid", "generation": 7},
+    columns=["order_id", "amount"],
+    row_offset=100,
+    row_limit=500,
+)
+```
+
+The snapshot must describe the version actually pinned by the provider. Manifest snapshots
+include namespace ID, table ID and generation; a generation number alone cannot distinguish
+replacement tables. Object snapshots can use a provider-checked version ID or ETag. The
+constructor does not verify a snapshot against storage. A missing or null snapshot gives
+each construction a distinct identity, so a mutable path cannot match an earlier request
+by default. Copying or cloning an existing identity preserves it.
+
+| Python parameter  | Default  | Identity meaning                                                                                                                  |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `source`          | Required | Opaque source and credential scope.                                                                                               |
+| `path`            | Required | Exact path; no protocol stripping, case folding or path normalization.                                                            |
+| `snapshot`        | `None`   | Provider-defined JSON description of the pinned version. Null disables matching independently constructed requests.               |
+| `columns`         | `None`   | Ordered column names, including duplicates. All columns (`None`) differs from no columns (`[]`).                                  |
+| `row_offset`      | `0`      | Rows skipped before output limits.                                                                                                |
+| `batch_size`      | `1024`   | Positive maximum rows per batch; affects batch boundaries.                                                                        |
+| `row_limit`       | `None`   | Output row limit. Zero differs from no limit.                                                                                     |
+| `byte_limit`      | `None`   | Cumulative output byte limit.                                                                                                     |
+| `filter`          | `None`   | Provider-defined JSON predicate; compared without interpretation or execution.                                                    |
+| `start_position`  | `None`   | Provider-defined JSON resume position, including its source/version context where applicable.                                     |
+| `backend_options` | `None`   | Additional result-affecting settings, including schema and codec options. Credentials belong to the source scope, not this value. |
+
+JSON object key order is ignored recursively. Arrays, column order, duplicates, strings and
+JSON types remain significant. Filters are not rewritten for semantic equivalence.
+Order-sensitive settings, such as schema field order, must be represented as arrays.
+Python accepts JSON scalars, lists and dictionaries with string keys; integers must fit signed or
+unsigned 64 bits and floats must be finite. Other inputs are rejected rather than coerced.
+Inputs are copied, so later mutation cannot change an identity already used as a key.
+
+Rust construction uses `ScanIdentity::new(source, path, snapshot, selection, options, filter, start_position, backend_options)`: `selection` is `ScanSelection`, `options` is
+`StreamOptions`, and the snapshot, filter, position and backend options are `serde_json::Value`.
+Rust and Python use the same comparison implementation. Debug/repr output omits request
+contents, including paths and predicate values. Hash values are not persistent IDs.
+
+Cancellation, deadlines and execution buffer limits remain per consumer. Equal logical
+identities do not authorize sharing cancellation state, bypassing a consumer's limits,
+or skipping authorization and version checks. These execution rules must be enforced
+separately by any future read-sharing implementation.
