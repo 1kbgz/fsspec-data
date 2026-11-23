@@ -765,9 +765,11 @@ name = "fsspec_data_py"
 version = "0.9.0"
 dependencies = [
  "arrow",
+ "bytes",
  "fsspec_data",
  "fsspec_rs",
  "futures",
+ "parquet",
  "pyo3",
  "pyo3-async-runtimes",
  "serde_json",

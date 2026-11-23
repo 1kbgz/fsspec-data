@@ -35,6 +35,7 @@ from .schema import (
     SchemaResolverRegistry,
     resolve_schema,
 )
+from .tables import BatchReceipt, ManifestTable, PublicationReceipt, RecoveryToken, SinkOptions, TableSnapshot, TableWriter
 from .view import DEFAULT_MAPPING, DataViewFileSystem, ViewEntry
 
 __version__ = "0.9.0"
@@ -46,6 +47,7 @@ __all__ = [
     "DEFAULT_REGISTRY",
     "DEFAULT_SCHEMA_RESOLVERS",
     "AsyncDecodedBatchStream",
+    "BatchReceipt",
     "Codec",
     "CodecCapabilities",
     "CodecRegistry",
@@ -63,8 +65,11 @@ __all__ = [
     "FileDataSource",
     "InterchangePlan",
     "InterchangeRequest",
+    "ManifestTable",
     "Node",
     "PlannedBatchStream",
+    "PublicationReceipt",
+    "RecoveryToken",
     "ResolvedSchema",
     "S3ParquetSource",
     "ScanIdentity",
@@ -74,7 +79,10 @@ __all__ = [
     "SchemaProvenance",
     "SchemaRef",
     "SchemaResolverRegistry",
+    "SinkOptions",
     "SourceIdentity",
+    "TableSnapshot",
+    "TableWriter",
     "ViewEntry",
     "__version__",
     "json_schema_to_arrow",
