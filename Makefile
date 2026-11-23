@@ -37,8 +37,8 @@ install:  ## install python library
 #########
 .PHONY: lint-py lint-rs lint-docs lint lints
 lint-py:  ## run python linter with ruff
-	python -m ruff check fsspec_data
-	python -m ruff format --check fsspec_data
+	python -m ruff check fsspec_data benchmarks
+	python -m ruff format --check fsspec_data benchmarks
 
 lint-rs:  ## run rust linter
 	make -C rust lint
@@ -54,8 +54,8 @@ lints: lint
 
 .PHONY: fix-py fix-rs fix-docs fix format
 fix-py:  ## fix python formatting with ruff
-	python -m ruff check --fix fsspec_data
-	python -m ruff format fsspec_data
+	python -m ruff check --fix fsspec_data benchmarks
+	python -m ruff format fsspec_data benchmarks
 
 fix-rs:  ## fix code with rustfmt
 	make -C rust fix

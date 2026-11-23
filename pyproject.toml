@@ -52,6 +52,7 @@ develop = [
     "mdformat-myst",
     "mdformat-tables>=1",
     "pytest",
+    "pytest-benchmark>=5,<6",
     "pytest-cov",
     "ruff",
     "twine",
