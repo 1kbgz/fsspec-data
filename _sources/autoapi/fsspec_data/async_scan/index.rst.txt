@@ -32,6 +32,8 @@ Functions
 .. autoapisummary::
 
    fsspec_data.async_scan.scan_parquet_async
+   fsspec_data.async_scan._s3_options
+   fsspec_data.async_scan._open_scan
 
 
 Module Contents
@@ -39,12 +41,23 @@ Module Contents
 
 .. py:data:: _rust
 
-.. py:class:: AsyncDecodedBatchStream(schema: pyarrow.Schema, native: Any)
+.. py:class:: AsyncDecodedBatchStream(schema: pyarrow.Schema, native: Any, identity: fsspec_data.scan_identity.ScanIdentity | None = None)
 
    Demand-driven Arrow batches; use ``aclose`` or an async context manager.
 
 
    .. py:attribute:: schema
+
+
+   .. py:attribute:: _identity
+      :value: None
+
+
+
+   .. py:attribute:: _owner
+      :type:  Any
+      :value: None
+
 
 
    .. py:attribute:: _native
@@ -66,12 +79,22 @@ Module Contents
 
 
 
+   .. py:property:: identity
+      :type: fsspec_data.scan_identity.ScanIdentity | None
+
+
+      Resolved native S3 request identity; None for providers without identity support.
+
+
    .. py:method:: __aiter__() -> AsyncDecodedBatchStream
 
 
    .. py:method:: __anext__() -> pyarrow.RecordBatch
       :async:
 
+
+
+   .. py:method:: _source_closed() -> bool
 
 
    .. py:method:: aclose() -> None
@@ -140,5 +163,11 @@ Module Contents
    ``deadline`` uses asyncio loop time. With ``fs``, only the opened file is owned
    by the scan; its reads and close must be awaitable, its size known, and seeks
    must be asynchronous or operate on a cached cursor without I/O.
+
+
+.. py:function:: _s3_options(storage_options: collections.abc.Mapping[str, str | bool | int | float] | None) -> dict[str, str]
+
+.. py:function:: _open_scan(native: Any, owner: Any = None) -> AsyncDecodedBatchStream
+   :async:
 
 

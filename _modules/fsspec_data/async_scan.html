@@ -610,6 +610,11 @@ window.runMermaid = runMermaid;</script>
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../../autoapi/fsspec_data/s3/index.html">
+      <span class="fd-link-text">fsspec_data.s3</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../../autoapi/fsspec_data/scan_identity/index.html">
       <span class="fd-link-text">fsspec_data.scan_identity</span>
     </a>
@@ -745,6 +750,8 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">fsspec</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractFileSystem</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">.scan_identity</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScanIdentity</span>
+
 <span class="n">_rust</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">".fsspec_data"</span><span class="p">,</span> <span class="n">__package__</span><span class="p">)</span>
 
 
@@ -753,12 +760,19 @@ window.runMermaid = runMermaid;</script>
 <span class="k">class</span><span class="w"> </span><span class="nc">AsyncDecodedBatchStream</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Demand-driven Arrow batches; use ``aclose`` or an async context manager."""</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span><span class="p">,</span> <span class="n">native</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span><span class="p">,</span> <span class="n">native</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">identity</span><span class="p">:</span> <span class="n">ScanIdentity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_identity</span> <span class="o">=</span> <span class="n">identity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_native</span> <span class="o">=</span> <span class="n">native</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pending</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_close_waiter</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScanIdentity</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Resolved native S3 request identity; None for providers without identity support."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_identity</span>
 
 <div class="viewcode-block" id="AsyncDecodedBatchStream.__aiter__">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/index.html#fsspec_data.async_scan.AsyncDecodedBatchStream.__aiter__">[docs]</a>
@@ -769,7 +783,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="AsyncDecodedBatchStream.__anext__">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/index.html#fsspec_data.async_scan.AsyncDecodedBatchStream.__anext__">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__anext__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_closed</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">StopAsyncIteration</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pending</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"another batch request is already pending"</span><span class="p">)</span>
@@ -783,10 +797,16 @@ window.runMermaid = runMermaid;</script>
             <span class="k">raise</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_pending</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="ow">or</span> <span class="n">batch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_closed</span><span class="p">()</span> <span class="ow">or</span> <span class="n">batch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">aclose</span><span class="p">()</span>
             <span class="k">raise</span> <span class="ne">StopAsyncIteration</span>
         <span class="k">return</span> <span class="n">batch</span></div>
+
+
+<div class="viewcode-block" id="AsyncDecodedBatchStream._source_closed">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/index.html#fsspec_data.async_scan.AsyncDecodedBatchStream._source_closed">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_source_closed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">_close_waiter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="AsyncDecodedBatchStream.aclose">
@@ -802,7 +822,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="AsyncDecodedBatchStream.__aenter__">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/index.html#fsspec_data.async_scan.AsyncDecodedBatchStream.__aenter__">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__aenter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_closed</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"scan is closed"</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -934,20 +954,39 @@ window.runMermaid = runMermaid;</script>
         <span class="n">bucket</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">bucket</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">key</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"S3 URL must include a bucket and object key"</span><span class="p">)</span>
-        <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="n">storage_options</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"storage_options values must be strings, booleans or numbers"</span><span class="p">)</span>
-            <span class="n">options</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">_s3_options</span><span class="p">(</span><span class="n">storage_options</span><span class="p">)</span>
         <span class="n">timeout</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">deadline</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">deadline</span> <span class="o">-</span> <span class="n">loop</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
         <span class="n">native</span> <span class="o">=</span> <span class="n">_rust</span><span class="o">.</span><span class="n">async_parquet_scan</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"s3://</span><span class="si">{</span><span class="n">bucket</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">_open_scan</span><span class="p">(</span><span class="n">native</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_s3_options">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/async_scan/index.html#fsspec_data.async_scan._s3_options">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_s3_options</span><span class="p">(</span><span class="n">storage_options</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="n">storage_options</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"storage_options values must be strings, booleans or numbers"</span><span class="p">)</span>
+        <span class="n">options</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">options</span></div>
+
+
+
+<div class="viewcode-block" id="_open_scan">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/async_scan/index.html#fsspec_data.async_scan._open_scan">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_open_scan</span><span class="p">(</span><span class="n">native</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncDecodedBatchStream</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">schema</span> <span class="o">=</span> <span class="k">await</span> <span class="n">native</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+        <span class="n">schema</span><span class="p">,</span> <span class="n">identity</span> <span class="o">=</span> <span class="k">await</span> <span class="n">native</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">owner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">owner</span><span class="o">.</span><span class="n">_close_waiter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"source is closed"</span><span class="p">)</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">AsyncDecodedBatchStream</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">native</span><span class="p">,</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">identity</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ScanIdentity</span><span class="o">.</span><span class="n">_from_native</span><span class="p">(</span><span class="n">identity</span><span class="p">))</span>
+        <span class="n">stream</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="n">owner</span>
+        <span class="k">return</span> <span class="n">stream</span>
     <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">):</span>
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">shield</span><span class="p">(</span><span class="n">native</span><span class="o">.</span><span class="n">close</span><span class="p">())</span>
-        <span class="k">raise</span>
-    <span class="k">return</span> <span class="n">AsyncDecodedBatchStream</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">native</span><span class="p">)</span></div>
+        <span class="k">raise</span></div>
 
 </pre></div>
 

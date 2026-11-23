@@ -206,6 +206,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../s3/index.html">
+      <span class="fd-link-text">fsspec_data.s3</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../scan_identity/index.html">
       <span class="fd-link-text">fsspec_data.scan_identity</span>
     </a>
@@ -337,6 +342,12 @@
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.schema">AsyncDecodedBatchStream.schema</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream._identity">AsyncDecodedBatchStream._identity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream._owner">AsyncDecodedBatchStream._owner</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream._native">AsyncDecodedBatchStream._native</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -349,10 +360,16 @@
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream._close_waiter">AsyncDecodedBatchStream._close_waiter</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.identity">AsyncDecodedBatchStream.identity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.__aiter__">AsyncDecodedBatchStream.__aiter__()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.__anext__">AsyncDecodedBatchStream.__anext__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream._source_closed">AsyncDecodedBatchStream._source_closed()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.aclose">AsyncDecodedBatchStream.aclose()</a>
@@ -389,6 +406,12 @@
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.async_scan.scan_parquet_async">scan_parquet_async()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.async_scan._s3_options">_s3_options()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.async_scan._open_scan">_open_scan()</a>
   </li>
 </ul>
 </div>
@@ -443,6 +466,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.async_scan.scan_parquet_async" title="fsspec_data.async_scan.scan_parquet_async"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scan_parquet_async</span></code></a>(url, *[, fs, storage_options, ...]) → AsyncDecodedBatchStream</p></td>
 <td><p>Open a Parquet scan on native S3 or a filesystem with <code class="docutils literal notranslate"><span class="pre">open_async</span></code>.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.async_scan._s3_options" title="fsspec_data.async_scan._s3_options"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_s3_options</span></code></a>(storage_options) → dict[str, str]</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.async_scan._open_scan" title="fsspec_data.async_scan._open_scan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_open_scan</span></code></a>(native[, owner]) → AsyncDecodedBatchStream</p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -455,11 +484,21 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="fsspec_data.async_scan.AsyncDecodedBatchStream">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.async_scan.</span></span><span class="sig-name descname"><span class="pre">AsyncDecodedBatchStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan.AsyncDecodedBatchStream" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.async_scan.</span></span><span class="sig-name descname"><span class="pre">AsyncDecodedBatchStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../scan_identity/index.html#fsspec_data.scan_identity.ScanIdentity" title="fsspec_data.scan_identity.ScanIdentity"><span class="pre">fsspec_data.scan_identity.ScanIdentity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan.AsyncDecodedBatchStream" title="Link to this definition">¶</a></dt>
 <dd><p>Demand-driven Arrow batches; use <code class="docutils literal notranslate"><span class="pre">aclose</span></code> or an async context manager.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.async_scan.AsyncDecodedBatchStream.schema">
 <span class="sig-name descname"><span class="pre">schema</span></span><a class="headerlink" href="#fsspec_data.async_scan.AsyncDecodedBatchStream.schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.async_scan.AsyncDecodedBatchStream._identity">
+<span class="sig-name descname"><span class="pre">_identity</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.async_scan.AsyncDecodedBatchStream._identity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.async_scan.AsyncDecodedBatchStream._owner">
+<span class="sig-name descname"><span class="pre">_owner</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.async_scan.AsyncDecodedBatchStream._owner" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -482,6 +521,12 @@
 <span class="sig-name descname"><span class="pre">_close_waiter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">asyncio.Future</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.async_scan.AsyncDecodedBatchStream._close_waiter" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.async_scan.AsyncDecodedBatchStream.identity">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../scan_identity/index.html#fsspec_data.scan_identity.ScanIdentity" title="fsspec_data.scan_identity.ScanIdentity"><span class="pre">fsspec_data.scan_identity.ScanIdentity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.async_scan.AsyncDecodedBatchStream.identity" title="Link to this definition">¶</a></dt>
+<dd><p>Resolved native S3 request identity; None for providers without identity support.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.async_scan.AsyncDecodedBatchStream.__aiter__">
 <span class="sig-name descname"><span class="pre">__aiter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.async_scan.AsyncDecodedBatchStream" title="fsspec_data.async_scan.AsyncDecodedBatchStream"><span class="pre">AsyncDecodedBatchStream</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream.__aiter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan.AsyncDecodedBatchStream.__aiter__" title="Link to this definition">¶</a></dt>
@@ -490,6 +535,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.async_scan.AsyncDecodedBatchStream.__anext__">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__anext__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.RecordBatch</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream.__anext__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan.AsyncDecodedBatchStream.__anext__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.async_scan.AsyncDecodedBatchStream._source_closed">
+<span class="sig-name descname"><span class="pre">_source_closed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream._source_closed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan.AsyncDecodedBatchStream._source_closed" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -560,6 +610,16 @@ by the scan; its reads and close must be awaitable, its size known, and seeks
 must be asynchronous or operate on a cached cursor without I/O.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.async_scan._s3_options">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.async_scan.</span></span><span class="sig-name descname"><span class="pre">_s3_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#_s3_options"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan._s3_options" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.async_scan._open_scan">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.async_scan.</span></span><span class="sig-name descname"><span class="pre">_open_scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.async_scan.AsyncDecodedBatchStream" title="fsspec_data.async_scan.AsyncDecodedBatchStream"><span class="pre">AsyncDecodedBatchStream</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/async_scan.html#_open_scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.async_scan._open_scan" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </section>
 </section>
 
@@ -618,6 +678,12 @@ must be asynchronous or operate on a cached cursor without I/O.</p>
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.schema">AsyncDecodedBatchStream.schema</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream._identity">AsyncDecodedBatchStream._identity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream._owner">AsyncDecodedBatchStream._owner</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream._native">AsyncDecodedBatchStream._native</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -630,10 +696,16 @@ must be asynchronous or operate on a cached cursor without I/O.</p>
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream._close_waiter">AsyncDecodedBatchStream._close_waiter</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.identity">AsyncDecodedBatchStream.identity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.__aiter__">AsyncDecodedBatchStream.__aiter__()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.__anext__">AsyncDecodedBatchStream.__anext__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream._source_closed">AsyncDecodedBatchStream._source_closed()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.async_scan.AsyncDecodedBatchStream.aclose">AsyncDecodedBatchStream.aclose()</a>
@@ -670,6 +742,12 @@ must be asynchronous or operate on a cached cursor without I/O.</p>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.async_scan.scan_parquet_async">scan_parquet_async()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.async_scan._s3_options">_s3_options()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.async_scan._open_scan">_open_scan()</a>
   </li>
 </ul>
 

@@ -1,0 +1,72 @@
+fsspec_data.s3
+==============
+
+.. py:module:: fsspec_data.s3
+
+.. autoapi-nested-parse::
+
+   Configured native S3 sources for asynchronous Parquet scans.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.s3.S3ParquetSource
+
+
+Module Contents
+---------------
+
+.. py:class:: S3ParquetSource(bucket: str, *, storage_options: collections.abc.Mapping[str, str | bool | int | float] | None = None)
+
+   Bases: :py:obj:`fsspec_data.describe.DataSource`
+
+
+   Async Parquet source retaining one native client and credential-context identity.
+
+   Use an async context manager or ``aclose`` to close its scans and client. Other
+   DataSource operations are unsupported. Recreate after changing configuration or
+   effective authorization; requests within this source retain its initial client.
+
+
+   .. py:attribute:: _bucket
+
+
+   .. py:attribute:: _native
+
+
+   .. py:attribute:: _close_waiter
+      :type:  asyncio.Future[None] | None
+      :value: None
+
+
+
+   .. py:method:: scan_async(path: str, *, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, max_range_bytes: int = 64 * 1024 * 1024, max_batch_bytes: int = 64 * 1024 * 1024, read_chunk_size: int = 1024 * 1024, deadline: float | None = None) -> fsspec_data.async_scan.AsyncDecodedBatchStream
+      :async:
+
+
+      Scan asynchronously with selection and limits; requires backend support.
+
+
+
+   .. py:method:: aclose() -> None
+      :async:
+
+
+      Cancel and drain this source's scans, then close its filesystem and context.
+
+
+
+   .. py:method:: __aenter__() -> Self
+      :async:
+
+
+
+   .. py:method:: __aexit__(exc_type: type[BaseException] | None, exc: BaseException | None, traceback: types.TracebackType | None) -> None
+      :async:
+
+
+

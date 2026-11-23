@@ -76,3 +76,8 @@ Module Contents
    .. py:method:: __repr__() -> str
 
 
+   .. py:method:: _from_native(native: Any) -> ScanIdentity
+      :classmethod:
+
+
+

@@ -27,6 +27,19 @@ Functions
    fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_close
    fsspec_data.tests.test_async_scan.test_deadline_includes_idle_consumer_time
    fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed
+   fsspec_data.tests.test_async_scan.test_configured_source_reuses_identity_from_opened_file_without_extra_head
+   fsspec_data.tests.test_async_scan.test_configured_scan_identity_uses_actual_selection_and_limits
+   fsspec_data.tests.test_async_scan.test_replacement_changes_identity_and_existing_handle_rejects_new_object
+   fsspec_data.tests.test_async_scan.test_clients_and_one_shot_helpers_have_independent_source_scopes
+   fsspec_data.tests.test_async_scan.test_same_identity_keeps_consumer_deadlines_and_close_independent
+   fsspec_data.tests.test_async_scan.test_closing_source_cancels_and_drains_scans
+   fsspec_data.tests.test_async_scan.test_cancelling_one_configured_scan_leaves_source_usable
+   fsspec_data.tests.test_async_scan.test_configured_source_rejects_other_bucket_before_io
+   fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_source_close
+   fsspec_data.tests.test_async_scan.test_configured_source_captures_environment_credentials_at_construction
+   fsspec_data.tests.test_async_scan.test_open_failure_does_not_close_configured_source
+   fsspec_data.tests.test_async_scan.test_object_key_and_size_are_part_of_resolved_identity
+   fsspec_data.tests.test_async_scan.test_cancelling_source_close_waiter_preserves_cleanup
 
 
 Module Contents
@@ -71,4 +84,30 @@ Module Contents
 .. py:function:: test_deadline_includes_idle_consumer_time(store)
 
 .. py:function:: test_independent_scans_continue_after_one_is_closed(store)
+
+.. py:function:: test_configured_source_reuses_identity_from_opened_file_without_extra_head(store)
+
+.. py:function:: test_configured_scan_identity_uses_actual_selection_and_limits(store, changed)
+
+.. py:function:: test_replacement_changes_identity_and_existing_handle_rejects_new_object(store)
+
+.. py:function:: test_clients_and_one_shot_helpers_have_independent_source_scopes(store)
+
+.. py:function:: test_same_identity_keeps_consumer_deadlines_and_close_independent(store)
+
+.. py:function:: test_closing_source_cancels_and_drains_scans(store, during_open)
+
+.. py:function:: test_cancelling_one_configured_scan_leaves_source_usable(store, during_open)
+
+.. py:function:: test_configured_source_rejects_other_bucket_before_io(store)
+
+.. py:function:: test_ready_batch_is_not_delivered_after_source_close()
+
+.. py:function:: test_configured_source_captures_environment_credentials_at_construction(store, monkeypatch)
+
+.. py:function:: test_open_failure_does_not_close_configured_source(store)
+
+.. py:function:: test_object_key_and_size_are_part_of_resolved_identity(store)
+
+.. py:function:: test_cancelling_source_close_waiter_preserves_cleanup()
 

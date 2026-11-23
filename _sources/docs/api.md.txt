@@ -909,7 +909,7 @@ Options:
 | `deadline`        | `None`  | Absolute deadline in `asyncio.get_running_loop().time()` units. Includes opening the file, metadata, reads, decoding and idle consumer time.                                                     |
 
 Buffer accounting and decoder allocation limits follow the
-[Rust async scan contract](#rust-asynchronous-parquet-scans). Native S3 scans own an independent
+[Rust async scan contract](#rust-asynchronous-parquet-scans). One-shot native S3 scans own an independent
 filesystem, file and I/O context. The native context uses the fsspec-rs defaults of 64
 operations, 64 MiB of buffered I/O and an 8 MiB maximum read; S3 reserves both output and
 staging capacity. Decode work runs on the Rust scan worker. PyO3 connects Rust futures to
@@ -945,11 +945,44 @@ use standard Python exceptions, including `FileNotFoundError`, `PermissionError`
 A consumer exception takes precedence over cleanup errors during
 context-manager exit.
 
+## Configured S3 Parquet sources
+
+`S3ParquetSource(bucket, storage_options=None)` retains one native S3 client, I/O context
+and opaque source token. Options follow `scan_parquet_async`. Configuration is read when
+the source is constructed; mutating the input mapping or environment does not rebuild its
+client. Create a new source when changing configuration or effective authorization.
+
+`await source.scan_async(path, **options)` implements the `DataSource` async scan contract
+for Parquet. Other data-source operations are unsupported. Paths may be object keys or
+`s3://`/`s3-rs://` URLs in the configured bucket. A bucket prefix in a key remains part of
+that key. Selection, limits and deadlines match `scan_parquet_async`; each scan owns its
+file and cancellation state. Native admission and I/O byte budgets are shared by the
+source's context; decoder limits remain per scan.
+
+Use the source within one asyncio loop. It supports `async with` and `await source.aclose()`.
+Closing cancels and drains its pending opens and scans, then closes the client and context.
+Repeated close waits for the same cleanup, including after cancellation of a close waiter.
+New scans on a closed source raise `RuntimeError`. Closing or cancelling a single scan
+leaves the source and other scans usable.
+
+Native S3 streams expose a read-only `identity: ScanIdentity`. It includes the source token,
+the opened handle's normalized object key, pinned ETag and size, actual columns/row offset,
+batch/row/byte limits, and Parquet codec. Metadata comes from the opened handle without
+another network request. Reads continue to check ETag and size; identity does not replace
+those checks or claim S3 version-ID pinning. Filters and resume positions are null because
+this scan API does not execute them. Deadlines and execution buffer limits remain per scan.
+
+Matching requests on one configured source compare equal. Separate source instances and
+one-shot helper calls have distinct source tokens, even with identical options. Identity
+remains available after stream close. Python file providers return `identity is None`
+until their snapshot contract is integrated. Equal identities do not currently share reads.
+
 ## Scan identity
 
 Rust and Python export `SourceIdentity` and `ScanIdentity`. They are immutable equality
 and hash keys for resolved scan requests. These types do not execute scans, cache results,
-or share reads, and existing scan methods do not construct them automatically.
+or share reads. Native S3 scans construct them from the opened handle as described above;
+other providers require explicit integration.
 
 `SourceIdentity::new()` in Rust, or `SourceIdentity()` in Python, creates an opaque token
 for one source configuration and credential context. Retain the token for requests in that

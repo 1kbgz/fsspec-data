@@ -610,6 +610,11 @@ window.runMermaid = runMermaid;</script>
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../../autoapi/fsspec_data/s3/index.html">
+      <span class="fd-link-text">fsspec_data.s3</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../../autoapi/fsspec_data/scan_identity/index.html">
       <span class="fd-link-text">fsspec_data.scan_identity</span>
     </a>
@@ -838,6 +843,15 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../autoapi/fsspec_data/scan_identity/index.html#fsspec_data.ScanIdentity.__repr__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">"ScanIdentity(...)"</span></div>
+
+
+<div class="viewcode-block" id="ScanIdentity._from_native">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/scan_identity/index.html#fsspec_data.ScanIdentity._from_native">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_native</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">native</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScanIdentity</span><span class="p">:</span>
+        <span class="n">identity</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">identity</span><span class="p">,</span> <span class="s2">"_native"</span><span class="p">,</span> <span class="n">native</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">identity</span></div>
 </div>
 
 </pre></div>

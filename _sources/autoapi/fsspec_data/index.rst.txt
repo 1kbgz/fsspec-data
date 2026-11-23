@@ -18,6 +18,7 @@ Submodules
    /autoapi/fsspec_data/describe/index
    /autoapi/fsspec_data/interchange/index
    /autoapi/fsspec_data/json_schema/index
+   /autoapi/fsspec_data/s3/index
    /autoapi/fsspec_data/scan_identity/index
    /autoapi/fsspec_data/schema/index
    /autoapi/fsspec_data/tests/index
@@ -70,6 +71,7 @@ Classes
    fsspec_data.InterchangeRequest
    fsspec_data.PlannedBatchStream
    fsspec_data.SchemaPolicy
+   fsspec_data.S3ParquetSource
    fsspec_data.ScanIdentity
    fsspec_data.SourceIdentity
    fsspec_data.ResolvedSchema
@@ -96,12 +98,23 @@ Functions
 Package Contents
 ----------------
 
-.. py:class:: AsyncDecodedBatchStream(schema: pyarrow.Schema, native: Any)
+.. py:class:: AsyncDecodedBatchStream(schema: pyarrow.Schema, native: Any, identity: fsspec_data.scan_identity.ScanIdentity | None = None)
 
    Demand-driven Arrow batches; use ``aclose`` or an async context manager.
 
 
    .. py:attribute:: schema
+
+
+   .. py:attribute:: _identity
+      :value: None
+
+
+
+   .. py:attribute:: _owner
+      :type:  Any
+      :value: None
+
 
 
    .. py:attribute:: _native
@@ -123,12 +136,22 @@ Package Contents
 
 
 
+   .. py:property:: identity
+      :type: fsspec_data.scan_identity.ScanIdentity | None
+
+
+      Resolved native S3 request identity; None for providers without identity support.
+
+
    .. py:method:: __aiter__() -> AsyncDecodedBatchStream
 
 
    .. py:method:: __anext__() -> pyarrow.RecordBatch
       :async:
 
+
+
+   .. py:method:: _source_closed() -> bool
 
 
    .. py:method:: aclose() -> None
@@ -789,6 +812,56 @@ Package Contents
 
 .. py:function:: json_schema_to_arrow(value: collections.abc.Mapping[str, Any]) -> pyarrow.Schema
 
+.. py:class:: S3ParquetSource(bucket: str, *, storage_options: collections.abc.Mapping[str, str | bool | int | float] | None = None)
+
+   Bases: :py:obj:`fsspec_data.describe.DataSource`
+
+
+   Async Parquet source retaining one native client and credential-context identity.
+
+   Use an async context manager or ``aclose`` to close its scans and client. Other
+   DataSource operations are unsupported. Recreate after changing configuration or
+   effective authorization; requests within this source retain its initial client.
+
+
+   .. py:attribute:: _bucket
+
+
+   .. py:attribute:: _native
+
+
+   .. py:attribute:: _close_waiter
+      :type:  asyncio.Future[None] | None
+      :value: None
+
+
+
+   .. py:method:: scan_async(path: str, *, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, max_range_bytes: int = 64 * 1024 * 1024, max_batch_bytes: int = 64 * 1024 * 1024, read_chunk_size: int = 1024 * 1024, deadline: float | None = None) -> fsspec_data.async_scan.AsyncDecodedBatchStream
+      :async:
+
+
+      Scan asynchronously with selection and limits; requires backend support.
+
+
+
+   .. py:method:: aclose() -> None
+      :async:
+
+
+      Cancel and drain this source's scans, then close its filesystem and context.
+
+
+
+   .. py:method:: __aenter__() -> Self
+      :async:
+
+
+
+   .. py:method:: __aexit__(exc_type: type[BaseException] | None, exc: BaseException | None, traceback: types.TracebackType | None) -> None
+      :async:
+
+
+
 .. py:class:: ScanIdentity(source: SourceIdentity, path: str, *, snapshot: JsonValue = None, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, filter: JsonValue = None, start_position: JsonValue = None, backend_options: JsonValue = None)
 
    Compare resolved scan requests without exposing contents in repr.
@@ -802,6 +875,11 @@ Package Contents
 
 
    .. py:method:: __repr__() -> str
+
+
+   .. py:method:: _from_native(native: Any) -> ScanIdentity
+      :classmethod:
+
 
 
 .. py:class:: SourceIdentity

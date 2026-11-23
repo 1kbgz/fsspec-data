@@ -206,6 +206,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="s3/index.html">
+      <span class="fd-link-text">fsspec_data.s3</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="scan_identity/index.html">
       <span class="fd-link-text">fsspec_data.scan_identity</span>
     </a>
@@ -340,6 +345,12 @@
     <a href="#fsspec_data.AsyncDecodedBatchStream.schema">AsyncDecodedBatchStream.schema</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._identity">AsyncDecodedBatchStream._identity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._owner">AsyncDecodedBatchStream._owner</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.AsyncDecodedBatchStream._native">AsyncDecodedBatchStream._native</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -352,10 +363,16 @@
     <a href="#fsspec_data.AsyncDecodedBatchStream._close_waiter">AsyncDecodedBatchStream._close_waiter</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.identity">AsyncDecodedBatchStream.identity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.AsyncDecodedBatchStream.__aiter__">AsyncDecodedBatchStream.__aiter__()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.AsyncDecodedBatchStream.__anext__">AsyncDecodedBatchStream.__anext__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._source_closed">AsyncDecodedBatchStream._source_closed()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.AsyncDecodedBatchStream.aclose">AsyncDecodedBatchStream.aclose()</a>
@@ -787,6 +804,30 @@
     <a href="#fsspec_data.json_schema_to_arrow">json_schema_to_arrow()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.S3ParquetSource">S3ParquetSource</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource._bucket">S3ParquetSource._bucket</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource._native">S3ParquetSource._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource._close_waiter">S3ParquetSource._close_waiter</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource.scan_async">S3ParquetSource.scan_async()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource.aclose">S3ParquetSource.aclose()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource.__aenter__">S3ParquetSource.__aenter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource.__aexit__">S3ParquetSource.__aexit__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.ScanIdentity">ScanIdentity</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -794,6 +835,9 @@
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.ScanIdentity.__repr__">ScanIdentity.__repr__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.ScanIdentity._from_native">ScanIdentity._from_native()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.SourceIdentity">SourceIdentity</a>
@@ -1071,6 +1115,7 @@
 <li class="toctree-l1"><a class="reference internal" href="describe/index.html">fsspec_data.describe</a></li>
 <li class="toctree-l1"><a class="reference internal" href="interchange/index.html">fsspec_data.interchange</a></li>
 <li class="toctree-l1"><a class="reference internal" href="json_schema/index.html">fsspec_data.json_schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="s3/index.html">fsspec_data.s3</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scan_identity/index.html">fsspec_data.scan_identity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="schema/index.html">fsspec_data.schema</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/index.html">fsspec_data.tests</a></li>
@@ -1175,34 +1220,37 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaPolicy" title="fsspec_data.SchemaPolicy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaPolicy</span></code></a></p></td>
 <td><p>str(object='') -&gt; str</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.ScanIdentity" title="fsspec_data.ScanIdentity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScanIdentity</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.S3ParquetSource" title="fsspec_data.S3ParquetSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">S3ParquetSource</span></code></a></p></td>
+<td><p>Async Parquet source retaining one native client and credential-context identity.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.ScanIdentity" title="fsspec_data.ScanIdentity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScanIdentity</span></code></a></p></td>
 <td><p>Compare resolved scan requests without exposing contents in repr.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SourceIdentity" title="fsspec_data.SourceIdentity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SourceIdentity</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SourceIdentity" title="fsspec_data.SourceIdentity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SourceIdentity</span></code></a></p></td>
 <td><p>One source configuration and credential context; retain this token for reuse.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.ResolvedSchema" title="fsspec_data.ResolvedSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResolvedSchema</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.ResolvedSchema" title="fsspec_data.ResolvedSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResolvedSchema</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaDocument" title="fsspec_data.SchemaDocument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaDocument</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaDocument" title="fsspec_data.SchemaDocument"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaDocument</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaFormat" title="fsspec_data.SchemaFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaFormat</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaFormat" title="fsspec_data.SchemaFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaFormat</span></code></a></p></td>
 <td><p>str(object='') -&gt; str</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaProvenance" title="fsspec_data.SchemaProvenance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaProvenance</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaProvenance" title="fsspec_data.SchemaProvenance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaProvenance</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaRef" title="fsspec_data.SchemaRef"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaRef</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaRef" title="fsspec_data.SchemaRef"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaRef</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.SchemaResolverRegistry" title="fsspec_data.SchemaResolverRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaResolverRegistry</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaResolverRegistry" title="fsspec_data.SchemaResolverRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaResolverRegistry</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.DataViewFileSystem" title="fsspec_data.DataViewFileSystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.DataViewFileSystem" title="fsspec_data.DataViewFileSystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataViewFileSystem</span></code></a></p></td>
 <td><p>View of a data source, rendering each node's facets as files.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.ViewEntry" title="fsspec_data.ViewEntry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ViewEntry</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.ViewEntry" title="fsspec_data.ViewEntry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ViewEntry</span></code></a></p></td>
 <td><p>A file or directory of a data view and what it renders. <code class="docutils literal notranslate"><span class="pre">facet</span></code> is <code class="docutils literal notranslate"><span class="pre">children</span></code>,</p></td>
 </tr>
 </tbody>
@@ -1231,11 +1279,21 @@
 <h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">AsyncDecodedBatchStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">AsyncDecodedBatchStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="scan_identity/index.html#fsspec_data.scan_identity.ScanIdentity" title="fsspec_data.scan_identity.ScanIdentity"><span class="pre">fsspec_data.scan_identity.ScanIdentity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream" title="Link to this definition">¶</a></dt>
 <dd><p>Demand-driven Arrow batches; use <code class="docutils literal notranslate"><span class="pre">aclose</span></code> or an async context manager.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream.schema">
 <span class="sig-name descname"><span class="pre">schema</span></span><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream.schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream._identity">
+<span class="sig-name descname"><span class="pre">_identity</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream._identity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream._owner">
+<span class="sig-name descname"><span class="pre">_owner</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream._owner" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1258,6 +1316,12 @@
 <span class="sig-name descname"><span class="pre">_close_waiter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">asyncio.Future</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream._close_waiter" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream.identity">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="scan_identity/index.html#fsspec_data.scan_identity.ScanIdentity" title="fsspec_data.scan_identity.ScanIdentity"><span class="pre">fsspec_data.scan_identity.ScanIdentity</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream.identity" title="Link to this definition">¶</a></dt>
+<dd><p>Resolved native S3 request identity; None for providers without identity support.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream.__aiter__">
 <span class="sig-name descname"><span class="pre">__aiter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.AsyncDecodedBatchStream" title="fsspec_data.AsyncDecodedBatchStream"><span class="pre">AsyncDecodedBatchStream</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream.__aiter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream.__aiter__" title="Link to this definition">¶</a></dt>
@@ -1266,6 +1330,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream.__anext__">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__anext__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.RecordBatch</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream.__anext__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream.__anext__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.AsyncDecodedBatchStream._source_closed">
+<span class="sig-name descname"><span class="pre">_source_closed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/async_scan.html#AsyncDecodedBatchStream._source_closed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncDecodedBatchStream._source_closed" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -2060,6 +2129,53 @@ provided field must be used or dropped unless <code class="docutils literal notr
 <dd></dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.S3ParquetSource">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">S3ParquetSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bucket</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/s3.html#S3ParquetSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.S3ParquetSource" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="describe/index.html#fsspec_data.describe.DataSource" title="fsspec_data.describe.DataSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fsspec_data.describe.DataSource</span></code></a></p>
+<p>Async Parquet source retaining one native client and credential-context identity.</p>
+<p>Use an async context manager or <code class="docutils literal notranslate"><span class="pre">aclose</span></code> to close its scans and client. Other
+DataSource operations are unsupported. Recreate after changing configuration or
+effective authorization; requests within this source retain its initial client.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.S3ParquetSource._bucket">
+<span class="sig-name descname"><span class="pre">_bucket</span></span><a class="headerlink" href="#fsspec_data.S3ParquetSource._bucket" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.S3ParquetSource._native">
+<span class="sig-name descname"><span class="pre">_native</span></span><a class="headerlink" href="#fsspec_data.S3ParquetSource._native" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.S3ParquetSource._close_waiter">
+<span class="sig-name descname"><span class="pre">_close_waiter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">asyncio.Future</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.S3ParquetSource._close_waiter" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.S3ParquetSource.scan_async">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scan_async</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_range_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_batch_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="async_scan/index.html#fsspec_data.async_scan.AsyncDecodedBatchStream" title="fsspec_data.async_scan.AsyncDecodedBatchStream"><span class="pre">fsspec_data.async_scan.AsyncDecodedBatchStream</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/s3.html#S3ParquetSource.scan_async"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.S3ParquetSource.scan_async" title="Link to this definition">¶</a></dt>
+<dd><p>Scan asynchronously with selection and limits; requires backend support.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.S3ParquetSource.aclose">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aclose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/s3.html#S3ParquetSource.aclose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.S3ParquetSource.aclose" title="Link to this definition">¶</a></dt>
+<dd><p>Cancel and drain this source’s scans, then close its filesystem and context.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.S3ParquetSource.__aenter__">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__aenter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/s3.html#S3ParquetSource.__aenter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.S3ParquetSource.__aenter__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.S3ParquetSource.__aexit__">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__aexit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseException</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">types.TracebackType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/s3.html#S3ParquetSource.__aexit__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.S3ParquetSource.__aexit__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="fsspec_data.ScanIdentity">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">ScanIdentity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.SourceIdentity" title="fsspec_data.SourceIdentity"><span class="pre">SourceIdentity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">snapshot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">JsonValue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">JsonValue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">JsonValue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">JsonValue</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/scan_identity.html#ScanIdentity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.ScanIdentity" title="Link to this definition">¶</a></dt>
 <dd><p>Compare resolved scan requests without exposing contents in repr.</p>
@@ -2073,6 +2189,11 @@ snapshot makes each construction distinct. Filters are compared, not executed.</
 <dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.ScanIdentity.__repr__">
 <span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/scan_identity.html#ScanIdentity.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.ScanIdentity.__repr__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.ScanIdentity._from_native">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_from_native</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.ScanIdentity" title="fsspec_data.ScanIdentity"><span class="pre">ScanIdentity</span></a></span></span><a class="reference internal" href="../../_modules/fsspec_data/scan_identity.html#ScanIdentity._from_native"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.ScanIdentity._from_native" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2675,6 +2796,12 @@ or a format name. <code class="docutils literal notranslate"><span class="pre">u
     <a href="#fsspec_data.AsyncDecodedBatchStream.schema">AsyncDecodedBatchStream.schema</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._identity">AsyncDecodedBatchStream._identity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._owner">AsyncDecodedBatchStream._owner</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.AsyncDecodedBatchStream._native">AsyncDecodedBatchStream._native</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -2687,10 +2814,16 @@ or a format name. <code class="docutils literal notranslate"><span class="pre">u
     <a href="#fsspec_data.AsyncDecodedBatchStream._close_waiter">AsyncDecodedBatchStream._close_waiter</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream.identity">AsyncDecodedBatchStream.identity</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.AsyncDecodedBatchStream.__aiter__">AsyncDecodedBatchStream.__aiter__()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.AsyncDecodedBatchStream.__anext__">AsyncDecodedBatchStream.__anext__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.AsyncDecodedBatchStream._source_closed">AsyncDecodedBatchStream._source_closed()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.AsyncDecodedBatchStream.aclose">AsyncDecodedBatchStream.aclose()</a>
@@ -3122,6 +3255,30 @@ or a format name. <code class="docutils literal notranslate"><span class="pre">u
     <a href="#fsspec_data.json_schema_to_arrow">json_schema_to_arrow()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.S3ParquetSource">S3ParquetSource</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource._bucket">S3ParquetSource._bucket</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource._native">S3ParquetSource._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource._close_waiter">S3ParquetSource._close_waiter</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource.scan_async">S3ParquetSource.scan_async()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource.aclose">S3ParquetSource.aclose()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource.__aenter__">S3ParquetSource.__aenter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.S3ParquetSource.__aexit__">S3ParquetSource.__aexit__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.ScanIdentity">ScanIdentity</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -3129,6 +3286,9 @@ or a format name. <code class="docutils literal notranslate"><span class="pre">u
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.ScanIdentity.__repr__">ScanIdentity.__repr__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.ScanIdentity._from_native">ScanIdentity._from_native()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.SourceIdentity">SourceIdentity</a>

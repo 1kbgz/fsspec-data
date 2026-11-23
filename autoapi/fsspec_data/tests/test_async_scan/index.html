@@ -206,6 +206,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../../s3/index.html">
+      <span class="fd-link-text">fsspec_data.s3</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../../scan_identity/index.html">
       <span class="fd-link-text">fsspec_data.scan_identity</span>
     </a>
@@ -375,6 +380,45 @@
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed">test_independent_scans_continue_after_one_is_closed()</a>
   </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_configured_source_reuses_identity_from_opened_file_without_extra_head">test_configured_source_reuses_identity_from_opened_file_without_extra_head()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_configured_scan_identity_uses_actual_selection_and_limits">test_configured_scan_identity_uses_actual_selection_and_limits()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_replacement_changes_identity_and_existing_handle_rejects_new_object">test_replacement_changes_identity_and_existing_handle_rejects_new_object()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_clients_and_one_shot_helpers_have_independent_source_scopes">test_clients_and_one_shot_helpers_have_independent_source_scopes()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_same_identity_keeps_consumer_deadlines_and_close_independent">test_same_identity_keeps_consumer_deadlines_and_close_independent()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_closing_source_cancels_and_drains_scans">test_closing_source_cancels_and_drains_scans()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_cancelling_one_configured_scan_leaves_source_usable">test_cancelling_one_configured_scan_leaves_source_usable()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_configured_source_rejects_other_bucket_before_io">test_configured_source_rejects_other_bucket_before_io()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_source_close">test_ready_batch_is_not_delivered_after_source_close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_configured_source_captures_environment_credentials_at_construction">test_configured_source_captures_environment_credentials_at_construction()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_open_failure_does_not_close_configured_source">test_open_failure_does_not_close_configured_source()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_object_key_and_size_are_part_of_resolved_identity">test_object_key_and_size_are_part_of_resolved_identity()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_cancelling_source_close_waiter_preserves_cleanup">test_cancelling_source_close_waiter_preserves_cleanup()</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -457,6 +501,45 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed" title="fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_independent_scans_continue_after_one_is_closed</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_configured_source_reuses_identity_from_opened_file_without_extra_head" title="fsspec_data.tests.test_async_scan.test_configured_source_reuses_identity_from_opened_file_without_extra_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_configured_source_reuses_identity_from_opened_file_without_extra_head</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_configured_scan_identity_uses_actual_selection_and_limits" title="fsspec_data.tests.test_async_scan.test_configured_scan_identity_uses_actual_selection_and_limits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_configured_scan_identity_uses_actual_selection_and_limits</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_replacement_changes_identity_and_existing_handle_rejects_new_object" title="fsspec_data.tests.test_async_scan.test_replacement_changes_identity_and_existing_handle_rejects_new_object"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_replacement_changes_identity_and_existing_handle_rejects_new_object</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_clients_and_one_shot_helpers_have_independent_source_scopes" title="fsspec_data.tests.test_async_scan.test_clients_and_one_shot_helpers_have_independent_source_scopes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_clients_and_one_shot_helpers_have_independent_source_scopes</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_same_identity_keeps_consumer_deadlines_and_close_independent" title="fsspec_data.tests.test_async_scan.test_same_identity_keeps_consumer_deadlines_and_close_independent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_same_identity_keeps_consumer_deadlines_and_close_independent</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_closing_source_cancels_and_drains_scans" title="fsspec_data.tests.test_async_scan.test_closing_source_cancels_and_drains_scans"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_closing_source_cancels_and_drains_scans</span></code></a>(store, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_cancelling_one_configured_scan_leaves_source_usable" title="fsspec_data.tests.test_async_scan.test_cancelling_one_configured_scan_leaves_source_usable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_cancelling_one_configured_scan_leaves_source_usable</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_configured_source_rejects_other_bucket_before_io" title="fsspec_data.tests.test_async_scan.test_configured_source_rejects_other_bucket_before_io"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_configured_source_rejects_other_bucket_before_io</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_source_close" title="fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_source_close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_ready_batch_is_not_delivered_after_source_close</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_configured_source_captures_environment_credentials_at_construction" title="fsspec_data.tests.test_async_scan.test_configured_source_captures_environment_credentials_at_construction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_configured_source_captures_environment_credentials_at_construction</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_open_failure_does_not_close_configured_source" title="fsspec_data.tests.test_async_scan.test_open_failure_does_not_close_configured_source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_open_failure_does_not_close_configured_source</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_object_key_and_size_are_part_of_resolved_identity" title="fsspec_data.tests.test_async_scan.test_object_key_and_size_are_part_of_resolved_identity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_object_key_and_size_are_part_of_resolved_identity</span></code></a>(store)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tests.test_async_scan.test_cancelling_source_close_waiter_preserves_cleanup" title="fsspec_data.tests.test_async_scan.test_cancelling_source_close_waiter_preserves_cleanup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_cancelling_source_close_waiter_preserves_cleanup</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -554,6 +637,71 @@
 <span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_independent_scans_continue_after_one_is_closed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_configured_source_reuses_identity_from_opened_file_without_extra_head">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_configured_source_reuses_identity_from_opened_file_without_extra_head</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_configured_source_reuses_identity_from_opened_file_without_extra_head" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_configured_scan_identity_uses_actual_selection_and_limits">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_configured_scan_identity_uses_actual_selection_and_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">changed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_configured_scan_identity_uses_actual_selection_and_limits" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_replacement_changes_identity_and_existing_handle_rejects_new_object">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_replacement_changes_identity_and_existing_handle_rejects_new_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_replacement_changes_identity_and_existing_handle_rejects_new_object" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_clients_and_one_shot_helpers_have_independent_source_scopes">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_clients_and_one_shot_helpers_have_independent_source_scopes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_clients_and_one_shot_helpers_have_independent_source_scopes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_same_identity_keeps_consumer_deadlines_and_close_independent">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_same_identity_keeps_consumer_deadlines_and_close_independent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_same_identity_keeps_consumer_deadlines_and_close_independent" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_closing_source_cancels_and_drains_scans">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_closing_source_cancels_and_drains_scans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">during_open</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_closing_source_cancels_and_drains_scans" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_cancelling_one_configured_scan_leaves_source_usable">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_cancelling_one_configured_scan_leaves_source_usable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">during_open</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_cancelling_one_configured_scan_leaves_source_usable" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_configured_source_rejects_other_bucket_before_io">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_configured_source_rejects_other_bucket_before_io</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_configured_source_rejects_other_bucket_before_io" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_source_close">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_ready_batch_is_not_delivered_after_source_close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_source_close" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_configured_source_captures_environment_credentials_at_construction">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_configured_source_captures_environment_credentials_at_construction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monkeypatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_configured_source_captures_environment_credentials_at_construction" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_open_failure_does_not_close_configured_source">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_open_failure_does_not_close_configured_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_open_failure_does_not_close_configured_source" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_object_key_and_size_are_part_of_resolved_identity">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_object_key_and_size_are_part_of_resolved_identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_object_key_and_size_are_part_of_resolved_identity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tests.test_async_scan.test_cancelling_source_close_waiter_preserves_cleanup">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tests.test_async_scan.</span></span><span class="sig-name descname"><span class="pre">test_cancelling_source_close_waiter_preserves_cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fsspec_data.tests.test_async_scan.test_cancelling_source_close_waiter_preserves_cleanup" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </section>
 </section>
 
@@ -649,6 +797,45 @@
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tests.test_async_scan.test_independent_scans_continue_after_one_is_closed">test_independent_scans_continue_after_one_is_closed()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_configured_source_reuses_identity_from_opened_file_without_extra_head">test_configured_source_reuses_identity_from_opened_file_without_extra_head()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_configured_scan_identity_uses_actual_selection_and_limits">test_configured_scan_identity_uses_actual_selection_and_limits()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_replacement_changes_identity_and_existing_handle_rejects_new_object">test_replacement_changes_identity_and_existing_handle_rejects_new_object()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_clients_and_one_shot_helpers_have_independent_source_scopes">test_clients_and_one_shot_helpers_have_independent_source_scopes()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_same_identity_keeps_consumer_deadlines_and_close_independent">test_same_identity_keeps_consumer_deadlines_and_close_independent()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_closing_source_cancels_and_drains_scans">test_closing_source_cancels_and_drains_scans()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_cancelling_one_configured_scan_leaves_source_usable">test_cancelling_one_configured_scan_leaves_source_usable()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_configured_source_rejects_other_bucket_before_io">test_configured_source_rejects_other_bucket_before_io()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_ready_batch_is_not_delivered_after_source_close">test_ready_batch_is_not_delivered_after_source_close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_configured_source_captures_environment_credentials_at_construction">test_configured_source_captures_environment_credentials_at_construction()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_open_failure_does_not_close_configured_source">test_open_failure_does_not_close_configured_source()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_object_key_and_size_are_part_of_resolved_identity">test_object_key_and_size_are_part_of_resolved_identity()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tests.test_async_scan.test_cancelling_source_close_waiter_preserves_cleanup">test_cancelling_source_close_waiter_preserves_cleanup()</a>
   </li>
 </ul>
 

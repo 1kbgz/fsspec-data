@@ -206,6 +206,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/s3/index.html">
+      <span class="fd-link-text">fsspec_data.s3</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/scan_identity/index.html">
       <span class="fd-link-text">fsspec_data.scan_identity</span>
     </a>
@@ -330,6 +335,9 @@
   <li class="fd-toc-item" data-depth="1">
     <a href="#scan-through-a-configured-async-filesystem">Scan through a configured async filesystem</a>
   </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#reuse-a-native-s3-source-across-scans">Reuse a native S3 source across scans</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -448,6 +456,29 @@ the filesystem’s existing credentials and configuration. Sync-only filesystems
 <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>. Check the <a class="reference internal" href="api.html#python-asynchronous-parquet-scans"><span class="std std-ref">file provider contract</span></a>
 when implementing an async filesystem.</p>
 </section>
+<section id="reuse-a-native-s3-source-across-scans">
+<h2>Reuse a native S3 source across scans<a class="headerlink" href="#reuse-a-native-s3-source-across-scans" title="Link to this heading">¶</a></h2>
+<p>Keep a <code class="docutils literal notranslate"><span class="pre">S3ParquetSource</span></code> open when repeated scans should use the same client and credential
+context. Read <code class="docutils literal notranslate"><span class="pre">stream.identity</span></code> to compare requests after the source has opened and pinned
+the object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">S3ParquetSource</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">consume</span><span class="p">():</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">S3ParquetSource</span><span class="p">(</span><span class="s2">"bucket"</span><span class="p">)</span> <span class="k">as</span> <span class="n">source</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="k">await</span> <span class="n">source</span><span class="o">.</span><span class="n">scan_async</span><span class="p">(</span><span class="s2">"orders.parquet"</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"order_id"</span><span class="p">])</span> <span class="k">as</span> <span class="n">first</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="n">first</span><span class="o">.</span><span class="n">identity</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">first</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">num_rows</span><span class="p">)</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="k">await</span> <span class="n">source</span><span class="o">.</span><span class="n">scan_async</span><span class="p">(</span><span class="s2">"orders.parquet"</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"order_id"</span><span class="p">])</span> <span class="k">as</span> <span class="n">second</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">second</span><span class="o">.</span><span class="n">identity</span> <span class="o">==</span> <span class="n">identity</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The comparison is true when the pinned ETag/size and request are unchanged. Each scan still
+performs its own reads. Recreate the source after changing credentials or effective
+permissions. See the <a class="reference internal" href="api.html#configured-s3-parquet-sources"><span class="std std-ref">source reference</span></a> for ownership,
+shared I/O budgets and shutdown behavior.</p>
+</section>
 </section>
 
 
@@ -497,6 +528,9 @@ when implementing an async filesystem.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#scan-through-a-configured-async-filesystem">Scan through a configured async filesystem</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#reuse-a-native-s3-source-across-scans">Reuse a native S3 source across scans</a>
   </li>
 </ul>
 
