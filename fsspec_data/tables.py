@@ -95,6 +95,14 @@ class ManifestTable:
         """Resolve latest publication or a saved generation without directory listing."""
         return TableSnapshot(self._native.snapshot(generation))
 
+    def orphan_collector(self, *, retention_seconds: float, max_generations: int = 256, max_entries: int = 100_000) -> OrphanCollector:
+        """Create a collector whose retention clock starts when it observes a file.
+
+        Keep this object between sweeps. Restarting resets retention. All published
+        versions are retained; files in an unpublished generation are left alone.
+        """
+        return OrphanCollector(self._native.orphan_collector(retention_seconds, max_generations, max_entries))
+
     def open_writer(
         self, schema: pa.Schema, *, mode: Literal["create", "append", "replace"] = "create", options: SinkOptions | None = None
     ) -> TableWriter:
@@ -123,6 +131,30 @@ class ManifestTable:
                 options.max_history_reads,
             )
         )
+
+
+@dataclass(frozen=True)
+class CleanupReport:
+    generation: int | None
+    pending: int
+    eligible: list[str]
+    deleted: list[str]
+
+
+class OrphanCollector:
+    """Observe abandoned files and remove them after retention in occupied generations."""
+
+    def __init__(self, native: Any) -> None:
+        self._native = native
+
+    def collect(self, *, dry_run: bool = True) -> CleanupReport:
+        """Validate history, then list candidates; dry runs also track retention.
+
+        Keys in the report are relative to the table root. Validation or listing
+        failures prevent deletion. A deletion failure may leave a partial sweep;
+        rerunning is safe. Failure resets retention observations.
+        """
+        return CleanupReport(**json.loads(self._native.collect(dry_run)))
 
 
 class TableWriter:

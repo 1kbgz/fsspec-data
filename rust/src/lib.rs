@@ -1,5 +1,6 @@
 mod async_parquet;
 mod avro;
+pub mod cleanup;
 mod codec;
 #[cfg(feature = "confluent")]
 mod confluent;

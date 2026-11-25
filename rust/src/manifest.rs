@@ -176,7 +176,7 @@ pub(crate) fn identifier(value: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
 }
 
-fn part_generation(key: &str) -> Result<(u64, &str)> {
+pub(crate) fn part_generation(key: &str) -> Result<(u64, &str)> {
     let components: Vec<_> = key.split('/').collect();
     check(
         components.len() == 4 && components[0] == "parts",
