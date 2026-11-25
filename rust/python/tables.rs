@@ -1,9 +1,11 @@
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use arrow::array::RecordBatch;
 use arrow::datatypes::Schema;
 use arrow::pyarrow::PyArrowType;
 use bytes::Bytes;
+use fsspec_data::cleanup::{CleanupLimits, OrphanCollector};
 use fsspec_data::manifest::{ManifestReader, ReadLimits, Selection, Snapshot};
 use fsspec_data::parts::PartLimits;
 use fsspec_data::sink::{
@@ -110,6 +112,30 @@ impl NativeManifestTable {
         })
     }
 
+    fn orphan_collector(
+        &self,
+        retention_seconds: f64,
+        max_generations: usize,
+        max_entries: usize,
+    ) -> PyResult<NativeOrphanCollector> {
+        let retention = Duration::try_from_secs_f64(retention_seconds)
+            .map_err(|_| invalid("retention_seconds must be finite and positive"))?;
+        let collector = OrphanCollector::new(
+            self.fs.clone(),
+            &self.root,
+            retention,
+            CleanupLimits {
+                max_manifest_bytes: self.limits.max_manifest_bytes,
+                max_generations,
+                max_entries,
+            },
+        )
+        .map_err(storage_error)?;
+        Ok(NativeOrphanCollector {
+            collector: Mutex::new(collector),
+        })
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn open_writer(
         &self,
@@ -180,6 +206,19 @@ impl NativeManifestTable {
         };
         py.detach(|| recover(self.fs.clone(), &token, &options, action(retry)))
             .map(receipt)
+            .map_err(storage_error)
+    }
+}
+
+#[pyclass]
+struct NativeOrphanCollector {
+    collector: Mutex<OrphanCollector>,
+}
+#[pymethods]
+impl NativeOrphanCollector {
+    fn collect(&self, py: Python<'_>, dry_run: bool) -> PyResult<String> {
+        py.detach(|| lock(&self.collector).collect(dry_run))
+            .map(|report| json!(report).to_string())
             .map_err(storage_error)
     }
 }
@@ -361,6 +400,7 @@ impl Iterator for PartBatches {
 
 pub(super) fn register(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<NativeManifestTable>()?;
+    module.add_class::<NativeOrphanCollector>()?;
     module.add_class::<NativeTableWriter>()?;
     module.add_class::<NativeTableSnapshot>()?;
     Ok(())

@@ -35,7 +35,17 @@ from .schema import (
     SchemaResolverRegistry,
     resolve_schema,
 )
-from .tables import BatchReceipt, ManifestTable, PublicationReceipt, RecoveryToken, SinkOptions, TableSnapshot, TableWriter
+from .tables import (
+    BatchReceipt,
+    CleanupReport,
+    ManifestTable,
+    OrphanCollector,
+    PublicationReceipt,
+    RecoveryToken,
+    SinkOptions,
+    TableSnapshot,
+    TableWriter,
+)
 from .view import DEFAULT_MAPPING, DataViewFileSystem, ViewEntry
 
 __version__ = "0.9.0"
@@ -48,6 +58,7 @@ __all__ = [
     "DEFAULT_SCHEMA_RESOLVERS",
     "AsyncDecodedBatchStream",
     "BatchReceipt",
+    "CleanupReport",
     "Codec",
     "CodecCapabilities",
     "CodecRegistry",
@@ -67,6 +78,7 @@ __all__ = [
     "InterchangeRequest",
     "ManifestTable",
     "Node",
+    "OrphanCollector",
     "PlannedBatchStream",
     "PublicationReceipt",
     "RecoveryToken",

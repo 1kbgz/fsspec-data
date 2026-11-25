@@ -97,3 +97,55 @@ not append rows again. A competing winner raises `conflict`.
 but `_SUCCESS` could not be written. The table is complete; `table.recover(receipt.recovery)`
 retries marker repair. See [manifest table reference](manifest-tables.md) for limits,
 error attributes, and recovery behavior.
+
+## Remove files left by failed writes
+
+Create one collector and keep it between scheduled sweeps. Choose a retention interval
+for failed-write files; this example uses one day:
+
+```python
+collector = table.orphan_collector(retention_seconds=24 * 60 * 60)
+report = collector.collect()
+print(report.pending, report.eligible)
+
+# Reuse the same collector on later scheduled runs.
+# After retention, inspect eligible keys before enabling deletion.
+report = collector.collect(dry_run=False)
+print(report.deleted)
+```
+
+The first sweep starts retention for each observed orphan. Dry runs track retention but
+delete nothing. Recreating the collector restarts that clock. Keep using the same table
+path and storage configuration, and reserve its namespace for table writers.
+
+Only files targeting an already published generation can be removed. If a failed writer
+was targeting the next generation, its files wait until another writer publishes that
+generation. Cleanup never publishes a generation itself. Saved versions, their parts,
+and winning recovery descriptors remain available, including versions before replacement.
+
+If validation or listing fails, correct the reported error and repeat the sweep. A deletion
+failure can leave some eligible files removed; repeating the sweep is safe and restarts
+retention for the remaining files. See [cleanup limits](manifest-tables.md#orphancollector)
+when a table exceeds the default history or entry budget.
+
+## Check publication and cleanup on a deployment
+
+Run the `fsspec-rs` create-if-absent conformance suite first. Then use a disposable
+prefix for the table checks:
+
+```bash
+export FSSPEC_TABLE_TEST_URL='s3://test-bucket/publication-checks'
+export FSSPEC_TABLE_TEST_OPTIONS='{"region": "us-east-1"}'
+pytest fsspec_data/tests/test_cleanup.py -k deployment
+```
+
+For an S3-compatible server, include `endpoint_url` and configure credentials for that
+server. For an NFS mount, set the URL to an absolute mounted directory and omit S3 options.
+The test creates a unique table directory, checks two competing writers, replaces the table,
+collects the losing writer's files, reopens a saved version, and checks recovery. Published
+test tables remain under the prefix; remove that disposable prefix when finished.
+
+Record the client and server versions, endpoint configuration, and mount options with the
+results. Also test interrupted requests and server restarts on the intended deployment;
+passing these client checks does not establish power-loss durability or cross-host NFS
+visibility. Local or simulated results do not certify another store.
