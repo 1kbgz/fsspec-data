@@ -82,7 +82,9 @@ Classes
    fsspec_data.SchemaRef
    fsspec_data.SchemaResolverRegistry
    fsspec_data.BatchReceipt
+   fsspec_data.CleanupReport
    fsspec_data.ManifestTable
+   fsspec_data.OrphanCollector
    fsspec_data.PublicationReceipt
    fsspec_data.RecoveryToken
    fsspec_data.SinkOptions
@@ -1055,6 +1057,24 @@ Package Contents
       :type:  str
 
 
+.. py:class:: CleanupReport
+
+   .. py:attribute:: generation
+      :type:  int | None
+
+
+   .. py:attribute:: pending
+      :type:  int
+
+
+   .. py:attribute:: eligible
+      :type:  list[str]
+
+
+   .. py:attribute:: deleted
+      :type:  list[str]
+
+
 .. py:class:: ManifestTable(root: str | os.PathLike[str], *, storage_options: collections.abc.Mapping[str, str | bool | int | float] | None = None, max_manifest_bytes: int = 8 * 1024 * 1024, max_part_bytes: int = 64 * 1024 * 1024, max_manifest_reads: int = 256)
 
    One partition on native local or S3 storage, with retained saved generations.
@@ -1072,12 +1092,39 @@ Package Contents
 
 
 
+   .. py:method:: orphan_collector(*, retention_seconds: float, max_generations: int = 256, max_entries: int = 100000) -> OrphanCollector
+
+      Create a collector whose retention clock starts when it observes a file.
+
+      Keep this object between sweeps. Restarting resets retention. All published
+      versions are retained; files in an unpublished generation are left alone.
+
+
+
    .. py:method:: open_writer(schema: pyarrow.Schema, *, mode: Literal['create', 'append', 'replace'] = 'create', options: SinkOptions | None = None) -> TableWriter
 
 
    .. py:method:: recover(token: RecoveryToken, *, retry: bool = False, options: SinkOptions | None = None) -> PublicationReceipt
 
       Observe publication, or resubmit its exact saved candidate with retry=True.
+
+
+
+.. py:class:: OrphanCollector(native: Any)
+
+   Observe abandoned files and remove them after retention in occupied generations.
+
+
+   .. py:attribute:: _native
+
+
+   .. py:method:: collect(*, dry_run: bool = True) -> CleanupReport
+
+      Validate history, then list candidates; dry runs also track retention.
+
+      Keys in the report are relative to the table root. Validation or listing
+      failures prevent deletion. A deletion failure may leave a partial sweep;
+      rerunning is safe. Failure resets retention observations.
 
 
 

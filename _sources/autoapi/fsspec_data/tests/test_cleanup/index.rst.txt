@@ -1,0 +1,39 @@
+fsspec_data.tests.test_cleanup
+==============================
+
+.. py:module:: fsspec_data.tests.test_cleanup
+
+.. autoapi-nested-parse::
+
+   Cleanup keeps saved snapshots readable and fences out failed publishers.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_cleanup.table
+   fsspec_data.tests.test_cleanup.stage
+   fsspec_data.tests.test_cleanup.test_collect_preserves_old_snapshots_and_resolves_losing_writer
+   fsspec_data.tests.test_cleanup.test_local_unchanged_files_future_attempts_and_symlinks
+   fsspec_data.tests.test_cleanup.test_invalid_retention
+   fsspec_data.tests.test_cleanup.test_new_collector_resets_retention_and_empty_namespace_is_untouched
+
+
+Module Contents
+---------------
+
+.. py:function:: table(request, tmp_path)
+
+.. py:function:: stage(table, value, mode='create')
+
+.. py:function:: test_collect_preserves_old_snapshots_and_resolves_losing_writer(table)
+
+.. py:function:: test_local_unchanged_files_future_attempts_and_symlinks(tmp_path)
+
+.. py:function:: test_invalid_retention(tmp_path, retention)
+
+.. py:function:: test_new_collector_resets_retention_and_empty_namespace_is_untouched(tmp_path)
+

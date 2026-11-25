@@ -266,6 +266,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_cleanup/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_cleanup</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
     </a>
@@ -352,6 +357,9 @@
   <li class="fd-toc-item" data-depth="1">
     <a href="#tablesnapshot">TableSnapshot</a>
   </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#orphancollector">OrphanCollector</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -362,7 +370,7 @@
   <section class="tex2jax_ignore mathjax_ignore" id="manifest-table-reference">
 <h1>Manifest table reference<a class="headerlink" href="#manifest-table-reference" title="Link to this heading">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">ManifestTable</span></code>, <code class="docutils literal notranslate"><span class="pre">TableSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">TableWriter</span></code>, <code class="docutils literal notranslate"><span class="pre">SinkOptions</span></code>, <code class="docutils literal notranslate"><span class="pre">BatchReceipt</span></code>,
-<code class="docutils literal notranslate"><span class="pre">PublicationReceipt</span></code>, and <code class="docutils literal notranslate"><span class="pre">RecoveryToken</span></code> are exported from <code class="docutils literal notranslate"><span class="pre">fsspec_data</span></code>. The bindings
+<code class="docutils literal notranslate"><span class="pre">PublicationReceipt</span></code>, <code class="docutils literal notranslate"><span class="pre">RecoveryToken</span></code>, <code class="docutils literal notranslate"><span class="pre">OrphanCollector</span></code>, and <code class="docutils literal notranslate"><span class="pre">CleanupReport</span></code> are exported from <code class="docutils literal notranslate"><span class="pre">fsspec_data</span></code>. The bindings
 use the Rust manifest reader and file sink. Operations are synchronous and release the
 Python GIL during storage access and encoding/decoding.</p>
 <section id="manifesttable">
@@ -375,7 +383,7 @@ Each table owns a configured filesystem instance; Python fsspec objects and cros
 filesystem registrations are not used by this constructor.</p>
 <p>The storage backend must support durable, atomic create-if-absent and consistent reads.
 Native capability support does not certify a deployment. All published generations and
-unreferenced parts are retained; this API performs no garbage collection or deletion.</p>
+their referenced parts are retained. Orphan cleanup is explicit.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Method</p></th>
@@ -389,7 +397,10 @@ unreferenced parts are retained; this API performs no garbage collection or dele
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">open_writer(schema,</span> <span class="pre">*,</span> <span class="pre">mode=&quot;create&quot;,</span> <span class="pre">options=None)</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">TableWriter</span></code> accepting PyArrow record batches with exactly matching schema.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">recover(token,</span> <span class="pre">*,</span> <span class="pre">retry=False,</span> <span class="pre">options=None)</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">orphan_collector(*,</span> <span class="pre">retention_seconds,</span> <span class="pre">max_generations=256,</span> <span class="pre">max_entries=100000)</span></code></p></td>
+<td><p>Stateful <code class="docutils literal notranslate"><span class="pre">OrphanCollector</span></code> for failed-write files.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">recover(token,</span> <span class="pre">*,</span> <span class="pre">retry=False,</span> <span class="pre">options=None)</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">PublicationReceipt</span></code> for a saved attempt, using its persisted descriptor.</p></td>
 </tr>
 </tbody>
@@ -518,6 +529,35 @@ mapping. Not found, already exists, permission, timeout, unavailable and invalid
 built-ins; <code class="docutils literal notranslate"><span class="pre">conflict</span></code>, <code class="docutils literal notranslate"><span class="pre">gap</span></code>, <code class="docutils literal notranslate"><span class="pre">corrupt</span></code> and <code class="docutils literal notranslate"><span class="pre">unknown_outcome</span></code> use <code class="docutils literal notranslate"><span class="pre">OSError</span></code> with those attributes.
 Scan option validation and output-limit errors retain <code class="docutils literal notranslate"><span class="pre">DecodedBatchStream</span></code> behavior.</p>
 </section>
+<section id="orphancollector">
+<h2>OrphanCollector<a class="headerlink" href="#orphancollector" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">collect(*,</span> <span class="pre">dry_run=True)</span></code> returns a <code class="docutils literal notranslate"><span class="pre">CleanupReport</span></code> with <code class="docutils literal notranslate"><span class="pre">generation</span></code> (published cleanup
+boundary, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for an unpublished table), <code class="docutils literal notranslate"><span class="pre">pending</span></code> (observed orphan files awaiting
+retention), <code class="docutils literal notranslate"><span class="pre">eligible</span></code> (relative keys past retention), and <code class="docutils literal notranslate"><span class="pre">deleted</span></code> (keys removed this
+sweep). Dry runs update observations but leave <code class="docutils literal notranslate"><span class="pre">deleted</span></code> empty. An absent object during
+deletion is ignored and does not appear in <code class="docutils literal notranslate"><span class="pre">deleted</span></code>.</p>
+<p>Retention must be positive and finite. It uses monotonic collector observations, not
+writer or store timestamps. Changed size/modification metadata, a missing listing entry,
+a failed sweep, or a new collector resets the relevant observations. Observations are
+in-memory and bound to this filesystem instance and table root.</p>
+<p>Before deletion, cleanup validates the complete manifest chain from zero through its
+boundary and protects parts referenced by any generation, plus winning candidate descriptors.
+It lists only the fixed <code class="docutils literal notranslate"><span class="pre">parts/&lt;generation&gt;/&lt;attempt&gt;/&lt;filename&gt;</span></code> layout. Future generations,
+manifests, completion markers, directories, symlinks and malformed keys are not removed.
+The namespace must be managed exclusively by protocol-compliant writers; replacing published
+manifests, changing part contents, introducing filesystem aliases, and independent lifecycle
+deletion violate that contract. Historical pruning and multipart-upload cleanup are unsupported.</p>
+<p><code class="docutils literal notranslate"><span class="pre">max_generations</span></code> bounds the number of historical manifests. Discovery has the reader’s
+256-request default limit. The table’s <code class="docutils literal notranslate"><span class="pre">max_manifest_bytes</span></code> bounds each encoded manifest.
+<code class="docutils literal notranslate"><span class="pre">max_entries</span></code> separately bounds protected keys and total entries returned across listings;
+it is not a transport or process memory limit, since a filesystem can allocate a complete
+listing before returning it. Exceeding a limit raises <code class="docutils literal notranslate"><span class="pre">invalid</span></code> before deletion. Read,
+validation, or listing errors also prevent deletion. Deletion errors propagate after any
+successful earlier deletions; the sweep is repeatable.</p>
+<p>Rust exposes the equivalent <code class="docutils literal notranslate"><span class="pre">cleanup::{OrphanCollector,</span> <span class="pre">CleanupLimits,</span> <span class="pre">CleanupReport}</span></code>.
+<code class="docutils literal notranslate"><span class="pre">OrphanCollector::new</span></code> accepts a shared filesystem, root, retention <code class="docutils literal notranslate"><span class="pre">Duration</span></code>, and limits;
+<code class="docutils literal notranslate"><span class="pre">collect(dry_run)</span></code> requires mutable access.</p>
+</section>
 </section>
 
 
@@ -564,6 +604,9 @@ Scan option validation and output-limit errors retain <code class="docutils lite
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#tablesnapshot">TableSnapshot</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#orphancollector">OrphanCollector</a>
   </li>
 </ul>
 

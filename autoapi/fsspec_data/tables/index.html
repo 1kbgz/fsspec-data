@@ -266,6 +266,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../tests/test_cleanup/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_cleanup</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
     </a>
@@ -443,10 +448,37 @@
     <a href="#fsspec_data.tables.ManifestTable.snapshot">ManifestTable.snapshot()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.ManifestTable.orphan_collector">ManifestTable.orphan_collector()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.open_writer">ManifestTable.open_writer()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.recover">ManifestTable.recover()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.CleanupReport">CleanupReport</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.CleanupReport.generation">CleanupReport.generation</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.CleanupReport.pending">CleanupReport.pending</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.CleanupReport.eligible">CleanupReport.eligible</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.CleanupReport.deleted">CleanupReport.deleted</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.OrphanCollector">OrphanCollector</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.OrphanCollector._native">OrphanCollector._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.OrphanCollector.collect">OrphanCollector.collect()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tables.TableWriter">TableWriter</a>
@@ -574,6 +606,12 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tables.ManifestTable" title="fsspec_data.tables.ManifestTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ManifestTable</span></code></a></p></td>
 <td><p>One partition on native local or S3 storage, with retained saved generations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tables.CleanupReport" title="fsspec_data.tables.CleanupReport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CleanupReport</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tables.OrphanCollector" title="fsspec_data.tables.OrphanCollector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OrphanCollector</span></code></a></p></td>
+<td><p>Observe abandoned files and remove them after retention in occupied generations.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tables.TableWriter" title="fsspec_data.tables.TableWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableWriter</span></code></a></p></td>
 <td><p>Positioned Arrow writes; clean context exit commits, exceptional exit aborts.</p></td>
@@ -746,6 +784,14 @@ create-if-absent and consistent reads; capability support is not certification.<
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.ManifestTable.orphan_collector">
+<span class="sig-name descname"><span class="pre">orphan_collector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">retention_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_generations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_entries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.OrphanCollector" title="fsspec_data.tables.OrphanCollector"><span class="pre">OrphanCollector</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#ManifestTable.orphan_collector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.ManifestTable.orphan_collector" title="Link to this definition">¶</a></dt>
+<dd><p>Create a collector whose retention clock starts when it observes a file.</p>
+<p>Keep this object between sweeps. Restarting resets retention. All published
+versions are retained; files in an unpublished generation are left alone.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.tables.ManifestTable.open_writer">
 <span class="sig-name descname"><span class="pre">open_writer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'create'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'append'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'replace'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'create'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.tables.SinkOptions" title="fsspec_data.tables.SinkOptions"><span class="pre">SinkOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.TableWriter" title="fsspec_data.tables.TableWriter"><span class="pre">TableWriter</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#ManifestTable.open_writer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.ManifestTable.open_writer" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -754,6 +800,51 @@ create-if-absent and consistent reads; capability support is not certification.<
 <dt class="sig sig-object py" id="fsspec_data.tables.ManifestTable.recover">
 <span class="sig-name descname"><span class="pre">recover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.tables.RecoveryToken" title="fsspec_data.tables.RecoveryToken"><span class="pre">RecoveryToken</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.tables.SinkOptions" title="fsspec_data.tables.SinkOptions"><span class="pre">SinkOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.PublicationReceipt" title="fsspec_data.tables.PublicationReceipt"><span class="pre">PublicationReceipt</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#ManifestTable.recover"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.ManifestTable.recover" title="Link to this definition">¶</a></dt>
 <dd><p>Observe publication, or resubmit its exact saved candidate with retry=True.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.tables.CleanupReport">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tables.</span></span><span class="sig-name descname"><span class="pre">CleanupReport</span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#CleanupReport"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.CleanupReport" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.CleanupReport.generation">
+<span class="sig-name descname"><span class="pre">generation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.tables.CleanupReport.generation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.CleanupReport.pending">
+<span class="sig-name descname"><span class="pre">pending</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#fsspec_data.tables.CleanupReport.pending" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.CleanupReport.eligible">
+<span class="sig-name descname"><span class="pre">eligible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#fsspec_data.tables.CleanupReport.eligible" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.CleanupReport.deleted">
+<span class="sig-name descname"><span class="pre">deleted</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#fsspec_data.tables.CleanupReport.deleted" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.tables.OrphanCollector">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tables.</span></span><span class="sig-name descname"><span class="pre">OrphanCollector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#OrphanCollector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.OrphanCollector" title="Link to this definition">¶</a></dt>
+<dd><p>Observe abandoned files and remove them after retention in occupied generations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.OrphanCollector._native">
+<span class="sig-name descname"><span class="pre">_native</span></span><a class="headerlink" href="#fsspec_data.tables.OrphanCollector._native" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.OrphanCollector.collect">
+<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.CleanupReport" title="fsspec_data.tables.CleanupReport"><span class="pre">CleanupReport</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#OrphanCollector.collect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.OrphanCollector.collect" title="Link to this definition">¶</a></dt>
+<dd><p>Validate history, then list candidates; dry runs also track retention.</p>
+<p>Keys in the report are relative to the table root. Validation or listing
+failures prevent deletion. A deletion failure may leave a partial sweep;
+rerunning is safe. Failure resets retention observations.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1036,10 +1127,37 @@ max_part_bytes bounds encoded input, not decoder allocations.</p>
     <a href="#fsspec_data.tables.ManifestTable.snapshot">ManifestTable.snapshot()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.ManifestTable.orphan_collector">ManifestTable.orphan_collector()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.open_writer">ManifestTable.open_writer()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.recover">ManifestTable.recover()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.CleanupReport">CleanupReport</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.CleanupReport.generation">CleanupReport.generation</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.CleanupReport.pending">CleanupReport.pending</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.CleanupReport.eligible">CleanupReport.eligible</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.CleanupReport.deleted">CleanupReport.deleted</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.OrphanCollector">OrphanCollector</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.OrphanCollector._native">OrphanCollector._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.OrphanCollector.collect">OrphanCollector.collect()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tables.TableWriter">TableWriter</a>

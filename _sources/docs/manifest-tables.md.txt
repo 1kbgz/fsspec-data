@@ -1,7 +1,7 @@
 # Manifest table reference
 
 `ManifestTable`, `TableSnapshot`, `TableWriter`, `SinkOptions`, `BatchReceipt`,
-`PublicationReceipt`, and `RecoveryToken` are exported from `fsspec_data`. The bindings
+`PublicationReceipt`, `RecoveryToken`, `OrphanCollector`, and `CleanupReport` are exported from `fsspec_data`. The bindings
 use the Rust manifest reader and file sink. Operations are synchronous and release the
 Python GIL during storage access and encoding/decoding.
 
@@ -16,13 +16,14 @@ filesystem registrations are not used by this constructor.
 
 The storage backend must support durable, atomic create-if-absent and consistent reads.
 Native capability support does not certify a deployment. All published generations and
-unreferenced parts are retained; this API performs no garbage collection or deletion.
+their referenced parts are retained. Orphan cleanup is explicit.
 
-| Method                                                | Result                                                                                      |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `snapshot(generation=None)`                           | Validated `TableSnapshot`; `None` discovers latest publication without listing directories. |
-| `open_writer(schema, *, mode="create", options=None)` | `TableWriter` accepting PyArrow record batches with exactly matching schema.                |
-| `recover(token, *, retry=False, options=None)`        | `PublicationReceipt` for a saved attempt, using its persisted descriptor.                   |
+| Method                                                                            | Result                                                                                      |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `snapshot(generation=None)`                                                       | Validated `TableSnapshot`; `None` discovers latest publication without listing directories. |
+| `open_writer(schema, *, mode="create", options=None)`                             | `TableWriter` accepting PyArrow record batches with exactly matching schema.                |
+| `orphan_collector(*, retention_seconds, max_generations=256, max_entries=100000)` | Stateful `OrphanCollector` for failed-write files.                                          |
+| `recover(token, *, retry=False, options=None)`                                    | `PublicationReceipt` for a saved attempt, using its persisted descriptor.                   |
 
 `create` requires no live table, `append` requires an incomplete table with matching schema
 and partition values, and `replace` requires an existing table. Replacement creates a new
@@ -108,3 +109,36 @@ Storage/publication errors expose `kind` and `retry_safe` using the existing nat
 mapping. Not found, already exists, permission, timeout, unavailable and invalid map to Python
 built-ins; `conflict`, `gap`, `corrupt` and `unknown_outcome` use `OSError` with those attributes.
 Scan option validation and output-limit errors retain `DecodedBatchStream` behavior.
+
+## OrphanCollector
+
+`collect(*, dry_run=True)` returns a `CleanupReport` with `generation` (published cleanup
+boundary, or `None` for an unpublished table), `pending` (observed orphan files awaiting
+retention), `eligible` (relative keys past retention), and `deleted` (keys removed this
+sweep). Dry runs update observations but leave `deleted` empty. An absent object during
+deletion is ignored and does not appear in `deleted`.
+
+Retention must be positive and finite. It uses monotonic collector observations, not
+writer or store timestamps. Changed size/modification metadata, a missing listing entry,
+a failed sweep, or a new collector resets the relevant observations. Observations are
+in-memory and bound to this filesystem instance and table root.
+
+Before deletion, cleanup validates the complete manifest chain from zero through its
+boundary and protects parts referenced by any generation, plus winning candidate descriptors.
+It lists only the fixed `parts/<generation>/<attempt>/<filename>` layout. Future generations,
+manifests, completion markers, directories, symlinks and malformed keys are not removed.
+The namespace must be managed exclusively by protocol-compliant writers; replacing published
+manifests, changing part contents, introducing filesystem aliases, and independent lifecycle
+deletion violate that contract. Historical pruning and multipart-upload cleanup are unsupported.
+
+`max_generations` bounds the number of historical manifests. Discovery has the reader's
+256-request default limit. The table's `max_manifest_bytes` bounds each encoded manifest.
+`max_entries` separately bounds protected keys and total entries returned across listings;
+it is not a transport or process memory limit, since a filesystem can allocate a complete
+listing before returning it. Exceeding a limit raises `invalid` before deletion. Read,
+validation, or listing errors also prevent deletion. Deletion errors propagate after any
+successful earlier deletions; the sweep is repeatable.
+
+Rust exposes the equivalent `cleanup::{OrphanCollector, CleanupLimits, CleanupReport}`.
+`OrphanCollector::new` accepts a shared filesystem, root, retention `Duration`, and limits;
+`collect(dry_run)` requires mutable access.

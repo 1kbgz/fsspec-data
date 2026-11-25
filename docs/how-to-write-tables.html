@@ -266,6 +266,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_cleanup/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_cleanup</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
     </a>
@@ -351,6 +356,12 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#recover-an-uncertain-publication">Recover an uncertain publication</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#remove-files-left-by-failed-writes">Remove files left by failed writes</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#check-publication-and-cleanup-on-a-deployment">Check publication and cleanup on a deployment</a>
   </li>
 </ul>
 </div>
@@ -452,6 +463,51 @@ but <code class="docutils literal notranslate"><span class="pre">_SUCCESS</span>
 retries marker repair. See <a class="reference internal" href="manifest-tables.html"><span class="std std-doc">manifest table reference</span></a> for limits,
 error attributes, and recovery behavior.</p>
 </section>
+<section id="remove-files-left-by-failed-writes">
+<h2>Remove files left by failed writes<a class="headerlink" href="#remove-files-left-by-failed-writes" title="Link to this heading">¶</a></h2>
+<p>Create one collector and keep it between scheduled sweeps. Choose a retention interval
+for failed-write files; this example uses one day:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">collector</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">orphan_collector</span><span class="p">(</span><span class="n">retention_seconds</span><span class="o">=</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">collector</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">pending</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">eligible</span><span class="p">)</span>
+
+<span class="c1"># Reuse the same collector on later scheduled runs.</span>
+<span class="c1"># After retention, inspect eligible keys before enabling deletion.</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">collector</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">deleted</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The first sweep starts retention for each observed orphan. Dry runs track retention but
+delete nothing. Recreating the collector restarts that clock. Keep using the same table
+path and storage configuration, and reserve its namespace for table writers.</p>
+<p>Only files targeting an already published generation can be removed. If a failed writer
+was targeting the next generation, its files wait until another writer publishes that
+generation. Cleanup never publishes a generation itself. Saved versions, their parts,
+and winning recovery descriptors remain available, including versions before replacement.</p>
+<p>If validation or listing fails, correct the reported error and repeat the sweep. A deletion
+failure can leave some eligible files removed; repeating the sweep is safe and restarts
+retention for the remaining files. See <a class="reference internal" href="manifest-tables.html#orphancollector"><span class="std std-ref">cleanup limits</span></a>
+when a table exceeds the default history or entry budget.</p>
+</section>
+<section id="check-publication-and-cleanup-on-a-deployment">
+<h2>Check publication and cleanup on a deployment<a class="headerlink" href="#check-publication-and-cleanup-on-a-deployment" title="Link to this heading">¶</a></h2>
+<p>Run the <code class="docutils literal notranslate"><span class="pre">fsspec-rs</span></code> create-if-absent conformance suite first. Then use a disposable
+prefix for the table checks:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">FSSPEC_TABLE_TEST_URL</span><span class="o">=</span><span class="s1">'s3://test-bucket/publication-checks'</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">FSSPEC_TABLE_TEST_OPTIONS</span><span class="o">=</span><span class="s1">'{"region": "us-east-1"}'</span>
+pytest<span class="w"> </span>fsspec_data/tests/test_cleanup.py<span class="w"> </span>-k<span class="w"> </span>deployment
+</pre></div>
+</div>
+<p>For an S3-compatible server, include <code class="docutils literal notranslate"><span class="pre">endpoint_url</span></code> and configure credentials for that
+server. For an NFS mount, set the URL to an absolute mounted directory and omit S3 options.
+The test creates a unique table directory, checks two competing writers, replaces the table,
+collects the losing writer’s files, reopens a saved version, and checks recovery. Published
+test tables remain under the prefix; remove that disposable prefix when finished.</p>
+<p>Record the client and server versions, endpoint configuration, and mount options with the
+results. Also test interrupted requests and server restarts on the intended deployment;
+passing these client checks does not establish power-loss durability or cross-host NFS
+visibility. Local or simulated results do not certify another store.</p>
+</section>
 </section>
 
 
@@ -498,6 +554,12 @@ error attributes, and recovery behavior.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#recover-an-uncertain-publication">Recover an uncertain publication</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#remove-files-left-by-failed-writes">Remove files left by failed writes</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#check-publication-and-cleanup-on-a-deployment">Check publication and cleanup on a deployment</a>
   </li>
 </ul>
 

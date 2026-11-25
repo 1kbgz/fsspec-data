@@ -670,6 +670,11 @@ window.runMermaid = runMermaid;</script>
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../../autoapi/fsspec_data/tests/test_cleanup/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_cleanup</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../../autoapi/fsspec_data/tests/test_converters/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_converters</span>
     </a>
@@ -876,6 +881,17 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">TableSnapshot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">generation</span><span class="p">))</span></div>
 
 
+<div class="viewcode-block" id="ManifestTable.orphan_collector">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.ManifestTable.orphan_collector">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">orphan_collector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">retention_seconds</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_generations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span> <span class="n">max_entries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100_000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrphanCollector</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create a collector whose retention clock starts when it observes a file.</span>
+
+<span class="sd">        Keep this object between sweeps. Restarting resets retention. All published</span>
+<span class="sd">        versions are retained; files in an unpublished generation are left alone.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">OrphanCollector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">orphan_collector</span><span class="p">(</span><span class="n">retention_seconds</span><span class="p">,</span> <span class="n">max_generations</span><span class="p">,</span> <span class="n">max_entries</span><span class="p">))</span></div>
+
+
 <div class="viewcode-block" id="ManifestTable.open_writer">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.ManifestTable.open_writer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">open_writer</span><span class="p">(</span>
@@ -909,6 +925,39 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">options</span><span class="o">.</span><span class="n">max_history_reads</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CleanupReport">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.CleanupReport">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CleanupReport</span><span class="p">:</span>
+    <span class="n">generation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">pending</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">eligible</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">deleted</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="OrphanCollector">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.OrphanCollector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OrphanCollector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Observe abandoned files and remove them after retention in occupied generations."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">native</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_native</span> <span class="o">=</span> <span class="n">native</span>
+
+<div class="viewcode-block" id="OrphanCollector.collect">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.OrphanCollector.collect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CleanupReport</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Validate history, then list candidates; dry runs also track retention.</span>
+
+<span class="sd">        Keys in the report are relative to the table root. Validation or listing</span>
+<span class="sd">        failures prevent deletion. A deletion failure may leave a partial sweep;</span>
+<span class="sd">        rerunning is safe. Failure resets retention observations.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">CleanupReport</span><span class="p">(</span><span class="o">**</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">dry_run</span><span class="p">)))</span></div>
 </div>
 
 
