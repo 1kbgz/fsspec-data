@@ -305,6 +305,11 @@
       <span class="fd-link-text">fsspec_data.tests.test_view_conversion</span>
     </a>
   </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_watch/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_watch</span>
+    </a>
+  </li>
 </ul>
     </details>
   </li>
@@ -349,6 +354,9 @@
     <a href="#manifesttable">ManifestTable</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
+    <a href="#tablewatcher">TableWatcher</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
     <a href="#sinkoptions">SinkOptions</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
@@ -370,7 +378,8 @@
   <section class="tex2jax_ignore mathjax_ignore" id="manifest-table-reference">
 <h1>Manifest table reference<a class="headerlink" href="#manifest-table-reference" title="Link to this heading">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">ManifestTable</span></code>, <code class="docutils literal notranslate"><span class="pre">TableSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">TableWriter</span></code>, <code class="docutils literal notranslate"><span class="pre">SinkOptions</span></code>, <code class="docutils literal notranslate"><span class="pre">BatchReceipt</span></code>,
-<code class="docutils literal notranslate"><span class="pre">PublicationReceipt</span></code>, <code class="docutils literal notranslate"><span class="pre">RecoveryToken</span></code>, <code class="docutils literal notranslate"><span class="pre">OrphanCollector</span></code>, and <code class="docutils literal notranslate"><span class="pre">CleanupReport</span></code> are exported from <code class="docutils literal notranslate"><span class="pre">fsspec_data</span></code>. The bindings
+<code class="docutils literal notranslate"><span class="pre">PublicationReceipt</span></code>, <code class="docutils literal notranslate"><span class="pre">RecoveryToken</span></code>, <code class="docutils literal notranslate"><span class="pre">OrphanCollector</span></code>, <code class="docutils literal notranslate"><span class="pre">CleanupReport</span></code>, <code class="docutils literal notranslate"><span class="pre">TableWatcher</span></code>,
+<code class="docutils literal notranslate"><span class="pre">WatchBatch</span></code>, <code class="docutils literal notranslate"><span class="pre">WatchPosition</span></code>, and <code class="docutils literal notranslate"><span class="pre">WatchEnd</span></code> are exported from <code class="docutils literal notranslate"><span class="pre">fsspec_data</span></code>. The bindings
 use the Rust manifest reader and file sink. Operations are synchronous and release the
 Python GIL during storage access and encoding/decoding.</p>
 <section id="manifesttable">
@@ -417,6 +426,59 @@ and credential context. <code class="docutils literal notranslate"><span class="
 returns <code class="docutils literal notranslate"><span class="pre">unknown_outcome</span></code>, since an earlier request may still complete. Recovery cannot
 reconstruct an attempt that failed before its candidate descriptor was stored. Passing the
 original writer’s options preserves its publication and recovery read limits.</p>
+</section>
+<section id="tablewatcher">
+<h2>TableWatcher<a class="headerlink" href="#tablewatcher" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">table.watch(*,</span> <span class="pre">start=None,</span> <span class="pre">columns=None,</span> <span class="pre">batch_size=1024,</span> <span class="pre">poll_interval=0.1,</span> <span class="pre">idle_timeout=None)</span></code> returns a synchronous <code class="docutils literal notranslate"><span class="pre">TableWatcher</span></code>. The table must already be
+published with row-based progress. A new watch begins with all rows of the latest
+snapshot. <code class="docutils literal notranslate"><span class="pre">start</span></code> resumes a <code class="docutils literal notranslate"><span class="pre">WatchPosition</span></code> from its saved generation. The watcher
+reads successive generations in order, without listing directories.</p>
+<p>Each iteration returns <code class="docutils literal notranslate"><span class="pre">WatchBatch(batch,</span> <span class="pre">position)</span></code>. Its position describes progress
+after that batch. The watcher also exposes the selected Arrow <code class="docutils literal notranslate"><span class="pre">schema</span></code>, last returned
+<code class="docutils literal notranslate"><span class="pre">position</span></code>, and <code class="docutils literal notranslate"><span class="pre">end_reason</span></code>. Before the first batch, <code class="docutils literal notranslate"><span class="pre">position</span></code> is the starting checkpoint.
+A position records the source location, namespace/table identity, generation, manifest
+checksum, progress and progress unit. JSON serialization uses <code class="docutils literal notranslate"><span class="pre">to_json()</span></code> and
+<code class="docutils literal notranslate"><span class="pre">WatchPosition.from_json(text)</span></code>. It contains no credential options; reopening a source
+still requires authorization. The source location includes the protocol, resolved path (including the S3 bucket), and explicit S3
+endpoint/region options. Resume requires the same location configuration.</p>
+<p><code class="docutils literal notranslate"><span class="pre">columns</span></code> preserves requested order, duplicates and empty projections. <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> bounds
+rows per batch and must be positive. <code class="docutils literal notranslate"><span class="pre">poll_interval</span></code> is a finite positive number of seconds.
+<code class="docutils literal notranslate"><span class="pre">idle_timeout</span></code> is a finite nonnegative number of seconds, or <code class="docutils literal notranslate"><span class="pre">None</span></code> to wait indefinitely.
+Zero drains available rows and ends when no successor is published. Positive timeouts
+measure time since the last returned batch, including consumer processing time, and are
+checked when a successor is absent. They are not storage request deadlines.</p>
+<p>After iteration ends, <code class="docutils literal notranslate"><span class="pre">end_reason</span></code> is one of:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Value</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">WatchEnd.COMPLETE</span></code></p></td>
+<td><p>All rows of a complete generation were returned.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">WatchEnd.IDLE_TIMEOUT</span></code></p></td>
+<td><p>No successor was available before the idle timeout.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">WatchEnd.CANCELLED</span></code></p></td>
+<td><p>Cancellation was observed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">WatchEnd.REPLACED</span></code></p></td>
+<td><p>A successor changed the table identity or deleted the table.</p></td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">cancel()</span></code> and <code class="docutils literal notranslate"><span class="pre">close()</span></code> request cancellation; context exit calls <code class="docutils literal notranslate"><span class="pre">close()</span></code>. Cancellation
+wakes polling waits and is checked between reads. A synchronous storage call cannot be
+interrupted. Properties and iteration serialize on the watcher; cancellation can be called
+from another thread. Errors propagate and terminate iteration without setting an end reason
+or advancing the last returned checkpoint. Resume can retry from that checkpoint.</p>
+<p>The watcher verifies encoded parts before decoding and skips parts before the saved progress.
+It does not switch to replacement data, infer event/array positions from row counts, watch
+filesystem notifications, or provide asynchronous iteration. Standalone scans remain pinned.
+The Rust equivalents are <code class="docutils literal notranslate"><span class="pre">watch::ManifestWatcher</span></code>, <code class="docutils literal notranslate"><span class="pre">WatchOptions</span></code>, <code class="docutils literal notranslate"><span class="pre">WatchPosition</span></code>,
+<code class="docutils literal notranslate"><span class="pre">WatchBatch</span></code>, and <code class="docutils literal notranslate"><span class="pre">WatchEnd</span></code>; Rust callers provide a stable non-secret source label.</p>
 </section>
 <section id="sinkoptions">
 <h2>SinkOptions<a class="headerlink" href="#sinkoptions" title="Link to this heading">¶</a></h2>
@@ -512,13 +574,19 @@ must be paired with the original storage configuration.</p>
 <section id="tablesnapshot">
 <h2>TableSnapshot<a class="headerlink" href="#tablesnapshot" title="Link to this heading">¶</a></h2>
 <p>Read-only properties expose <code class="docutils literal notranslate"><span class="pre">schema</span></code>, <code class="docutils literal notranslate"><span class="pre">generation</span></code>, <code class="docutils literal notranslate"><span class="pre">num_rows</span></code>, <code class="docutils literal notranslate"><span class="pre">progress</span></code>, <code class="docutils literal notranslate"><span class="pre">complete</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">metadata</span></code>. Metadata returns an independent dictionary of the validated manifest, including
+<code class="docutils literal notranslate"><span class="pre">metadata</span></code>, and <code class="docutils literal notranslate"><span class="pre">state</span></code>. Metadata returns an independent dictionary of the validated manifest, including
 identity, partition values, parts and receipts. A snapshot retains its filesystem and selected
 generation even after its parent <code class="docutils literal notranslate"><span class="pre">ManifestTable</span></code> is released.</p>
+<p><code class="docutils literal notranslate"><span class="pre">state</span></code> returns an independent dictionary with <code class="docutils literal notranslate"><span class="pre">generation</span></code>, <code class="docutils literal notranslate"><span class="pre">num_rows</span></code>, <code class="docutils literal notranslate"><span class="pre">num_rows_exact</span></code>,
+<code class="docutils literal notranslate"><span class="pre">complete</span></code>, <code class="docutils literal notranslate"><span class="pre">progress</span></code>, and <code class="docutils literal notranslate"><span class="pre">progress_unit</span></code>. Manifest row counts are exact. Progress is
+separate from row counts even when its unit is <code class="docutils literal notranslate"><span class="pre">rows</span></code>. Partition values appear as singleton
+<code class="docutils literal notranslate"><span class="pre">distinct.&lt;column&gt;</span></code> lists. Unavailable modification times and other distinct values are omitted.
+Completion comes from the manifest, independently of <code class="docutils literal notranslate"><span class="pre">_SUCCESS</span></code>. Rust exposes <code class="docutils literal notranslate"><span class="pre">Snapshot::state()</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">scan(*,</span> <span class="pre">columns=None,</span> <span class="pre">row_offset=0,</span> <span class="pre">batch_size=1024,</span> <span class="pre">row_limit=None,</span> <span class="pre">byte_limit=None)</span></code> returns
 <code class="docutils literal notranslate"><span class="pre">DecodedBatchStream</span></code>. Output preserves part order and requested column order, including
 duplicates and empty projections. Offset and limits apply across parts. Only Parquet parts without encoding options are supported. Selection currently
-happens after decoding; this API does not perform range or predicate pushdown.</p>
+skips complete parts before the offset, then slices decoded rows; this API does not perform
+range or predicate pushdown. Rust exposes the same reader through <code class="docutils literal notranslate"><span class="pre">Snapshot::scan()</span></code>.</p>
 <p>Each requested part is read in full within <code class="docutils literal notranslate"><span class="pre">max_part_bytes</span></code>, verified against its SHA-256 and
 size, then checked for matching Parquet schema and row count. Unlisted files are invisible.
 Later parts are fetched only as iteration reaches them. A zero row limit reads no parts.
@@ -595,6 +663,9 @@ successful earlier deletions; the sweep is repeatable.</p>
     </svg><ul class="fd-toc-list">
   <li class="fd-toc-item" data-depth="1">
     <a href="#manifesttable">ManifestTable</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#tablewatcher">TableWatcher</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#sinkoptions">SinkOptions</a>

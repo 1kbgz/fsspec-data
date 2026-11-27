@@ -89,7 +89,11 @@ Classes
    fsspec_data.RecoveryToken
    fsspec_data.SinkOptions
    fsspec_data.TableSnapshot
+   fsspec_data.TableWatcher
    fsspec_data.TableWriter
+   fsspec_data.WatchBatch
+   fsspec_data.WatchEnd
+   fsspec_data.WatchPosition
    fsspec_data.DataViewFileSystem
    fsspec_data.ViewEntry
 
@@ -1092,6 +1096,16 @@ Package Contents
 
 
 
+   .. py:method:: watch(*, start: WatchPosition | None = None, columns: collections.abc.Sequence[str] | None = None, batch_size: int = 1024, poll_interval: float = 0.1, idle_timeout: float | None = None) -> TableWatcher
+
+      Watch existing and newly published rows, or resume a saved position.
+
+      Requires an already published table with row progress. A new watch starts
+      at the latest generation. A resume visits its saved generation and each
+      successor; replacement ends the watch. Storage calls are synchronous.
+
+
+
    .. py:method:: orphan_collector(*, retention_seconds: float, max_generations: int = 256, max_entries: int = 100000) -> OrphanCollector
 
       Create a collector whose retention clock starts when it observes a file.
@@ -1238,6 +1252,16 @@ Package Contents
 
 
 
+   .. py:property:: state
+      :type: dict[str, Any]
+
+
+      Visible counts, generation, completion and progress from this manifest.
+
+      Counts are exact. Unavailable timestamps/distinct values are absent;
+      partition values provide cheap distinct.<column> entries.
+
+
    .. py:property:: metadata
       :type: dict[str, Any]
 
@@ -1272,6 +1296,52 @@ Package Contents
       Selection and output limits apply across parts. A part is read in full;
       max_part_bytes bounds encoded input, not decoder allocations.
 
+
+
+.. py:class:: TableWatcher(native: Any)
+
+   Iterator of batches and checkpoints. Inspect end_reason after exhaustion.
+
+   Persist an item's position after processing its batch. Cancellation wakes
+   polling waits, but cannot interrupt a synchronous storage call in progress.
+
+
+   .. py:attribute:: _native
+
+
+   .. py:attribute:: schema
+      :type:  pyarrow.Schema
+
+
+   .. py:property:: position
+      :type: WatchPosition
+
+
+
+   .. py:property:: end_reason
+      :type: WatchEnd | None
+
+
+
+   .. py:method:: __iter__() -> Self
+
+
+   .. py:method:: __next__() -> WatchBatch
+
+
+   .. py:method:: cancel() -> None
+
+      Request cancellation; next iteration reports CANCELLED.
+
+
+
+   .. py:method:: close() -> None
+
+
+   .. py:method:: __enter__() -> Self
+
+
+   .. py:method:: __exit__(*args: object) -> None
 
 
 .. py:class:: TableWriter(native: Any, schema: pyarrow.Schema)
@@ -1350,6 +1420,87 @@ Package Contents
 
 
    .. py:method:: __exit__(exc_type: type[BaseException] | None, exc: BaseException | None, traceback: types.TracebackType | None) -> None
+
+
+.. py:class:: WatchBatch
+
+   .. py:attribute:: batch
+      :type:  pyarrow.RecordBatch
+
+
+   .. py:attribute:: position
+      :type:  WatchPosition
+
+
+.. py:class:: WatchEnd
+
+   Bases: :py:obj:`enum.StrEnum`
+
+
+   Enum where members are also (and must be) strings
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: COMPLETE
+      :value: 'complete'
+
+
+
+   .. py:attribute:: IDLE_TIMEOUT
+      :value: 'idle_timeout'
+
+
+
+   .. py:attribute:: CANCELLED
+      :value: 'cancelled'
+
+
+
+   .. py:attribute:: REPLACED
+      :value: 'replaced'
+
+
+
+.. py:class:: WatchPosition
+
+   Serializable checkpoint for the same source location and saved table generation.
+
+
+   .. py:attribute:: source
+      :type:  str
+
+
+   .. py:attribute:: namespace_id
+      :type:  str
+
+
+   .. py:attribute:: table_id
+      :type:  str
+
+
+   .. py:attribute:: generation
+      :type:  int
+
+
+   .. py:attribute:: manifest_sha256
+      :type:  str
+
+
+   .. py:attribute:: progress
+      :type:  int
+
+
+   .. py:attribute:: progress_unit
+      :type:  str
+
+
+   .. py:method:: to_json() -> str
+
+
+   .. py:method:: from_json(value: str) -> Self
+      :classmethod:
+
 
 
 .. py:data:: DEFAULT_MAPPING

@@ -305,6 +305,11 @@
       <span class="fd-link-text">fsspec_data.tests.test_view_conversion</span>
     </a>
   </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../tests/test_watch/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_watch</span>
+    </a>
+  </li>
 </ul>
     </details>
   </li>
@@ -448,6 +453,9 @@
     <a href="#fsspec_data.tables.ManifestTable.snapshot">ManifestTable.snapshot()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.ManifestTable.watch">ManifestTable.watch()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.orphan_collector">ManifestTable.orphan_collector()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -455,6 +463,93 @@
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.recover">ManifestTable.recover()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.WatchPosition">WatchPosition</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.source">WatchPosition.source</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.namespace_id">WatchPosition.namespace_id</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.table_id">WatchPosition.table_id</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.generation">WatchPosition.generation</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.manifest_sha256">WatchPosition.manifest_sha256</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.progress">WatchPosition.progress</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.progress_unit">WatchPosition.progress_unit</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.to_json">WatchPosition.to_json()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.from_json">WatchPosition.from_json()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.WatchEnd">WatchEnd</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchEnd.COMPLETE">WatchEnd.COMPLETE</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchEnd.IDLE_TIMEOUT">WatchEnd.IDLE_TIMEOUT</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchEnd.CANCELLED">WatchEnd.CANCELLED</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchEnd.REPLACED">WatchEnd.REPLACED</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.WatchBatch">WatchBatch</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchBatch.batch">WatchBatch.batch</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchBatch.position">WatchBatch.position</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.TableWatcher">TableWatcher</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher._native">TableWatcher._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.schema">TableWatcher.schema</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.position">TableWatcher.position</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.end_reason">TableWatcher.end_reason</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.__iter__">TableWatcher.__iter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.__next__">TableWatcher.__next__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.cancel">TableWatcher.cancel()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.close">TableWatcher.close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.__enter__">TableWatcher.__enter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.__exit__">TableWatcher.__exit__()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tables.CleanupReport">CleanupReport</a>
@@ -538,6 +633,9 @@
     <a href="#fsspec_data.tables.TableSnapshot.schema">TableSnapshot.schema</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableSnapshot.state">TableSnapshot.state</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.TableSnapshot.metadata">TableSnapshot.metadata</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -606,6 +704,18 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tables.ManifestTable" title="fsspec_data.tables.ManifestTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ManifestTable</span></code></a></p></td>
 <td><p>One partition on native local or S3 storage, with retained saved generations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tables.WatchPosition" title="fsspec_data.tables.WatchPosition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatchPosition</span></code></a></p></td>
+<td><p>Serializable checkpoint for the same source location and saved table generation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tables.WatchEnd" title="fsspec_data.tables.WatchEnd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatchEnd</span></code></a></p></td>
+<td><p>Enum where members are also (and must be) strings</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tables.WatchBatch" title="fsspec_data.tables.WatchBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatchBatch</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tables.TableWatcher" title="fsspec_data.tables.TableWatcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableWatcher</span></code></a></p></td>
+<td><p>Iterator of batches and checkpoints. Inspect end_reason after exhaustion.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tables.CleanupReport" title="fsspec_data.tables.CleanupReport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CleanupReport</span></code></a></p></td>
 <td><p></p></td>
@@ -784,6 +894,15 @@ create-if-absent and consistent reads; capability support is not certification.<
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.ManifestTable.watch">
+<span class="sig-name descname"><span class="pre">watch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.tables.WatchPosition" title="fsspec_data.tables.WatchPosition"><span class="pre">WatchPosition</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idle_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.TableWatcher" title="fsspec_data.tables.TableWatcher"><span class="pre">TableWatcher</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#ManifestTable.watch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.ManifestTable.watch" title="Link to this definition">¶</a></dt>
+<dd><p>Watch existing and newly published rows, or resume a saved position.</p>
+<p>Requires an already published table with row progress. A new watch starts
+at the latest generation. A resume visits its saved generation and each
+successor; replacement ends the watch. Storage calls are synchronous.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="fsspec_data.tables.ManifestTable.orphan_collector">
 <span class="sig-name descname"><span class="pre">orphan_collector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">retention_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_generations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_entries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.OrphanCollector" title="fsspec_data.tables.OrphanCollector"><span class="pre">OrphanCollector</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#ManifestTable.orphan_collector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.ManifestTable.orphan_collector" title="Link to this definition">¶</a></dt>
 <dd><p>Create a collector whose retention clock starts when it observes a file.</p>
@@ -801,6 +920,159 @@ versions are retained; files in an unpublished generation are left alone.</p>
 <span class="sig-name descname"><span class="pre">recover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.tables.RecoveryToken" title="fsspec_data.tables.RecoveryToken"><span class="pre">RecoveryToken</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.tables.SinkOptions" title="fsspec_data.tables.SinkOptions"><span class="pre">SinkOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.PublicationReceipt" title="fsspec_data.tables.PublicationReceipt"><span class="pre">PublicationReceipt</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#ManifestTable.recover"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.ManifestTable.recover" title="Link to this definition">¶</a></dt>
 <dd><p>Observe publication, or resubmit its exact saved candidate with retry=True.</p>
 </dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchPosition">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tables.</span></span><span class="sig-name descname"><span class="pre">WatchPosition</span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#WatchPosition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.WatchPosition" title="Link to this definition">¶</a></dt>
+<dd><p>Serializable checkpoint for the same source location and saved table generation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchPosition.source">
+<span class="sig-name descname"><span class="pre">source</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fsspec_data.tables.WatchPosition.source" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchPosition.namespace_id">
+<span class="sig-name descname"><span class="pre">namespace_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fsspec_data.tables.WatchPosition.namespace_id" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchPosition.table_id">
+<span class="sig-name descname"><span class="pre">table_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fsspec_data.tables.WatchPosition.table_id" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchPosition.generation">
+<span class="sig-name descname"><span class="pre">generation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#fsspec_data.tables.WatchPosition.generation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchPosition.manifest_sha256">
+<span class="sig-name descname"><span class="pre">manifest_sha256</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fsspec_data.tables.WatchPosition.manifest_sha256" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchPosition.progress">
+<span class="sig-name descname"><span class="pre">progress</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#fsspec_data.tables.WatchPosition.progress" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchPosition.progress_unit">
+<span class="sig-name descname"><span class="pre">progress_unit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fsspec_data.tables.WatchPosition.progress_unit" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchPosition.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#WatchPosition.to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.WatchPosition.to_json" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchPosition.from_json">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#WatchPosition.from_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.WatchPosition.from_json" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchEnd">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tables.</span></span><span class="sig-name descname"><span class="pre">WatchEnd</span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#WatchEnd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.WatchEnd" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.StrEnum</span></code></p>
+<p>Enum where members are also (and must be) strings</p>
+<p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchEnd.COMPLETE">
+<span class="sig-name descname"><span class="pre">COMPLETE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'complete'</span></em><a class="headerlink" href="#fsspec_data.tables.WatchEnd.COMPLETE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchEnd.IDLE_TIMEOUT">
+<span class="sig-name descname"><span class="pre">IDLE_TIMEOUT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'idle_timeout'</span></em><a class="headerlink" href="#fsspec_data.tables.WatchEnd.IDLE_TIMEOUT" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchEnd.CANCELLED">
+<span class="sig-name descname"><span class="pre">CANCELLED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cancelled'</span></em><a class="headerlink" href="#fsspec_data.tables.WatchEnd.CANCELLED" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchEnd.REPLACED">
+<span class="sig-name descname"><span class="pre">REPLACED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'replaced'</span></em><a class="headerlink" href="#fsspec_data.tables.WatchEnd.REPLACED" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchBatch">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tables.</span></span><span class="sig-name descname"><span class="pre">WatchBatch</span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#WatchBatch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.WatchBatch" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchBatch.batch">
+<span class="sig-name descname"><span class="pre">batch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pyarrow.RecordBatch</span></em><a class="headerlink" href="#fsspec_data.tables.WatchBatch.batch" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.WatchBatch.position">
+<span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#fsspec_data.tables.WatchPosition" title="fsspec_data.tables.WatchPosition"><span class="pre">WatchPosition</span></a></em><a class="headerlink" href="#fsspec_data.tables.WatchBatch.position" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tables.</span></span><span class="sig-name descname"><span class="pre">TableWatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#TableWatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.TableWatcher" title="Link to this definition">¶</a></dt>
+<dd><p>Iterator of batches and checkpoints. Inspect end_reason after exhaustion.</p>
+<p>Persist an item’s position after processing its batch. Cancellation wakes
+polling waits, but cannot interrupt a synchronous storage call in progress.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher._native">
+<span class="sig-name descname"><span class="pre">_native</span></span><a class="headerlink" href="#fsspec_data.tables.TableWatcher._native" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pyarrow.Schema</span></em><a class="headerlink" href="#fsspec_data.tables.TableWatcher.schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher.position">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#fsspec_data.tables.WatchPosition" title="fsspec_data.tables.WatchPosition"><span class="pre">WatchPosition</span></a></em><a class="headerlink" href="#fsspec_data.tables.TableWatcher.position" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher.end_reason">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">end_reason</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#fsspec_data.tables.WatchEnd" title="fsspec_data.tables.WatchEnd"><span class="pre">WatchEnd</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.tables.TableWatcher.end_reason" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#TableWatcher.__iter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.TableWatcher.__iter__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher.__next__">
+<span class="sig-name descname"><span class="pre">__next__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.WatchBatch" title="fsspec_data.tables.WatchBatch"><span class="pre">WatchBatch</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#TableWatcher.__next__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.TableWatcher.__next__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher.cancel">
+<span class="sig-name descname"><span class="pre">cancel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#TableWatcher.cancel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.TableWatcher.cancel" title="Link to this definition">¶</a></dt>
+<dd><p>Request cancellation; next iteration reports CANCELLED.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#TableWatcher.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.TableWatcher.close" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher.__enter__">
+<span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#TableWatcher.__enter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.TableWatcher.__enter__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableWatcher.__exit__">
+<span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#TableWatcher.__exit__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.TableWatcher.__exit__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -951,6 +1223,14 @@ rerunning is safe. Failure resets retention observations.</p>
 <dt class="sig sig-object py" id="fsspec_data.tables.TableSnapshot.schema">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pyarrow.Schema</span></em><a class="headerlink" href="#fsspec_data.tables.TableSnapshot.schema" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableSnapshot.state">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#fsspec_data.tables.TableSnapshot.state" title="Link to this definition">¶</a></dt>
+<dd><p>Visible counts, generation, completion and progress from this manifest.</p>
+<p>Counts are exact. Unavailable timestamps/distinct values are absent;
+partition values provide cheap distinct.&lt;column&gt; entries.</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="fsspec_data.tables.TableSnapshot.metadata">
@@ -1127,6 +1407,9 @@ max_part_bytes bounds encoded input, not decoder allocations.</p>
     <a href="#fsspec_data.tables.ManifestTable.snapshot">ManifestTable.snapshot()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.ManifestTable.watch">ManifestTable.watch()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.orphan_collector">ManifestTable.orphan_collector()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -1134,6 +1417,93 @@ max_part_bytes bounds encoded input, not decoder allocations.</p>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.recover">ManifestTable.recover()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.WatchPosition">WatchPosition</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.source">WatchPosition.source</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.namespace_id">WatchPosition.namespace_id</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.table_id">WatchPosition.table_id</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.generation">WatchPosition.generation</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.manifest_sha256">WatchPosition.manifest_sha256</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.progress">WatchPosition.progress</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.progress_unit">WatchPosition.progress_unit</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.to_json">WatchPosition.to_json()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchPosition.from_json">WatchPosition.from_json()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.WatchEnd">WatchEnd</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchEnd.COMPLETE">WatchEnd.COMPLETE</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchEnd.IDLE_TIMEOUT">WatchEnd.IDLE_TIMEOUT</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchEnd.CANCELLED">WatchEnd.CANCELLED</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchEnd.REPLACED">WatchEnd.REPLACED</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.WatchBatch">WatchBatch</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchBatch.batch">WatchBatch.batch</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.WatchBatch.position">WatchBatch.position</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.TableWatcher">TableWatcher</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher._native">TableWatcher._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.schema">TableWatcher.schema</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.position">TableWatcher.position</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.end_reason">TableWatcher.end_reason</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.__iter__">TableWatcher.__iter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.__next__">TableWatcher.__next__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.cancel">TableWatcher.cancel()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.close">TableWatcher.close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.__enter__">TableWatcher.__enter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableWatcher.__exit__">TableWatcher.__exit__()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.tables.CleanupReport">CleanupReport</a>
@@ -1215,6 +1585,9 @@ max_part_bytes bounds encoded input, not decoder allocations.</p>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.TableSnapshot.schema">TableSnapshot.schema</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableSnapshot.state">TableSnapshot.state</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.TableSnapshot.metadata">TableSnapshot.metadata</a>

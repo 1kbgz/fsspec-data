@@ -1,7 +1,8 @@
 # Manifest table reference
 
 `ManifestTable`, `TableSnapshot`, `TableWriter`, `SinkOptions`, `BatchReceipt`,
-`PublicationReceipt`, `RecoveryToken`, `OrphanCollector`, and `CleanupReport` are exported from `fsspec_data`. The bindings
+`PublicationReceipt`, `RecoveryToken`, `OrphanCollector`, `CleanupReport`, `TableWatcher`,
+`WatchBatch`, `WatchPosition`, and `WatchEnd` are exported from `fsspec_data`. The bindings
 use the Rust manifest reader and file sink. Operations are synchronous and release the
 Python GIL during storage access and encoding/decoding.
 
@@ -38,6 +39,50 @@ and credential context. `retry=False` observes publication and repairs a complet
 returns `unknown_outcome`, since an earlier request may still complete. Recovery cannot
 reconstruct an attempt that failed before its candidate descriptor was stored. Passing the
 original writer's options preserves its publication and recovery read limits.
+
+## TableWatcher
+
+`table.watch(*, start=None, columns=None, batch_size=1024, poll_interval=0.1, idle_timeout=None)` returns a synchronous `TableWatcher`. The table must already be
+published with row-based progress. A new watch begins with all rows of the latest
+snapshot. `start` resumes a `WatchPosition` from its saved generation. The watcher
+reads successive generations in order, without listing directories.
+
+Each iteration returns `WatchBatch(batch, position)`. Its position describes progress
+after that batch. The watcher also exposes the selected Arrow `schema`, last returned
+`position`, and `end_reason`. Before the first batch, `position` is the starting checkpoint.
+A position records the source location, namespace/table identity, generation, manifest
+checksum, progress and progress unit. JSON serialization uses `to_json()` and
+`WatchPosition.from_json(text)`. It contains no credential options; reopening a source
+still requires authorization. The source location includes the protocol, resolved path (including the S3 bucket), and explicit S3
+endpoint/region options. Resume requires the same location configuration.
+
+`columns` preserves requested order, duplicates and empty projections. `batch_size` bounds
+rows per batch and must be positive. `poll_interval` is a finite positive number of seconds.
+`idle_timeout` is a finite nonnegative number of seconds, or `None` to wait indefinitely.
+Zero drains available rows and ends when no successor is published. Positive timeouts
+measure time since the last returned batch, including consumer processing time, and are
+checked when a successor is absent. They are not storage request deadlines.
+
+After iteration ends, `end_reason` is one of:
+
+| Value                   | Meaning                                                      |
+| ----------------------- | ------------------------------------------------------------ |
+| `WatchEnd.COMPLETE`     | All rows of a complete generation were returned.             |
+| `WatchEnd.IDLE_TIMEOUT` | No successor was available before the idle timeout.          |
+| `WatchEnd.CANCELLED`    | Cancellation was observed.                                   |
+| `WatchEnd.REPLACED`     | A successor changed the table identity or deleted the table. |
+
+`cancel()` and `close()` request cancellation; context exit calls `close()`. Cancellation
+wakes polling waits and is checked between reads. A synchronous storage call cannot be
+interrupted. Properties and iteration serialize on the watcher; cancellation can be called
+from another thread. Errors propagate and terminate iteration without setting an end reason
+or advancing the last returned checkpoint. Resume can retry from that checkpoint.
+
+The watcher verifies encoded parts before decoding and skips parts before the saved progress.
+It does not switch to replacement data, infer event/array positions from row counts, watch
+filesystem notifications, or provide asynchronous iteration. Standalone scans remain pinned.
+The Rust equivalents are `watch::ManifestWatcher`, `WatchOptions`, `WatchPosition`,
+`WatchBatch`, and `WatchEnd`; Rust callers provide a stable non-secret source label.
 
 ## SinkOptions
 
@@ -90,14 +135,21 @@ must be paired with the original storage configuration.
 ## TableSnapshot
 
 Read-only properties expose `schema`, `generation`, `num_rows`, `progress`, `complete`, and
-`metadata`. Metadata returns an independent dictionary of the validated manifest, including
+`metadata`, and `state`. Metadata returns an independent dictionary of the validated manifest, including
 identity, partition values, parts and receipts. A snapshot retains its filesystem and selected
 generation even after its parent `ManifestTable` is released.
+
+`state` returns an independent dictionary with `generation`, `num_rows`, `num_rows_exact`,
+`complete`, `progress`, and `progress_unit`. Manifest row counts are exact. Progress is
+separate from row counts even when its unit is `rows`. Partition values appear as singleton
+`distinct.<column>` lists. Unavailable modification times and other distinct values are omitted.
+Completion comes from the manifest, independently of `_SUCCESS`. Rust exposes `Snapshot::state()`.
 
 `scan(*, columns=None, row_offset=0, batch_size=1024, row_limit=None, byte_limit=None)` returns
 `DecodedBatchStream`. Output preserves part order and requested column order, including
 duplicates and empty projections. Offset and limits apply across parts. Only Parquet parts without encoding options are supported. Selection currently
-happens after decoding; this API does not perform range or predicate pushdown.
+skips complete parts before the offset, then slices decoded rows; this API does not perform
+range or predicate pushdown. Rust exposes the same reader through `Snapshot::scan()`.
 
 Each requested part is read in full within `max_part_bytes`, verified against its SHA-256 and
 size, then checked for matching Parquet schema and row count. Unlisted files are invisible.

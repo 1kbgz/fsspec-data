@@ -709,6 +709,11 @@ window.runMermaid = runMermaid;</script>
       <span class="fd-link-text">fsspec_data.tests.test_view_conversion</span>
     </a>
   </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../../autoapi/fsspec_data/tests/test_watch/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_watch</span>
+    </a>
+  </li>
 </ul>
     </details>
   </li>
@@ -766,6 +771,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrEnum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">TracebackType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Self</span>
@@ -881,6 +887,34 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">TableSnapshot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">generation</span><span class="p">))</span></div>
 
 
+<div class="viewcode-block" id="ManifestTable.watch">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.ManifestTable.watch">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">watch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="n">WatchPosition</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">idle_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TableWatcher</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Watch existing and newly published rows, or resume a saved position.</span>
+
+<span class="sd">        Requires an already published table with row progress. A new watch starts</span>
+<span class="sd">        at the latest generation. A resume visits its saved generation and each</span>
+<span class="sd">        successor; replacement ends the watch. Storage calls are synchronous.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">TableWatcher</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span>
+                <span class="kc">None</span> <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">start</span><span class="o">.</span><span class="n">to_json</span><span class="p">(),</span>
+                <span class="kc">None</span> <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">columns</span><span class="p">),</span>
+                <span class="n">batch_size</span><span class="p">,</span>
+                <span class="n">poll_interval</span><span class="p">,</span>
+                <span class="n">idle_timeout</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="ManifestTable.orphan_collector">
 <a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.ManifestTable.orphan_collector">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">orphan_collector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">retention_seconds</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_generations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span> <span class="n">max_entries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100_000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrphanCollector</span><span class="p">:</span>
@@ -925,6 +959,119 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">options</span><span class="o">.</span><span class="n">max_history_reads</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="WatchPosition">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.WatchPosition">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">WatchPosition</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Serializable checkpoint for the same source location and saved table generation."""</span>
+
+    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">namespace_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">table_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">generation</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">manifest_sha256</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">progress_unit</span><span class="p">:</span> <span class="nb">str</span>
+
+<div class="viewcode-block" id="WatchPosition.to_json">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.WatchPosition.to_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">allow_nan</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="WatchPosition.from_json">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.WatchPosition.from_json">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="WatchEnd">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.WatchEnd">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">WatchEnd</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
+    <span class="n">COMPLETE</span> <span class="o">=</span> <span class="s2">"complete"</span>
+    <span class="n">IDLE_TIMEOUT</span> <span class="o">=</span> <span class="s2">"idle_timeout"</span>
+    <span class="n">CANCELLED</span> <span class="o">=</span> <span class="s2">"cancelled"</span>
+    <span class="n">REPLACED</span> <span class="o">=</span> <span class="s2">"replaced"</span></div>
+
+
+
+<div class="viewcode-block" id="WatchBatch">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.WatchBatch">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">WatchBatch</span><span class="p">:</span>
+    <span class="n">batch</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span>
+    <span class="n">position</span><span class="p">:</span> <span class="n">WatchPosition</span></div>
+
+
+
+<div class="viewcode-block" id="TableWatcher">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.TableWatcher">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TableWatcher</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Iterator of batches and checkpoints. Inspect end_reason after exhaustion.</span>
+
+<span class="sd">    Persist an item's position after processing its batch. Cancellation wakes</span>
+<span class="sd">    polling waits, but cannot interrupt a synchronous storage call in progress.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">native</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_native</span> <span class="o">=</span> <span class="n">native</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span> <span class="o">=</span> <span class="n">native</span><span class="o">.</span><span class="n">schema</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WatchPosition</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">WatchPosition</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">end_reason</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WatchEnd</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">end_reason</span>
+        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">WatchEnd</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TableWatcher.__iter__">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.TableWatcher.__iter__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="TableWatcher.__next__">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.TableWatcher.__next__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WatchBatch</span><span class="p">:</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">next_batch</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">item</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">StopIteration</span>
+        <span class="n">batch</span><span class="p">,</span> <span class="n">position</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="k">return</span> <span class="n">WatchBatch</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">WatchPosition</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">position</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="TableWatcher.cancel">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.TableWatcher.cancel">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Request cancellation; next iteration reports CANCELLED."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="TableWatcher.close">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.TableWatcher.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="TableWatcher.__enter__">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.TableWatcher.__enter__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="TableWatcher.__exit__">
+<a class="viewcode-back" href="../../autoapi/fsspec_data/tables/index.html#fsspec_data.TableWatcher.__exit__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 </div>
 
 
@@ -1082,6 +1229,15 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">schema</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Schema</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">schema</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Visible counts, generation, completion and progress from this manifest.</span>
+
+<span class="sd">        Counts are exact. Unavailable timestamps/distinct values are absent;</span>
+<span class="sd">        partition values provide cheap distinct.&lt;column&gt; entries.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_native</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>

@@ -22,5 +22,6 @@ Submodules
    /autoapi/fsspec_data/tests/test_tables/index
    /autoapi/fsspec_data/tests/test_view/index
    /autoapi/fsspec_data/tests/test_view_conversion/index
+   /autoapi/fsspec_data/tests/test_watch/index
 
 

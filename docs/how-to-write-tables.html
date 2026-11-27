@@ -305,6 +305,11 @@
       <span class="fd-link-text">fsspec_data.tests.test_view_conversion</span>
     </a>
   </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_watch/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_watch</span>
+    </a>
+  </li>
 </ul>
     </details>
   </li>
@@ -353,6 +358,9 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#read-a-saved-version">Read a saved version</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#watch-appended-rows-and-save-a-checkpoint">Watch appended rows and save a checkpoint</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#recover-an-uncertain-publication">Recover an uncertain publication</a>
@@ -432,6 +440,31 @@ one at a time, verifying their checksums before decoding. Set <code class="docut
 constructing the table to cap encoded part reads. Use <code class="docutils literal notranslate"><span class="pre">batch_size</span></code>, <code class="docutils literal notranslate"><span class="pre">row_limit</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">byte_limit</span></code> to bound scan output; decoder allocations are not a process memory cap.
 Cancel a scan with <code class="docutils literal notranslate"><span class="pre">stream.cancel()</span></code> if stopping early.</p>
+</section>
+<section id="watch-appended-rows-and-save-a-checkpoint">
+<h2>Watch appended rows and save a checkpoint<a class="headerlink" href="#watch-appended-rows-and-save-a-checkpoint" title="Link to this heading">¶</a></h2>
+<p>Read existing rows and wait for subsequent commits with <code class="docutils literal notranslate"><span class="pre">watch()</span></code>. Save each position
+after processing its batch:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">WatchEnd</span><span class="p">,</span> <span class="n">WatchPosition</span>
+
+<span class="n">checkpoint</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"watch-position.json"</span><span class="p">)</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">WatchPosition</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span> <span class="k">if</span> <span class="n">checkpoint</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span>
+
+<span class="k">with</span> <span class="n">table</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"value"</span><span class="p">],</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span> <span class="k">as</span> <span class="n">watcher</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">watcher</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">())</span>
+        <span class="n">checkpoint</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+    <span class="n">reason</span> <span class="o">=</span> <span class="n">watcher</span><span class="o">.</span><span class="n">end_reason</span>
+
+<span class="k">if</span> <span class="n">reason</span> <span class="o">==</span> <span class="n">WatchEnd</span><span class="o">.</span><span class="n">REPLACED</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Table replaced; start a new watch when ready to read the replacement."</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Reopen the same table and pass the saved position to resume after a restart. Make your
+processing and checkpoint storage durable together if duplicate side effects are unacceptable.
+For an incomplete table, use an idle timeout or call <code class="docutils literal notranslate"><span class="pre">watcher.cancel()</span></code> from another thread
+to stop waiting. See <a class="reference internal" href="manifest-tables.html#tablewatcher"><span class="std std-ref">watch reference</span></a> for end reasons and limits.</p>
 </section>
 <section id="recover-an-uncertain-publication">
 <h2>Recover an uncertain publication<a class="headerlink" href="#recover-an-uncertain-publication" title="Link to this heading">¶</a></h2>
@@ -551,6 +584,9 @@ visibility. Local or simulated results do not certify another store.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#read-a-saved-version">Read a saved version</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#watch-appended-rows-and-save-a-checkpoint">Watch appended rows and save a checkpoint</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#recover-an-uncertain-publication">Recover an uncertain publication</a>

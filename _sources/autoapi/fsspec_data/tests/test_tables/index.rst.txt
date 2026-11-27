@@ -29,6 +29,7 @@ Functions
    fsspec_data.tests.test_tables.test_context_exit_preserves_exception_if_publication_cannot_be_aborted
    fsspec_data.tests.test_tables.test_schema_metadata_round_trip
    fsspec_data.tests.test_tables.test_scan_rejects_unsupported_encoding_options
+   fsspec_data.tests.test_tables.test_watch_positions_include_s3_bucket_endpoint_and_exclude_credentials
 
 
 Module Contents
@@ -73,4 +74,6 @@ Module Contents
 .. py:function:: test_schema_metadata_round_trip(tmp_path)
 
 .. py:function:: test_scan_rejects_unsupported_encoding_options(tmp_path, changes)
+
+.. py:function:: test_watch_positions_include_s3_bucket_endpoint_and_exclude_credentials(s3_store)
 

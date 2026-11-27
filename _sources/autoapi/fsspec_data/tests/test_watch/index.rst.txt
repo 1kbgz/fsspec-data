@@ -1,0 +1,51 @@
+fsspec_data.tests.test_watch
+============================
+
+.. py:module:: fsspec_data.tests.test_watch
+
+.. autoapi-nested-parse::
+
+   Watch checkpoints refer to immutable generations, including after restart.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_watch.publish
+   fsspec_data.tests.test_watch.test_state_is_pinned_exact_and_separate_from_raw_metadata
+   fsspec_data.tests.test_watch.test_resume_new_source_instance_through_appends_and_finish
+   fsspec_data.tests.test_watch.test_replace_stops_original_watch_and_preserves_checkpoint
+   fsspec_data.tests.test_watch.test_watch_waits_for_commit_and_cancels_without_holding_gil
+   fsspec_data.tests.test_watch.test_idle_timeout_and_context_exit
+   fsspec_data.tests.test_watch.test_invalid_watch_options
+   fsspec_data.tests.test_watch.test_positions_reject_wrong_path_namespace_generation_and_progress
+   fsspec_data.tests.test_watch.test_failed_part_read_does_not_advance_checkpoint_and_ends_iteration
+   fsspec_data.tests.test_watch.test_resume_skips_already_consumed_parts
+
+
+Module Contents
+---------------
+
+.. py:function:: publish(table, values, *, mode='create', complete=False)
+
+.. py:function:: test_state_is_pinned_exact_and_separate_from_raw_metadata(tmp_path)
+
+.. py:function:: test_resume_new_source_instance_through_appends_and_finish(tmp_path)
+
+.. py:function:: test_replace_stops_original_watch_and_preserves_checkpoint(tmp_path)
+
+.. py:function:: test_watch_waits_for_commit_and_cancels_without_holding_gil(tmp_path)
+
+.. py:function:: test_idle_timeout_and_context_exit(tmp_path)
+
+.. py:function:: test_invalid_watch_options(tmp_path, options)
+
+.. py:function:: test_positions_reject_wrong_path_namespace_generation_and_progress(tmp_path)
+
+.. py:function:: test_failed_part_read_does_not_advance_checkpoint_and_ends_iteration(tmp_path)
+
+.. py:function:: test_resume_skips_already_consumed_parts(tmp_path)
+
