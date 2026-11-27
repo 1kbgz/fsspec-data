@@ -8,7 +8,6 @@ mod converter;
 mod describe;
 mod error;
 mod fingerprint;
-pub mod follow;
 mod json_schema;
 pub mod manifest;
 #[cfg(test)]
@@ -21,6 +20,7 @@ mod schema;
 pub mod sink;
 mod stream;
 mod table_scan;
+pub mod watch;
 
 pub use async_parquet::{AsyncDecodedStream, AsyncScanOptions};
 pub use avro::{avro_arrow_schema, AvroCodec, AvroFraming, AvroValueDecoder, AvroValueEncoder};

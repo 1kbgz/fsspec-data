@@ -14,7 +14,7 @@ use crate::{CancellationToken, DecodedStream, InterchangeError, ScanSelection, S
 /// Positions describe progress, not authorization, and must not contain credentials.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct FollowPosition {
+pub struct WatchPosition {
     pub source: String,
     pub namespace_id: String,
     pub table_id: String,
@@ -25,14 +25,14 @@ pub struct FollowPosition {
 }
 
 #[derive(Clone, Debug)]
-pub struct FollowOptions {
-    pub start: Option<FollowPosition>,
+pub struct WatchOptions {
+    pub start: Option<WatchPosition>,
     pub columns: Option<Vec<String>>,
     pub batch_size: usize,
     pub poll_interval: Duration,
     pub idle_timeout: Option<Duration>,
 }
-impl Default for FollowOptions {
+impl Default for WatchOptions {
     fn default() -> Self {
         Self {
             start: None,
@@ -46,31 +46,31 @@ impl Default for FollowOptions {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
-pub enum FollowEnd {
+pub enum WatchEnd {
     Complete,
     IdleTimeout,
     Cancelled,
     Replaced,
 }
 
-pub struct FollowBatch {
+pub struct WatchBatch {
     pub batch: RecordBatch,
-    pub position: FollowPosition,
+    pub position: WatchPosition,
 }
 
 /// Reads the starting snapshot, then each successor in order without directory listing.
 /// Synchronous storage calls cannot be interrupted; cancellation is checked between calls
 /// and wakes polling waits. Errors terminate iteration and preserve the last checkpoint.
-pub struct ManifestFollower {
+pub struct ManifestWatcher {
     reader: ManifestReader,
     snapshot: Arc<Snapshot>,
     stream: Option<DecodedStream>,
-    options: FollowOptions,
+    options: WatchOptions,
     cancellation: CancellationToken,
-    position: FollowPosition,
+    position: WatchPosition,
     schema: SchemaRef,
     idle_since: Instant,
-    end: Option<FollowEnd>,
+    end: Option<WatchEnd>,
     failed: bool,
 }
 fn error(kind: ErrorKind, message: &str) -> InterchangeError {
@@ -82,21 +82,18 @@ fn error(kind: ErrorKind, message: &str) -> InterchangeError {
     .into()
 }
 
-impl ManifestFollower {
+impl ManifestWatcher {
     /// `source` identifies the configured storage location, including endpoint and path.
     /// Use the same non-secret label only for the same logical source across restarts.
-    /// A new follow starts at the latest snapshot; a resume starts at its saved generation.
+    /// A new watch starts at the latest snapshot; a resume starts at its saved generation.
     pub fn new(
         reader: ManifestReader,
         source: String,
-        options: FollowOptions,
+        options: WatchOptions,
         cancellation: CancellationToken,
     ) -> crate::Result<Self> {
         if source.is_empty() || options.batch_size == 0 || options.poll_interval.is_zero() {
-            return Err(error(
-                ErrorKind::Invalid,
-                "invalid follow options or source",
-            ));
+            return Err(error(ErrorKind::Invalid, "invalid watch options or source"));
         }
         if options.start.as_ref().is_some_and(|p| p.source != source) {
             return Err(error(
@@ -119,10 +116,10 @@ impl ManifestFollower {
         if m.progress_unit != "rows" {
             return Err(error(
                 ErrorKind::NotSupported,
-                "follow requires row progress",
+                "watch requires row progress",
             ));
         }
-        let position = FollowPosition {
+        let position = WatchPosition {
             source,
             namespace_id: m.namespace_id.clone(),
             table_id: m.table_id.clone(),
@@ -174,21 +171,21 @@ impl ManifestFollower {
     pub fn schema(&self) -> SchemaRef {
         self.schema.clone()
     }
-    pub fn position(&self) -> &FollowPosition {
+    pub fn position(&self) -> &WatchPosition {
         &self.position
     }
-    pub fn end_reason(&self) -> Option<FollowEnd> {
+    pub fn end_reason(&self) -> Option<WatchEnd> {
         self.end
     }
     pub fn cancellation_token(&self) -> CancellationToken {
         self.cancellation.clone()
     }
 
-    fn advance(&mut self) -> crate::Result<Option<FollowBatch>> {
+    fn advance(&mut self) -> crate::Result<Option<WatchBatch>> {
         loop {
             if self.cancellation.is_cancelled() {
                 self.stream = None;
-                self.end = Some(FollowEnd::Cancelled);
+                self.end = Some(WatchEnd::Cancelled);
                 return Ok(None);
             }
             if let Some(stream) = &mut self.stream {
@@ -202,7 +199,7 @@ impl ManifestFollower {
                         self.position.manifest_sha256 = self.snapshot.checksum();
                         self.position.progress += batch.num_rows() as u64;
                         self.idle_since = Instant::now();
-                        return Ok(Some(FollowBatch {
+                        return Ok(Some(WatchBatch {
                             batch,
                             position: self.position.clone(),
                         }));
@@ -214,7 +211,7 @@ impl ManifestFollower {
             }
             let m = self.snapshot.manifest();
             if m.complete {
-                self.end = Some(FollowEnd::Complete);
+                self.end = Some(WatchEnd::Complete);
                 return Ok(None);
             }
             let generation = m
@@ -226,17 +223,17 @@ impl ManifestFollower {
                     let next = Arc::new(next);
                     let n = next.manifest();
                     if n.namespace_id != m.namespace_id {
-                        self.end = Some(FollowEnd::Replaced);
+                        self.end = Some(WatchEnd::Replaced);
                         return Ok(None);
                     }
                     if n.parent.as_ref().map(|p| p.sha256) != Some(self.snapshot.checksum()) {
                         return Err(error(
                             ErrorKind::Corrupt,
-                            "successor does not reference the followed manifest",
+                            "successor does not reference the watched manifest",
                         ));
                     }
                     if n.table_id != m.table_id || n.deleted {
-                        self.end = Some(FollowEnd::Replaced);
+                        self.end = Some(WatchEnd::Replaced);
                         return Ok(None);
                     }
                     n.validate_parent(m)?;
@@ -262,7 +259,7 @@ impl ManifestFollower {
                                 remaining.min(self.options.poll_interval)
                             }
                             _ => {
-                                self.end = Some(FollowEnd::IdleTimeout);
+                                self.end = Some(WatchEnd::IdleTimeout);
                                 return Ok(None);
                             }
                         },
@@ -279,8 +276,8 @@ impl ManifestFollower {
         }
     }
 }
-impl Iterator for ManifestFollower {
-    type Item = crate::Result<FollowBatch>;
+impl Iterator for ManifestWatcher {
+    type Item = crate::Result<WatchBatch>;
     fn next(&mut self) -> Option<Self::Item> {
         if self.end.is_some() || self.failed {
             return None;

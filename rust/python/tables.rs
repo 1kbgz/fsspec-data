@@ -5,13 +5,13 @@ use arrow::array::RecordBatch;
 use arrow::datatypes::Schema;
 use arrow::pyarrow::PyArrowType;
 use fsspec_data::cleanup::{CleanupLimits, OrphanCollector};
-use fsspec_data::follow::{FollowOptions, FollowPosition, ManifestFollower};
 use fsspec_data::manifest::{ManifestReader, ReadLimits, Selection, Snapshot};
 use fsspec_data::parts::PartLimits;
 use fsspec_data::sink::{
     recover, FileDataSink, PublicationReceipt, RecoveryAction, RecoveryToken, SinkOptions,
     WriteMode,
 };
+use fsspec_data::watch::{ManifestWatcher, WatchOptions, WatchPosition};
 use fsspec_data::{CancellationToken, ScanSelection, StreamOptions};
 use fsspec_rs::{ErrorKind, FilesystemRegistry, FsOptions, OperationError, SharedFileSystem};
 use pyo3::prelude::*;
@@ -116,7 +116,7 @@ impl NativeManifestTable {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn follow(
+    fn watch(
         &self,
         py: Python<'_>,
         start: Option<String>,
@@ -124,10 +124,10 @@ impl NativeManifestTable {
         batch_size: usize,
         poll_interval: f64,
         idle_timeout: Option<f64>,
-    ) -> PyResult<NativeTableFollower> {
-        let options = FollowOptions {
+    ) -> PyResult<NativeTableWatcher> {
+        let options = WatchOptions {
             start: start
-                .map(|s| serde_json::from_str::<FollowPosition>(&s))
+                .map(|s| serde_json::from_str::<WatchPosition>(&s))
                 .transpose()
                 .map_err(|e| invalid(&e.to_string()))?,
             columns,
@@ -140,14 +140,14 @@ impl NativeManifestTable {
                 .map_err(|_| invalid("idle_timeout must be finite and nonnegative"))?,
         };
         let cancellation = CancellationToken::new();
-        let follower = py
+        let watcher = py
             .detach(|| {
                 let reader = ManifestReader::new(self.fs.clone(), &self.root, self.limits)?;
-                ManifestFollower::new(reader, self.source.clone(), options, cancellation.clone())
+                ManifestWatcher::new(reader, self.source.clone(), options, cancellation.clone())
             })
             .map_err(to_python_error)?;
-        Ok(NativeTableFollower {
-            follower: Mutex::new(follower),
+        Ok(NativeTableWatcher {
+            watcher: Mutex::new(watcher),
             cancellation,
         })
     }
@@ -251,30 +251,30 @@ impl NativeManifestTable {
 }
 
 #[pyclass]
-struct NativeTableFollower {
-    follower: Mutex<ManifestFollower>,
+struct NativeTableWatcher {
+    watcher: Mutex<ManifestWatcher>,
     cancellation: CancellationToken,
 }
 #[pymethods]
-impl NativeTableFollower {
+impl NativeTableWatcher {
     #[getter]
     fn schema(&self, py: Python<'_>) -> PyArrowType<Schema> {
-        PyArrowType(py.detach(|| lock(&self.follower).schema().as_ref().clone()))
+        PyArrowType(py.detach(|| lock(&self.watcher).schema().as_ref().clone()))
     }
     #[getter]
     fn position(&self, py: Python<'_>) -> String {
-        py.detach(|| json!(lock(&self.follower).position()).to_string())
+        py.detach(|| json!(lock(&self.watcher).position()).to_string())
     }
     #[getter]
     fn end_reason(&self, py: Python<'_>) -> Option<String> {
         py.detach(|| {
-            lock(&self.follower)
+            lock(&self.watcher)
                 .end_reason()
                 .map(|reason| json!(reason).as_str().unwrap().to_owned())
         })
     }
     fn next_batch(&self, py: Python<'_>) -> PyResult<Option<(PyArrowType<RecordBatch>, String)>> {
-        py.detach(|| lock(&self.follower).next().transpose())
+        py.detach(|| lock(&self.watcher).next().transpose())
             .map(|value| {
                 value.map(|item| (PyArrowType(item.batch), json!(item.position).to_string()))
             })
@@ -404,7 +404,7 @@ impl NativeTableSnapshot {
 pub(super) fn register(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<NativeManifestTable>()?;
     module.add_class::<NativeOrphanCollector>()?;
-    module.add_class::<NativeTableFollower>()?;
+    module.add_class::<NativeTableWatcher>()?;
     module.add_class::<NativeTableWriter>()?;
     module.add_class::<NativeTableSnapshot>()?;
     Ok(())

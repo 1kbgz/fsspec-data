@@ -1,8 +1,8 @@
 # Manifest table reference
 
 `ManifestTable`, `TableSnapshot`, `TableWriter`, `SinkOptions`, `BatchReceipt`,
-`PublicationReceipt`, `RecoveryToken`, `OrphanCollector`, `CleanupReport`, `TableFollower`,
-`FollowBatch`, `FollowPosition`, and `FollowEnd` are exported from `fsspec_data`. The bindings
+`PublicationReceipt`, `RecoveryToken`, `OrphanCollector`, `CleanupReport`, `TableWatcher`,
+`WatchBatch`, `WatchPosition`, and `WatchEnd` are exported from `fsspec_data`. The bindings
 use the Rust manifest reader and file sink. Operations are synchronous and release the
 Python GIL during storage access and encoding/decoding.
 
@@ -40,19 +40,19 @@ returns `unknown_outcome`, since an earlier request may still complete. Recovery
 reconstruct an attempt that failed before its candidate descriptor was stored. Passing the
 original writer's options preserves its publication and recovery read limits.
 
-## TableFollower
+## TableWatcher
 
-`table.follow(*, start=None, columns=None, batch_size=1024, poll_interval=0.1, idle_timeout=None)` returns a synchronous `TableFollower`. The table must already be
-published with row-based progress. A new follow begins with all rows of the latest
-snapshot. `start` resumes a `FollowPosition` from its saved generation. The follower
+`table.watch(*, start=None, columns=None, batch_size=1024, poll_interval=0.1, idle_timeout=None)` returns a synchronous `TableWatcher`. The table must already be
+published with row-based progress. A new watch begins with all rows of the latest
+snapshot. `start` resumes a `WatchPosition` from its saved generation. The watcher
 reads successive generations in order, without listing directories.
 
-Each iteration returns `FollowBatch(batch, position)`. Its position describes progress
-after that batch. The follower also exposes the selected Arrow `schema`, last returned
+Each iteration returns `WatchBatch(batch, position)`. Its position describes progress
+after that batch. The watcher also exposes the selected Arrow `schema`, last returned
 `position`, and `end_reason`. Before the first batch, `position` is the starting checkpoint.
 A position records the source location, namespace/table identity, generation, manifest
 checksum, progress and progress unit. JSON serialization uses `to_json()` and
-`FollowPosition.from_json(text)`. It contains no credential options; reopening a source
+`WatchPosition.from_json(text)`. It contains no credential options; reopening a source
 still requires authorization. The source location includes the protocol, resolved path (including the S3 bucket), and explicit S3
 endpoint/region options. Resume requires the same location configuration.
 
@@ -65,24 +65,24 @@ checked when a successor is absent. They are not storage request deadlines.
 
 After iteration ends, `end_reason` is one of:
 
-| Value                    | Meaning                                                      |
-| ------------------------ | ------------------------------------------------------------ |
-| `FollowEnd.COMPLETE`     | All rows of a complete generation were returned.             |
-| `FollowEnd.IDLE_TIMEOUT` | No successor was available before the idle timeout.          |
-| `FollowEnd.CANCELLED`    | Cancellation was observed.                                   |
-| `FollowEnd.REPLACED`     | A successor changed the table identity or deleted the table. |
+| Value                   | Meaning                                                      |
+| ----------------------- | ------------------------------------------------------------ |
+| `WatchEnd.COMPLETE`     | All rows of a complete generation were returned.             |
+| `WatchEnd.IDLE_TIMEOUT` | No successor was available before the idle timeout.          |
+| `WatchEnd.CANCELLED`    | Cancellation was observed.                                   |
+| `WatchEnd.REPLACED`     | A successor changed the table identity or deleted the table. |
 
 `cancel()` and `close()` request cancellation; context exit calls `close()`. Cancellation
 wakes polling waits and is checked between reads. A synchronous storage call cannot be
-interrupted. Properties and iteration serialize on the follower; cancellation can be called
+interrupted. Properties and iteration serialize on the watcher; cancellation can be called
 from another thread. Errors propagate and terminate iteration without setting an end reason
 or advancing the last returned checkpoint. Resume can retry from that checkpoint.
 
-Follow verifies encoded parts before decoding and skips parts before the saved progress.
+The watcher verifies encoded parts before decoding and skips parts before the saved progress.
 It does not switch to replacement data, infer event/array positions from row counts, watch
 filesystem notifications, or provide asynchronous iteration. Standalone scans remain pinned.
-The Rust equivalents are `follow::ManifestFollower`, `FollowOptions`, `FollowPosition`,
-`FollowBatch`, and `FollowEnd`; Rust callers provide a stable non-secret source label.
+The Rust equivalents are `watch::ManifestWatcher`, `WatchOptions`, `WatchPosition`,
+`WatchBatch`, and `WatchEnd`; Rust callers provide a stable non-secret source label.
 
 ## SinkOptions
 

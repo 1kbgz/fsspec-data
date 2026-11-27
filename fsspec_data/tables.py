@@ -96,23 +96,23 @@ class ManifestTable:
         """Resolve latest publication or a saved generation without directory listing."""
         return TableSnapshot(self._native.snapshot(generation))
 
-    def follow(
+    def watch(
         self,
         *,
-        start: FollowPosition | None = None,
+        start: WatchPosition | None = None,
         columns: Sequence[str] | None = None,
         batch_size: int = 1024,
         poll_interval: float = 0.1,
         idle_timeout: float | None = None,
-    ) -> TableFollower:
-        """Follow existing and newly published rows, or resume a saved position.
+    ) -> TableWatcher:
+        """Watch existing and newly published rows, or resume a saved position.
 
-        Requires an already published table with row progress. A new follow starts
+        Requires an already published table with row progress. A new watch starts
         at the latest generation. A resume visits its saved generation and each
-        successor; replacement ends the follow. Storage calls are synchronous.
+        successor; replacement ends the watch. Storage calls are synchronous.
         """
-        return TableFollower(
-            self._native.follow(
+        return TableWatcher(
+            self._native.watch(
                 None if start is None else start.to_json(),
                 None if columns is None else list(columns),
                 batch_size,
@@ -160,7 +160,7 @@ class ManifestTable:
 
 
 @dataclass(frozen=True)
-class FollowPosition:
+class WatchPosition:
     """Serializable checkpoint for the same source location and saved table generation."""
 
     source: str
@@ -179,7 +179,7 @@ class FollowPosition:
         return cls(**json.loads(value))
 
 
-class FollowEnd(StrEnum):
+class WatchEnd(StrEnum):
     COMPLETE = "complete"
     IDLE_TIMEOUT = "idle_timeout"
     CANCELLED = "cancelled"
@@ -187,12 +187,12 @@ class FollowEnd(StrEnum):
 
 
 @dataclass(frozen=True)
-class FollowBatch:
+class WatchBatch:
     batch: pa.RecordBatch
-    position: FollowPosition
+    position: WatchPosition
 
 
-class TableFollower:
+class TableWatcher:
     """Iterator of batches and checkpoints. Inspect end_reason after exhaustion.
 
     Persist an item's position after processing its batch. Cancellation wakes
@@ -204,23 +204,23 @@ class TableFollower:
         self.schema: pa.Schema = native.schema
 
     @property
-    def position(self) -> FollowPosition:
-        return FollowPosition.from_json(self._native.position)
+    def position(self) -> WatchPosition:
+        return WatchPosition.from_json(self._native.position)
 
     @property
-    def end_reason(self) -> FollowEnd | None:
+    def end_reason(self) -> WatchEnd | None:
         value = self._native.end_reason
-        return None if value is None else FollowEnd(value)
+        return None if value is None else WatchEnd(value)
 
     def __iter__(self) -> Self:
         return self
 
-    def __next__(self) -> FollowBatch:
+    def __next__(self) -> WatchBatch:
         item = self._native.next_batch()
         if item is None:
             raise StopIteration
         batch, position = item
-        return FollowBatch(batch, FollowPosition.from_json(position))
+        return WatchBatch(batch, WatchPosition.from_json(position))
 
     def cancel(self) -> None:
         """Request cancellation; next iteration reports CANCELLED."""

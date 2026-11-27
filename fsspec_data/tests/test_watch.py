@@ -1,4 +1,4 @@
-"""Follow checkpoints refer to immutable generations, including after restart."""
+"""Watch checkpoints refer to immutable generations, including after restart."""
 
 import threading
 from dataclasses import replace
@@ -6,7 +6,7 @@ from dataclasses import replace
 import pyarrow as pa
 import pytest
 
-from fsspec_data import FollowEnd, FollowPosition, ManifestTable, SinkOptions
+from fsspec_data import ManifestTable, SinkOptions, WatchEnd, WatchPosition
 
 
 def publish(table, values, *, mode="create", complete=False):
@@ -44,71 +44,71 @@ def test_state_is_pinned_exact_and_separate_from_raw_metadata(tmp_path):
 def test_resume_new_source_instance_through_appends_and_finish(tmp_path):
     table = ManifestTable(tmp_path)
     publish(table, [0, 1, 2])
-    first = table.follow(batch_size=2)
+    first = table.watch(batch_size=2)
     item = next(first)
     assert item.batch.to_pydict() == {"value": [0, 1]}
-    checkpoint = FollowPosition.from_json(item.position.to_json())
+    checkpoint = WatchPosition.from_json(item.position.to_json())
     first.close()
-    assert list(first) == [] and first.end_reason == FollowEnd.CANCELLED
+    assert list(first) == [] and first.end_reason == WatchEnd.CANCELLED
     publish(table, [3, 4], mode="append")
     publish(table, [5, 6], mode="append", complete=True)
-    follow = ManifestTable(tmp_path).follow(start=checkpoint, batch_size=2)
-    assert follow.schema == item.batch.schema
-    items = list(follow)
+    watch = ManifestTable(tmp_path).watch(start=checkpoint, batch_size=2)
+    assert watch.schema == item.batch.schema
+    items = list(watch)
     assert [v for i in items for v in i.batch.column(0).to_pylist()] == [2, 3, 4, 5, 6]
     assert [i.position.generation for i in items] == [0, 1, 2]
-    assert follow.position == items[-1].position
-    assert follow.end_reason == FollowEnd.COMPLETE
-    assert list(follow) == []
-    resumed = table.follow(start=follow.position)
-    assert list(resumed) == [] and resumed.end_reason == FollowEnd.COMPLETE
+    assert watch.position == items[-1].position
+    assert watch.end_reason == WatchEnd.COMPLETE
+    assert list(watch) == []
+    resumed = table.watch(start=watch.position)
+    assert list(resumed) == [] and resumed.end_reason == WatchEnd.COMPLETE
 
 
-def test_replace_stops_original_follow_and_preserves_checkpoint(tmp_path):
+def test_replace_stops_original_watch_and_preserves_checkpoint(tmp_path):
     table = ManifestTable(tmp_path)
     publish(table, [1])
-    follow = table.follow()
-    saved = next(follow).position
+    watch = table.watch()
+    saved = next(watch).position
     publish(table, [100], mode="replace")
     publish(table, [101], mode="append", complete=True)
-    assert list(follow) == []
-    assert follow.end_reason == FollowEnd.REPLACED and follow.position == saved
-    resumed = table.follow(start=saved)
-    assert list(resumed) == [] and resumed.end_reason == FollowEnd.REPLACED
-    assert [i.batch.column(0).to_pylist() for i in table.follow()] == [[100], [101]]
+    assert list(watch) == []
+    assert watch.end_reason == WatchEnd.REPLACED and watch.position == saved
+    resumed = table.watch(start=saved)
+    assert list(resumed) == [] and resumed.end_reason == WatchEnd.REPLACED
+    assert [i.batch.column(0).to_pylist() for i in table.watch()] == [[100], [101]]
 
 
-def test_follow_waits_for_commit_and_cancels_without_holding_gil(tmp_path):
+def test_watch_waits_for_commit_and_cancels_without_holding_gil(tmp_path):
     table = ManifestTable(tmp_path)
     writer = publish(table, [1])
-    follow = table.follow(poll_interval=0.001, idle_timeout=5)
-    next(follow)
+    watch = table.watch(poll_interval=0.001, idle_timeout=5)
+    next(watch)
     result = []
-    thread = threading.Thread(target=lambda: result.append(next(follow)))
+    thread = threading.Thread(target=lambda: result.append(next(watch)))
     thread.start()
     writer.write_batch(pa.record_batch({"value": [2]}), expected_position=1, key="second")
     writer.commit()
     thread.join(timeout=10)
     assert not thread.is_alive() and result[0].batch.column(0).to_pylist() == [2]
     # A long interval must still be interruptible from another Python thread.
-    waiting = table.follow(start=result[0].position, poll_interval=60)
+    waiting = table.watch(start=result[0].position, poll_interval=60)
     thread = threading.Thread(target=lambda: result.append(list(waiting)))
     thread.start()
     waiting.cancel()
     thread.join(timeout=2)
     assert not thread.is_alive() and result[-1] == []
-    assert waiting.end_reason == FollowEnd.CANCELLED
+    assert waiting.end_reason == WatchEnd.CANCELLED
 
 
 def test_idle_timeout_and_context_exit(tmp_path):
     table = ManifestTable(tmp_path)
     publish(table, [1, 2])
-    follow = table.follow(columns=[], idle_timeout=0)
-    assert next(follow).batch.num_rows == 2
-    assert list(follow) == [] and follow.end_reason == FollowEnd.IDLE_TIMEOUT
-    with table.follow() as cancelled:
+    watch = table.watch(columns=[], idle_timeout=0)
+    assert next(watch).batch.num_rows == 2
+    assert list(watch) == [] and watch.end_reason == WatchEnd.IDLE_TIMEOUT
+    with table.watch() as cancelled:
         assert cancelled.end_reason is None
-    assert list(cancelled) == [] and cancelled.end_reason == FollowEnd.CANCELLED
+    assert list(cancelled) == [] and cancelled.end_reason == WatchEnd.CANCELLED
 
 
 @pytest.mark.parametrize(
@@ -123,21 +123,21 @@ def test_idle_timeout_and_context_exit(tmp_path):
         {"columns": ["missing"]},
     ],
 )
-def test_invalid_follow_options(tmp_path, options):
+def test_invalid_watch_options(tmp_path, options):
     table = ManifestTable(tmp_path)
     publish(table, [1])
     with pytest.raises(ValueError):
-        table.follow(**options)
+        table.watch(**options)
 
 
 def test_positions_reject_wrong_path_namespace_generation_and_progress(tmp_path):
     table = ManifestTable(tmp_path / "one")
     publish(table, [1, 2])
-    saved = table.follow().position
+    saved = table.watch().position
     other = ManifestTable(tmp_path / "two")
     publish(other, [1, 2])
     with pytest.raises(ValueError, match="different source"):
-        other.follow(start=saved)
+        other.watch(start=saved)
     for field, value in [
         ("namespace_id", "other"),
         ("table_id", "other"),
@@ -146,35 +146,35 @@ def test_positions_reject_wrong_path_namespace_generation_and_progress(tmp_path)
         ("manifest_sha256", "0" * 64),
     ]:
         with pytest.raises(ValueError):
-            table.follow(start=replace(saved, **{field: value}))
+            table.watch(start=replace(saved, **{field: value}))
     with pytest.raises(FileNotFoundError):
-        table.follow(start=replace(saved, generation=99))
+        table.watch(start=replace(saved, generation=99))
     with pytest.raises(ValueError):
-        table.follow(start=replace(saved, progress=True))
+        table.watch(start=replace(saved, progress=True))
     with pytest.raises(FileNotFoundError):
-        ManifestTable(tmp_path / "unpublished").follow()
+        ManifestTable(tmp_path / "unpublished").watch()
 
 
 def test_failed_part_read_does_not_advance_checkpoint_and_ends_iteration(tmp_path):
     table = ManifestTable(tmp_path)
     publish(table, [1, 2])
-    follow = table.follow()
-    saved = follow.position
+    watch = table.watch()
+    saved = watch.position
     part = table.snapshot().metadata["parts"][0]["key"]
     (tmp_path / part).write_bytes(b"corrupt")
     with pytest.raises(OSError) as error:
-        next(follow)
+        next(watch)
     assert getattr(error.value, "kind", None) == "corrupt"
-    assert follow.position == saved and follow.end_reason is None and list(follow) == []
+    assert watch.position == saved and watch.end_reason is None and list(watch) == []
 
 
 def test_resume_skips_already_consumed_parts(tmp_path):
     table = ManifestTable(tmp_path)
     publish(table, [1, 2])
-    saved = next(table.follow()).position
+    saved = next(table.watch()).position
     publish(table, [3, 4], mode="append", complete=True)
     # Simulate a provider refusing old-part reads: resume has no need to fetch them.
     (tmp_path / table.snapshot(0).metadata["parts"][0]["key"]).unlink()
-    resumed = table.follow(start=saved)
+    resumed = table.watch(start=saved)
     assert [i.batch.column(0).to_pylist() for i in resumed] == [[3, 4]]
-    assert resumed.end_reason == FollowEnd.COMPLETE
+    assert resumed.end_reason == WatchEnd.COMPLETE

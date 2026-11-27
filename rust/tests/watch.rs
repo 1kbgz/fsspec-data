@@ -2,9 +2,9 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use arrow::array::{Int64Array, RecordBatch};
-use fsspec_data::follow::{FollowEnd, FollowOptions, FollowPosition, ManifestFollower};
 use fsspec_data::manifest::{ManifestReader, ReadLimits};
 use fsspec_data::sink::{FileDataSink, SinkOptions, WriteMode};
+use fsspec_data::watch::{ManifestWatcher, WatchEnd, WatchOptions, WatchPosition};
 use fsspec_data::{CancellationToken, SharedFileSystem};
 use fsspec_rs::MemoryFs;
 
@@ -25,8 +25,8 @@ fn writer(fs: &SharedFileSystem, root: &str, mode: WriteMode) -> FileDataSink {
     )
     .unwrap()
 }
-fn follower(fs: &SharedFileSystem, root: &str, options: FollowOptions) -> ManifestFollower {
-    ManifestFollower::new(
+fn watcher(fs: &SharedFileSystem, root: &str, options: WatchOptions) -> ManifestWatcher {
+    ManifestWatcher::new(
         ManifestReader::new(fs.clone(), root, ReadLimits::default()).unwrap(),
         root.into(),
         options,
@@ -45,27 +45,27 @@ fn setup() -> (SharedFileSystem, String, FileDataSink) {
 #[test]
 fn resume_across_parts_and_generations_without_duplicates() {
     let (fs, root, mut sink) = setup();
-    let mut follow = follower(
+    let mut watch = watcher(
         &fs,
         &root,
-        FollowOptions {
+        WatchOptions {
             batch_size: 2,
             ..Default::default()
         },
     );
-    let first = follow.next().unwrap().unwrap();
+    let first = watch.next().unwrap().unwrap();
     assert_eq!(first.batch.num_rows(), 2);
     assert_eq!(first.position.progress, 2);
-    let start: FollowPosition =
+    let start: WatchPosition =
         serde_json::from_str(&serde_json::to_string(&first.position).unwrap()).unwrap();
     sink.write_batch(3, "second", &batch(3)).unwrap();
     sink.commit().unwrap();
     sink.write_batch(6, "third", &batch(6)).unwrap();
     sink.finish().unwrap();
-    let mut resumed = follower(
+    let mut resumed = watcher(
         &fs,
         &root,
-        FollowOptions {
+        WatchOptions {
             start: Some(start),
             batch_size: 2,
             ..Default::default()
@@ -92,71 +92,71 @@ fn resume_across_parts_and_generations_without_duplicates() {
             .collect::<Vec<_>>(),
         [0, 1, 1, 2, 2]
     );
-    assert_eq!(resumed.end_reason(), Some(FollowEnd::Complete));
+    assert_eq!(resumed.end_reason(), Some(WatchEnd::Complete));
     assert!(resumed.next().is_none());
     assert_eq!(resumed.position().progress, 9);
 }
 #[test]
 fn replacement_is_terminal_even_when_later_generations_exist() {
     let (fs, root, _sink) = setup();
-    let mut follow = follower(&fs, &root, FollowOptions::default());
-    follow.next().unwrap().unwrap();
-    let checkpoint = follow.position().clone();
+    let mut watch = watcher(&fs, &root, WatchOptions::default());
+    watch.next().unwrap().unwrap();
+    let checkpoint = watch.position().clone();
     let mut replacement = writer(&fs, &root, WriteMode::Replace);
     replacement.write_batch(0, "other", &batch(100)).unwrap();
     replacement.commit().unwrap();
     replacement.write_batch(3, "other2", &batch(200)).unwrap();
     replacement.commit().unwrap();
-    assert!(follow.next().is_none());
-    assert_eq!(follow.end_reason(), Some(FollowEnd::Replaced));
-    assert_eq!(follow.position(), &checkpoint);
-    let mut resumed = follower(
+    assert!(watch.next().is_none());
+    assert_eq!(watch.end_reason(), Some(WatchEnd::Replaced));
+    assert_eq!(watch.position(), &checkpoint);
+    let mut resumed = watcher(
         &fs,
         &root,
-        FollowOptions {
+        WatchOptions {
             start: Some(checkpoint),
             ..Default::default()
         },
     );
     assert!(resumed.next().is_none());
-    assert_eq!(resumed.end_reason(), Some(FollowEnd::Replaced));
+    assert_eq!(resumed.end_reason(), Some(WatchEnd::Replaced));
 }
 #[test]
 fn zero_idle_timeout_drains_available_rows_and_cancellation_wakes_waits() {
     let (fs, root, _sink) = setup();
-    let mut follow = follower(
+    let mut watch = watcher(
         &fs,
         &root,
-        FollowOptions {
+        WatchOptions {
             idle_timeout: Some(Duration::ZERO),
             ..Default::default()
         },
     );
-    follow.next().unwrap().unwrap();
-    assert!(follow.next().is_none());
-    assert_eq!(follow.end_reason(), Some(FollowEnd::IdleTimeout));
-    let mut follow = follower(
+    watch.next().unwrap().unwrap();
+    assert!(watch.next().is_none());
+    assert_eq!(watch.end_reason(), Some(WatchEnd::IdleTimeout));
+    let mut watch = watcher(
         &fs,
         &root,
-        FollowOptions {
+        WatchOptions {
             poll_interval: Duration::from_secs(60),
             ..Default::default()
         },
     );
-    let cancel = follow.cancellation_token();
-    follow.next().unwrap().unwrap();
+    let cancel = watch.cancellation_token();
+    watch.next().unwrap().unwrap();
     let thread = std::thread::spawn(move || {
-        assert!(follow.next().is_none());
-        follow.end_reason()
+        assert!(watch.next().is_none());
+        watch.end_reason()
     });
     std::thread::sleep(Duration::from_millis(10));
     cancel.cancel();
-    assert_eq!(thread.join().unwrap(), Some(FollowEnd::Cancelled));
+    assert_eq!(thread.join().unwrap(), Some(WatchEnd::Cancelled));
 }
 #[test]
 fn invalid_positions_and_options_fail_before_iteration() {
     let (fs, root, _sink) = setup();
-    let saved = follower(&fs, &root, FollowOptions::default())
+    let saved = watcher(&fs, &root, WatchOptions::default())
         .position()
         .clone();
     for field in [
@@ -176,10 +176,10 @@ fn invalid_positions_and_options_fail_before_iteration() {
             _ => "other".into(),
         };
         let start = serde_json::from_value(value).unwrap();
-        let result = ManifestFollower::new(
+        let result = ManifestWatcher::new(
             ManifestReader::new(fs.clone(), &root, ReadLimits::default()).unwrap(),
             root.clone(),
-            FollowOptions {
+            WatchOptions {
                 start: Some(start),
                 ..Default::default()
             },
@@ -188,20 +188,20 @@ fn invalid_positions_and_options_fail_before_iteration() {
         assert!(result.is_err(), "{field}");
     }
     for options in [
-        FollowOptions {
+        WatchOptions {
             batch_size: 0,
             ..Default::default()
         },
-        FollowOptions {
+        WatchOptions {
             poll_interval: Duration::ZERO,
             ..Default::default()
         },
-        FollowOptions {
+        WatchOptions {
             columns: Some(vec!["missing".into()]),
             ..Default::default()
         },
     ] {
-        assert!(ManifestFollower::new(
+        assert!(ManifestWatcher::new(
             ManifestReader::new(fs.clone(), &root, ReadLimits::default()).unwrap(),
             root.clone(),
             options,
@@ -214,36 +214,36 @@ fn invalid_positions_and_options_fail_before_iteration() {
 #[test]
 fn storage_failure_is_terminal_without_advancing_a_checkpoint() {
     let (fs, root, _sink) = setup();
-    let mut follow = follower(&fs, &root, FollowOptions::default());
-    let saved = follow.position().clone();
+    let mut watch = watcher(&fs, &root, WatchOptions::default());
+    let saved = watch.position().clone();
     let snapshot = ManifestReader::new(fs.clone(), &root, ReadLimits::default())
         .unwrap()
         .read(fsspec_data::manifest::Selection::Latest)
         .unwrap();
     fs.rm_file(&format!("{root}/{}", snapshot.manifest().parts[0].key))
         .unwrap();
-    assert!(follow.next().unwrap().is_err());
-    assert_eq!(follow.position(), &saved);
-    assert!(follow.next().is_none());
-    assert_eq!(follow.end_reason(), None);
+    assert!(watch.next().unwrap().is_err());
+    assert_eq!(watch.position(), &saved);
+    assert!(watch.next().is_none());
+    assert_eq!(watch.end_reason(), None);
 }
 
 #[test]
 fn malformed_successor_propagates_error_and_empty_finish_preserves_checkpoint() {
     let (fs, root, mut sink) = setup();
-    let mut follow = follower(&fs, &root, FollowOptions::default());
-    let saved = follow.next().unwrap().unwrap().position;
+    let mut watch = watcher(&fs, &root, WatchOptions::default());
+    let saved = watch.next().unwrap().unwrap().position;
     sink.finish().unwrap();
-    let mut complete = follower(
+    let mut complete = watcher(
         &fs,
         &root,
-        FollowOptions {
+        WatchOptions {
             start: Some(saved.clone()),
             ..Default::default()
         },
     );
     assert!(complete.next().is_none());
-    assert_eq!(complete.end_reason(), Some(FollowEnd::Complete));
+    assert_eq!(complete.end_reason(), Some(WatchEnd::Complete));
     assert_eq!(complete.position(), &saved);
     fs.write(
         &format!("{root}/manifests/00000000000000000001/manifest.json"),
@@ -251,13 +251,13 @@ fn malformed_successor_propagates_error_and_empty_finish_preserves_checkpoint() 
         Default::default(),
     )
     .unwrap();
-    assert!(follow.next().unwrap().is_err());
-    assert_eq!(follow.position(), &saved);
-    assert!(follow.next().is_none());
+    assert!(watch.next().unwrap().is_err());
+    assert_eq!(watch.position(), &saved);
+    assert!(watch.next().is_none());
 }
 
 #[test]
-fn state_keeps_event_progress_separate_and_follow_rejects_it() {
+fn state_keeps_event_progress_separate_and_watch_rejects_it() {
     let (fs, root, _sink) = setup();
     let reader = ManifestReader::new(fs.clone(), &root, ReadLimits::default()).unwrap();
     let mut m = reader
@@ -287,21 +287,21 @@ fn state_keeps_event_progress_separate_and_follow_rejects_it() {
     assert_eq!(state["complete"], false);
     assert_eq!(state["distinct.date"], serde_json::json!(["2026-11-27"]));
     assert!(!state.contains_key("modified"));
-    assert!(ManifestFollower::new(
+    assert!(ManifestWatcher::new(
         reader,
         root,
-        FollowOptions::default(),
+        WatchOptions::default(),
         CancellationToken::new()
     )
     .is_err());
 }
 
 #[test]
-fn deletion_ends_follow_and_new_follow_rejects_tombstone() {
+fn deletion_ends_watch_and_new_watch_rejects_tombstone() {
     use fsspec_data::manifest::{Parent, PublicationKind, Selection};
     let (fs, root, _sink) = setup();
-    let mut follow = follower(&fs, &root, FollowOptions::default());
-    follow.next().unwrap().unwrap();
+    let mut watch = watcher(&fs, &root, WatchOptions::default());
+    watch.next().unwrap().unwrap();
     let reader = ManifestReader::new(fs.clone(), &root, ReadLimits::default()).unwrap();
     let snapshot = reader.read(Selection::Latest).unwrap();
     let mut m = snapshot.manifest().clone();
@@ -324,12 +324,12 @@ fn deletion_ends_follow_and_new_follow_rejects_tombstone() {
         Default::default(),
     )
     .unwrap();
-    assert!(follow.next().is_none());
-    assert_eq!(follow.end_reason(), Some(FollowEnd::Replaced));
-    assert!(ManifestFollower::new(
+    assert!(watch.next().is_none());
+    assert_eq!(watch.end_reason(), Some(WatchEnd::Replaced));
+    assert!(ManifestWatcher::new(
         reader,
         root,
-        FollowOptions::default(),
+        WatchOptions::default(),
         CancellationToken::new()
     )
     .is_err());
@@ -396,30 +396,30 @@ fn parquet_scan_rejects_invalid_encoding_metadata_and_contents() {
 #[test]
 fn positive_idle_timeout_and_schema_projection() {
     let (fs, root, _sink) = setup();
-    let mut follow = follower(
+    let mut watch = watcher(
         &fs,
         &root,
-        FollowOptions {
+        WatchOptions {
             columns: Some(vec![]),
             idle_timeout: Some(Duration::from_millis(5)),
             poll_interval: Duration::from_millis(1),
             ..Default::default()
         },
     );
-    assert!(follow.schema().fields().is_empty());
-    assert_eq!(follow.next().unwrap().unwrap().batch.num_rows(), 3);
-    assert!(follow.next().is_none());
-    assert_eq!(follow.end_reason(), Some(FollowEnd::IdleTimeout));
+    assert!(watch.schema().fields().is_empty());
+    assert_eq!(watch.next().unwrap().unwrap().batch.num_rows(), 3);
+    assert!(watch.next().is_none());
+    assert_eq!(watch.end_reason(), Some(WatchEnd::IdleTimeout));
 }
 
 #[test]
-fn rewritten_history_does_not_silently_change_the_followed_data() {
+fn rewritten_history_does_not_silently_change_the_watched_data() {
     use fsspec_data::manifest::{Checksum, Selection};
     for new_namespace in [false, true] {
         let (fs, root, mut sink) = setup();
-        let mut follow = follower(&fs, &root, FollowOptions::default());
-        follow.next().unwrap().unwrap();
-        let saved = follow.position().clone();
+        let mut watch = watcher(&fs, &root, WatchOptions::default());
+        watch.next().unwrap().unwrap();
+        let saved = watch.position().clone();
         sink.finish().unwrap();
         let reader = ManifestReader::new(fs.clone(), &root, ReadLimits::default()).unwrap();
         let mut first = reader
@@ -454,11 +454,11 @@ fn rewritten_history_does_not_silently_change_the_followed_data() {
         )
         .unwrap();
         if new_namespace {
-            assert!(follow.next().is_none());
-            assert_eq!(follow.end_reason(), Some(FollowEnd::Replaced));
+            assert!(watch.next().is_none());
+            assert_eq!(watch.end_reason(), Some(WatchEnd::Replaced));
         } else {
-            assert!(follow.next().unwrap().is_err());
+            assert!(watch.next().unwrap().is_err());
         }
-        assert_eq!(follow.position(), &saved);
+        assert_eq!(watch.position(), &saved);
     }
 }
