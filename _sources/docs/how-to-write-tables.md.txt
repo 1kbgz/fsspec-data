@@ -177,6 +177,42 @@ results. Also test interrupted requests and server restarts on the intended depl
 passing these client checks does not establish power-loss durability or cross-host NFS
 visibility. Local or simulated results do not certify another store.
 
+## Accept a sink in a batch producer
+
+Annotate the destination with `DataSink` when its configuration is supplied by a caller.
+Pass its writer to producer code through `DataWriter`. Keep recovery handling with the caller
+that knows the backend's token type:
+
+```python
+from pathlib import Path
+import pyarrow as pa
+from fsspec_data import DataSink, DataWriter, ManifestTable, SinkOptions, TableWriter
+
+
+def stage_rows(
+    writer: DataWriter[object, object, object],
+    batch: pa.RecordBatch,
+    *,
+    position: int,
+    key: str,
+) -> None:
+    if writer.progress_unit != "rows":
+        raise ValueError("This producer requires row positions")
+    writer.write_batch(batch, expected_position=position, key=key)
+
+
+sink: DataSink[SinkOptions, TableWriter] = ManifestTable("producer-events")
+records = pa.record_batch({"value": [1, 2, 3]})
+with sink.open_writer(records.schema) as writer:
+    Path("producer-attempt.json").write_text(writer.recovery_token.to_json())
+    stage_rows(writer, records, position=0, key="request-1")
+```
+
+Use the same position, key, and batch when retrying a write. If publication fails with an
+unknown outcome, resolve the saved attempt using the backend's recovery API before opening
+another writer. See [recover an uncertain publication](#recover-an-uncertain-publication)
+and the [shared sink reference](api.md#shared-sink-interfaces).
+
 ## Read and watch without blocking an event loop
 
 Use `snapshot_async` to discover a saved version, then `scan_async` to consume it.

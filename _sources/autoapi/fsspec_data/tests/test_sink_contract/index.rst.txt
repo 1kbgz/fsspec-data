@@ -1,0 +1,44 @@
+fsspec_data.tests.test_sink_contract
+====================================
+
+.. py:module:: fsspec_data.tests.test_sink_contract
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_sink_contract._Result
+   fsspec_data.tests.test_sink_contract._Options
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_sink_contract.commit_batch
+   fsspec_data.tests.test_sink_contract.test_manifest_table_is_a_structural_sink_with_typed_receipts
+   fsspec_data.tests.test_sink_contract.test_generic_writer_preserves_retry_commit_finish_and_abort
+   fsspec_data.tests.test_sink_contract.test_protocol_context_aborts_on_exception_and_clean_exit_does_not_finish
+   fsspec_data.tests.test_sink_contract.test_generic_writer_keeps_recovery_token_after_uncertain_publication
+
+
+Module Contents
+---------------
+
+.. py:data:: _Result
+
+.. py:data:: _Options
+
+.. py:function:: commit_batch(sink: fsspec_data.DataSink[_Options, fsspec_data.DataWriter[object, _Result, object]], batch: pyarrow.RecordBatch, options: _Options | None = None) -> _Result
+
+.. py:function:: test_manifest_table_is_a_structural_sink_with_typed_receipts(tmp_path)
+
+.. py:function:: test_generic_writer_preserves_retry_commit_finish_and_abort(tmp_path)
+
+.. py:function:: test_protocol_context_aborts_on_exception_and_clean_exit_does_not_finish(tmp_path)
+
+.. py:function:: test_generic_writer_keeps_recovery_token_after_uncertain_publication(s3_store)
+

@@ -231,6 +231,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="sink/index.html">
+      <span class="fd-link-text">fsspec_data.sink</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="tables/index.html">
       <span class="fd-link-text">fsspec_data.tables</span>
     </a>
@@ -293,6 +298,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="tests/test_schema/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_schema</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="tests/test_sink_contract/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_sink_contract</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -977,6 +987,54 @@
     <a href="#fsspec_data.resolve_schema">resolve_schema()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.DataSink">DataSink</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSink.open_writer">DataSink.open_writer()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.DataWriter">DataWriter</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.schema">DataWriter.schema</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.progress_unit">DataWriter.progress_unit</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.position">DataWriter.position</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.recovery_token">DataWriter.recovery_token</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.resolve">DataWriter.resolve()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.write_batch">DataWriter.write_batch()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.flush">DataWriter.flush()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.commit">DataWriter.commit()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.finish">DataWriter.finish()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.abort">DataWriter.abort()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.close">DataWriter.close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.__enter__">DataWriter.__enter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.__exit__">DataWriter.__exit__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.AsyncTableWatcher">AsyncTableWatcher</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -1233,6 +1291,9 @@
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.TableWriter._closed">TableWriter._closed</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.TableWriter.progress_unit">TableWriter.progress_unit</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.TableWriter.position">TableWriter.position</a>
@@ -1501,6 +1562,7 @@
 <li class="toctree-l1"><a class="reference internal" href="s3/index.html">fsspec_data.s3</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scan_identity/index.html">fsspec_data.scan_identity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="schema/index.html">fsspec_data.schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sink/index.html">fsspec_data.sink</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tables/index.html">fsspec_data.tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/index.html">fsspec_data.tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="view/index.html">fsspec_data.view</a></li>
@@ -1630,6 +1692,12 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.SchemaResolverRegistry" title="fsspec_data.SchemaResolverRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaResolverRegistry</span></code></a></p></td>
 <td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.DataSink" title="fsspec_data.DataSink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataSink</span></code></a></p></td>
+<td><p>One configured table destination; existing ManifestTable conforms structurally.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.DataWriter" title="fsspec_data.DataWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataWriter</span></code></a></p></td>
+<td><p>Positioned Arrow writes; receipts and recovery stay backend-specific.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.AsyncTableWatcher" title="fsspec_data.AsyncTableWatcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncTableWatcher</span></code></a></p></td>
 <td><p>Async batches with resumable checkpoints. Closing drains in-flight work.</p></td>
@@ -2810,6 +2878,103 @@ errors defaults to ‘strict’.</p>
 <dd></dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.DataSink">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">DataSink</span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataSink"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataSink" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_Options_contra</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">_Writer_co</span></code>]</p>
+<p>One configured table destination; existing ManifestTable conforms structurally.</p>
+<p>Options and writer receipts are backend-specific. Implementations reject unsupported
+modes/options before writes. No inheritance or process-global registration is required.
+A protocol check verifies interface shape, not publication guarantees.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataSink.open_writer">
+<span class="sig-name descname"><span class="pre">open_writer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'create'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'append'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'replace'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'create'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_Options_contra</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_Writer_co</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataSink.open_writer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataSink.open_writer" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">DataWriter</span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataWriter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_BatchReceipt_co</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">_PublicationReceipt_co</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">_RecoveryToken_co</span></code>]</p>
+<p>Positioned Arrow writes; receipts and recovery stay backend-specific.</p>
+<p>Exact retries must not duplicate data. Forward positions are gaps; conflicting
+positions or key/payload reuse are conflicts. commit publishes and keeps the
+writer open; finish publishes and completes it. abort/close/drop discard pending
+work without undoing earlier commits. Clean context exit commits then closes;
+an exception aborts. Uncertain publications retain backend recovery information.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.schema">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pyarrow.Schema</span></em><a class="headerlink" href="#fsspec_data.DataWriter.schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.progress_unit">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">progress_unit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fsspec_data.DataWriter.progress_unit" title="Link to this definition">¶</a></dt>
+<dd><p>Unit of expected_position and position, independently of output row counts.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.position">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#fsspec_data.DataWriter.position" title="Link to this definition">¶</a></dt>
+<dd><p>Accepted progress, including unpublished work; not a durable checkpoint.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.recovery_token">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">recovery_token</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_RecoveryToken_co</span></em><a class="headerlink" href="#fsspec_data.DataWriter.recovery_token" title="Link to this definition">¶</a></dt>
+<dd><p>Persist before publication; identifies the current attempt, not credentials.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.resolve">
+<span class="sig-name descname"><span class="pre">resolve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_PublicationReceipt_co</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataWriter.resolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataWriter.resolve" title="Link to this definition">¶</a></dt>
+<dd><p>Observe or retry the same uncertain publication; never append it again.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.write_batch">
+<span class="sig-name descname"><span class="pre">write_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.RecordBatch</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BatchReceipt_co</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataWriter.write_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataWriter.write_batch" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.flush">
+<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataWriter.flush"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataWriter.flush" title="Link to this definition">¶</a></dt>
+<dd><p>Stage pending data without publishing or completing the table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.commit">
+<span class="sig-name descname"><span class="pre">commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_PublicationReceipt_co</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataWriter.commit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataWriter.commit" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.finish">
+<span class="sig-name descname"><span class="pre">finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_PublicationReceipt_co</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataWriter.finish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataWriter.finish" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.abort">
+<span class="sig-name descname"><span class="pre">abort</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataWriter.abort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataWriter.abort" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataWriter.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataWriter.close" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.__enter__">
+<span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataWriter.__enter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataWriter.__enter__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.DataWriter.__exit__">
+<span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseException</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">types.TracebackType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/fsspec_data/sink.html#DataWriter.__exit__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.DataWriter.__exit__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="fsspec_data.AsyncTableWatcher">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.</span></span><span class="sig-name descname"><span class="pre">AsyncTableWatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.WatchPosition" title="fsspec_data.WatchPosition"><span class="pre">WatchPosition</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fsspec_data/tables.html#AsyncTableWatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.AsyncTableWatcher" title="Link to this definition">¶</a></dt>
 <dd><p>Async batches with resumable checkpoints. Closing drains in-flight work.</p>
@@ -3282,6 +3447,12 @@ polling waits, but cannot interrupt a synchronous storage call in progress.</p>
 <dt class="sig sig-object py" id="fsspec_data.TableWriter._closed">
 <span class="sig-name descname"><span class="pre">_closed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#fsspec_data.TableWriter._closed" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.TableWriter.progress_unit">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">progress_unit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#fsspec_data.TableWriter.progress_unit" title="Link to this definition">¶</a></dt>
+<dd><p>The unit of expected_position and position; manifest writers use rows.</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="fsspec_data.TableWriter.position">
@@ -4458,6 +4629,54 @@ or a format name. <code class="docutils literal notranslate"><span class="pre">u
     <a href="#fsspec_data.resolve_schema">resolve_schema()</a>
   </li>
   <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.DataSink">DataSink</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataSink.open_writer">DataSink.open_writer()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.DataWriter">DataWriter</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.schema">DataWriter.schema</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.progress_unit">DataWriter.progress_unit</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.position">DataWriter.position</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.recovery_token">DataWriter.recovery_token</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.resolve">DataWriter.resolve()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.write_batch">DataWriter.write_batch()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.flush">DataWriter.flush()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.commit">DataWriter.commit()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.finish">DataWriter.finish()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.abort">DataWriter.abort()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.close">DataWriter.close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.__enter__">DataWriter.__enter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.DataWriter.__exit__">DataWriter.__exit__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
     <a href="#fsspec_data.AsyncTableWatcher">AsyncTableWatcher</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
@@ -4714,6 +4933,9 @@ or a format name. <code class="docutils literal notranslate"><span class="pre">u
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.TableWriter._closed">TableWriter._closed</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.TableWriter.progress_unit">TableWriter.progress_unit</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.TableWriter.position">TableWriter.position</a>

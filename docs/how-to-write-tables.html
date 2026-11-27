@@ -231,6 +231,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/sink/index.html">
+      <span class="fd-link-text">fsspec_data.sink</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tables/index.html">
       <span class="fd-link-text">fsspec_data.tables</span>
     </a>
@@ -293,6 +298,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_schema/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_schema</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_sink_contract/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_sink_contract</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -375,6 +385,9 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#check-publication-and-cleanup-on-a-deployment">Check publication and cleanup on a deployment</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#accept-a-sink-in-a-batch-producer">Accept a sink in a batch producer</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#read-and-watch-without-blocking-an-event-loop">Read and watch without blocking an event loop</a>
@@ -549,6 +562,40 @@ results. Also test interrupted requests and server restarts on the intended depl
 passing these client checks does not establish power-loss durability or cross-host NFS
 visibility. Local or simulated results do not certify another store.</p>
 </section>
+<section id="accept-a-sink-in-a-batch-producer">
+<h2>Accept a sink in a batch producer<a class="headerlink" href="#accept-a-sink-in-a-batch-producer" title="Link to this heading">¶</a></h2>
+<p>Annotate the destination with <code class="docutils literal notranslate"><span class="pre">DataSink</span></code> when its configuration is supplied by a caller.
+Pass its writer to producer code through <code class="docutils literal notranslate"><span class="pre">DataWriter</span></code>. Keep recovery handling with the caller
+that knows the backend’s token type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataSink</span><span class="p">,</span> <span class="n">DataWriter</span><span class="p">,</span> <span class="n">ManifestTable</span><span class="p">,</span> <span class="n">SinkOptions</span><span class="p">,</span> <span class="n">TableWriter</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">stage_rows</span><span class="p">(</span>
+    <span class="n">writer</span><span class="p">:</span> <span class="n">DataWriter</span><span class="p">[</span><span class="nb">object</span><span class="p">,</span> <span class="nb">object</span><span class="p">,</span> <span class="nb">object</span><span class="p">],</span>
+    <span class="n">batch</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">position</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">writer</span><span class="o">.</span><span class="n">progress_unit</span> <span class="o">!=</span> <span class="s2">"rows"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"This producer requires row positions"</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">write_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">expected_position</span><span class="o">=</span><span class="n">position</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="n">sink</span><span class="p">:</span> <span class="n">DataSink</span><span class="p">[</span><span class="n">SinkOptions</span><span class="p">,</span> <span class="n">TableWriter</span><span class="p">]</span> <span class="o">=</span> <span class="n">ManifestTable</span><span class="p">(</span><span class="s2">"producer-events"</span><span class="p">)</span>
+<span class="n">records</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">({</span><span class="s2">"value"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="k">with</span> <span class="n">sink</span><span class="o">.</span><span class="n">open_writer</span><span class="p">(</span><span class="n">records</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">"producer-attempt.json"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">writer</span><span class="o">.</span><span class="n">recovery_token</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+    <span class="n">stage_rows</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">records</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"request-1"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Use the same position, key, and batch when retrying a write. If publication fails with an
+unknown outcome, resolve the saved attempt using the backend’s recovery API before opening
+another writer. See <a class="reference internal" href="#recover-an-uncertain-publication"><span class="xref myst">recover an uncertain publication</span></a>
+and the <a class="reference internal" href="api.html#shared-sink-interfaces"><span class="std std-ref">shared sink reference</span></a>.</p>
+</section>
 <section id="read-and-watch-without-blocking-an-event-loop">
 <h2>Read and watch without blocking an event loop<a class="headerlink" href="#read-and-watch-without-blocking-an-event-loop" title="Link to this heading">¶</a></h2>
 <p>Use <code class="docutils literal notranslate"><span class="pre">snapshot_async</span></code> to discover a saved version, then <code class="docutils literal notranslate"><span class="pre">scan_async</span></code> to consume it.
@@ -644,6 +691,9 @@ for allocation and cancellation limits.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#check-publication-and-cleanup-on-a-deployment">Check publication and cleanup on a deployment</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#accept-a-sink-in-a-batch-producer">Accept a sink in a batch producer</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#read-and-watch-without-blocking-an-event-loop">Read and watch without blocking an event loop</a>

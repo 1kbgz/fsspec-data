@@ -518,6 +518,49 @@ fetches and batches; it does not interrupt a synchronous request already in prog
 `.parquet`, `.pq`, `.csv`, `.jsonl`, `.ndjson`, and `.avro` to a format and returns `None` for
 anything else.
 
+## Shared sink interfaces
+
+`DataSink` represents a configured destination for one logical table. `DataWriter` represents
+an opened write session. Both names are exported from Python `fsspec_data` and the Rust crate.
+
+Python defines structural protocols: `DataSink[Options, Writer]` and
+`DataWriter[BatchReceipt, PublicationReceipt, RecoveryToken]`. Implementations need no base
+class or registration. `ManifestTable` satisfies `DataSink[SinkOptions, TableWriter]`, and its
+existing `TableWriter` satisfies the writer protocol. Runtime `isinstance` checks only
+interface shape; they do not certify idempotency, durability, or backend correctness.
+
+Rust defines traits with the corresponding associated types. `DataSink::open_writer(schema, mode, options)` returns the backend's writer. `ManifestTableSink::new(fs, root)` binds the
+existing filesystem and table root; it implements `DataSink<Options = SinkOptions, Writer = FileDataSink>`. `FileDataSink` implements `DataWriter`; its existing constructor and inherent
+methods remain available. Trait objects require explicit associated types.
+
+Options, receipts, and recovery tokens retain their backend types. A database implementation
+need not manufacture a manifest generation or checksum. Existing `SinkOptions`, `BatchReceipt`,
+`PublicationReceipt`, and `RecoveryToken` describe the manifest backend; see the
+[manifest table reference](manifest-tables.md) for their fields.
+
+| Writer operation         | Contract                                                                                                                                                               |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema`                 | Accepted Arrow schema. Rust uses a method; Python uses a property.                                                                                                     |
+| `progress_unit`          | Unit of positions, independent of output row counts. Manifest writers use `"rows"`.                                                                                    |
+| `position`               | Accepted progress, including unpublished work; not a durable checkpoint.                                                                                               |
+| `write_batch`            | Requires expected position and retry key. Exact retries do not duplicate data; forward positions raise gap, conflicting positions or key/payload reuse raise conflict. |
+| `flush`                  | Stage pending data without publication or completion.                                                                                                                  |
+| `commit`                 | Publish accepted work and keep the writer/table open.                                                                                                                  |
+| `finish`                 | Publish accepted work, mark the table complete, and close the writer.                                                                                                  |
+| `abort` / `close` / drop | Discard pending work. Earlier successful commits remain visible; closing never marks completion.                                                                       |
+| `recovery_token`         | Backend token for the current publication attempt, obtained before commit/finish. It changes after successful publication and contains no credentials.                 |
+| `resolve`                | Observe or retry the same uncertain publication. Rust takes `RecoveryAction`; Python takes `retry=False`.                                                              |
+
+Unsupported modes/options must fail before writes. A Python writer's clean context exit
+commits and closes; exceptional exit aborts. Unknown publication outcomes preserve recovery
+information and must not be treated as proof that publication failed. Recovery tokens and
+successful receipts have separate purposes: tokens resolve attempts, while receipts establish
+committed progress. Generic code must retain the concrete writer or return its token when a
+publication fails; it must not silently reopen and append the same work.
+
+These interfaces are synchronous. Database/Kafka sink adapters, write capabilities on source
+facets, schema evolution and the data-sink C ABI are not implemented by these interfaces.
+
 ## Rust manifest snapshots
 
 `fsspec_data::manifest` provides version-one JSON manifests and a synchronous snapshot

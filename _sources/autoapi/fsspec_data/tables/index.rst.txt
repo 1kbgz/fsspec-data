@@ -412,6 +412,13 @@ Module Contents
 
 
 
+   .. py:property:: progress_unit
+      :type: str
+
+
+      The unit of expected_position and position; manifest writers use rows.
+
+
    .. py:property:: position
       :type: int
 

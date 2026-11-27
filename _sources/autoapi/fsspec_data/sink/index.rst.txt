@@ -1,0 +1,133 @@
+fsspec_data.sink
+================
+
+.. py:module:: fsspec_data.sink
+
+.. autoapi-nested-parse::
+
+   Structural contracts for configured table destinations and positioned writers.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   fsspec_data.sink._BatchReceipt_co
+   fsspec_data.sink._PublicationReceipt_co
+   fsspec_data.sink._RecoveryToken_co
+   fsspec_data.sink._Options_contra
+   fsspec_data.sink._Writer_co
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   fsspec_data.sink.DataWriter
+   fsspec_data.sink.DataSink
+
+
+Module Contents
+---------------
+
+.. py:data:: _BatchReceipt_co
+
+.. py:data:: _PublicationReceipt_co
+
+.. py:data:: _RecoveryToken_co
+
+.. py:data:: _Options_contra
+
+.. py:class:: DataWriter
+
+   Bases: :py:obj:`Protocol`\ [\ :py:obj:`_BatchReceipt_co`\ , :py:obj:`_PublicationReceipt_co`\ , :py:obj:`_RecoveryToken_co`\ ]
+
+
+   Positioned Arrow writes; receipts and recovery stay backend-specific.
+
+   Exact retries must not duplicate data. Forward positions are gaps; conflicting
+   positions or key/payload reuse are conflicts. commit publishes and keeps the
+   writer open; finish publishes and completes it. abort/close/drop discard pending
+   work without undoing earlier commits. Clean context exit commits then closes;
+   an exception aborts. Uncertain publications retain backend recovery information.
+
+
+   .. py:property:: schema
+      :type: pyarrow.Schema
+
+
+
+   .. py:property:: progress_unit
+      :type: str
+
+
+      Unit of expected_position and position, independently of output row counts.
+
+
+   .. py:property:: position
+      :type: int
+
+
+      Accepted progress, including unpublished work; not a durable checkpoint.
+
+
+   .. py:property:: recovery_token
+      :type: _RecoveryToken_co
+
+
+      Persist before publication; identifies the current attempt, not credentials.
+
+
+   .. py:method:: resolve(*, retry: bool = False) -> _PublicationReceipt_co
+
+      Observe or retry the same uncertain publication; never append it again.
+
+
+
+   .. py:method:: write_batch(batch: pyarrow.RecordBatch, *, expected_position: int, key: str) -> _BatchReceipt_co
+
+
+   .. py:method:: flush() -> None
+
+      Stage pending data without publishing or completing the table.
+
+
+
+   .. py:method:: commit() -> _PublicationReceipt_co
+
+
+   .. py:method:: finish() -> _PublicationReceipt_co
+
+
+   .. py:method:: abort() -> None
+
+
+   .. py:method:: close() -> None
+
+
+   .. py:method:: __enter__() -> Self
+
+
+   .. py:method:: __exit__(exc_type: type[BaseException] | None, exc: BaseException | None, traceback: types.TracebackType | None) -> None
+
+
+.. py:data:: _Writer_co
+
+.. py:class:: DataSink
+
+   Bases: :py:obj:`Protocol`\ [\ :py:obj:`_Options_contra`\ , :py:obj:`_Writer_co`\ ]
+
+
+   One configured table destination; existing ManifestTable conforms structurally.
+
+   Options and writer receipts are backend-specific. Implementations reject unsupported
+   modes/options before writes. No inheritance or process-global registration is required.
+   A protocol check verifies interface shape, not publication guarantees.
+
+
+   .. py:method:: open_writer(schema: pyarrow.Schema, *, mode: Literal['create', 'append', 'replace'] = 'create', options: _Options_contra | None = None) -> _Writer_co
+
+

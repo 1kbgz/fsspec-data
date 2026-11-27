@@ -231,6 +231,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/sink/index.html">
+      <span class="fd-link-text">fsspec_data.sink</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tables/index.html">
       <span class="fd-link-text">fsspec_data.tables</span>
     </a>
@@ -293,6 +298,11 @@
   <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_schema/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_schema</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_sink_contract/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_sink_contract</span>
     </a>
   </li>
   <li class="fd-tree-item">
@@ -456,6 +466,9 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#data-sources">Data sources</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#shared-sink-interfaces">Shared sink interfaces</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#rust-manifest-snapshots">Rust manifest snapshots</a>
@@ -1066,6 +1079,70 @@ fetches and batches; it does not interrupt a synchronous request already in prog
 <p><code class="docutils literal notranslate"><span class="pre">DataFormat.from_path(path)</span></code> (Rust: <code class="docutils literal notranslate"><span class="pre">DataFormat::from_path</span></code>) maps <code class="docutils literal notranslate"><span class="pre">.arrow</span></code>, <code class="docutils literal notranslate"><span class="pre">.ipc</span></code>,
 <code class="docutils literal notranslate"><span class="pre">.parquet</span></code>, <code class="docutils literal notranslate"><span class="pre">.pq</span></code>, <code class="docutils literal notranslate"><span class="pre">.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">.jsonl</span></code>, <code class="docutils literal notranslate"><span class="pre">.ndjson</span></code>, and <code class="docutils literal notranslate"><span class="pre">.avro</span></code> to a format and returns <code class="docutils literal notranslate"><span class="pre">None</span></code> for
 anything else.</p>
+</section>
+<section id="shared-sink-interfaces">
+<h2>Shared sink interfaces<a class="headerlink" href="#shared-sink-interfaces" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">DataSink</span></code> represents a configured destination for one logical table. <code class="docutils literal notranslate"><span class="pre">DataWriter</span></code> represents
+an opened write session. Both names are exported from Python <code class="docutils literal notranslate"><span class="pre">fsspec_data</span></code> and the Rust crate.</p>
+<p>Python defines structural protocols: <code class="docutils literal notranslate"><span class="pre">DataSink[Options,</span> <span class="pre">Writer]</span></code> and
+<code class="docutils literal notranslate"><span class="pre">DataWriter[BatchReceipt,</span> <span class="pre">PublicationReceipt,</span> <span class="pre">RecoveryToken]</span></code>. Implementations need no base
+class or registration. <code class="docutils literal notranslate"><span class="pre">ManifestTable</span></code> satisfies <code class="docutils literal notranslate"><span class="pre">DataSink[SinkOptions,</span> <span class="pre">TableWriter]</span></code>, and its
+existing <code class="docutils literal notranslate"><span class="pre">TableWriter</span></code> satisfies the writer protocol. Runtime <code class="docutils literal notranslate"><span class="pre">isinstance</span></code> checks only
+interface shape; they do not certify idempotency, durability, or backend correctness.</p>
+<p>Rust defines traits with the corresponding associated types. <code class="docutils literal notranslate"><span class="pre">DataSink::open_writer(schema,</span> <span class="pre">mode,</span> <span class="pre">options)</span></code> returns the backend’s writer. <code class="docutils literal notranslate"><span class="pre">ManifestTableSink::new(fs,</span> <span class="pre">root)</span></code> binds the
+existing filesystem and table root; it implements <code class="docutils literal notranslate"><span class="pre">DataSink&lt;Options</span> <span class="pre">=</span> <span class="pre">SinkOptions,</span> <span class="pre">Writer</span> <span class="pre">=</span> <span class="pre">FileDataSink&gt;</span></code>. <code class="docutils literal notranslate"><span class="pre">FileDataSink</span></code> implements <code class="docutils literal notranslate"><span class="pre">DataWriter</span></code>; its existing constructor and inherent
+methods remain available. Trait objects require explicit associated types.</p>
+<p>Options, receipts, and recovery tokens retain their backend types. A database implementation
+need not manufacture a manifest generation or checksum. Existing <code class="docutils literal notranslate"><span class="pre">SinkOptions</span></code>, <code class="docutils literal notranslate"><span class="pre">BatchReceipt</span></code>,
+<code class="docutils literal notranslate"><span class="pre">PublicationReceipt</span></code>, and <code class="docutils literal notranslate"><span class="pre">RecoveryToken</span></code> describe the manifest backend; see the
+<a class="reference internal" href="manifest-tables.html"><span class="std std-doc">manifest table reference</span></a> for their fields.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Writer operation</p></th>
+<th class="head"><p>Contract</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">schema</span></code></p></td>
+<td><p>Accepted Arrow schema. Rust uses a method; Python uses a property.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">progress_unit</span></code></p></td>
+<td><p>Unit of positions, independent of output row counts. Manifest writers use <code class="docutils literal notranslate"><span class="pre">&quot;rows&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">position</span></code></p></td>
+<td><p>Accepted progress, including unpublished work; not a durable checkpoint.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">write_batch</span></code></p></td>
+<td><p>Requires expected position and retry key. Exact retries do not duplicate data; forward positions raise gap, conflicting positions or key/payload reuse raise conflict.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">flush</span></code></p></td>
+<td><p>Stage pending data without publication or completion.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">commit</span></code></p></td>
+<td><p>Publish accepted work and keep the writer/table open.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">finish</span></code></p></td>
+<td><p>Publish accepted work, mark the table complete, and close the writer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">abort</span></code> / <code class="docutils literal notranslate"><span class="pre">close</span></code> / drop</p></td>
+<td><p>Discard pending work. Earlier successful commits remain visible; closing never marks completion.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">recovery_token</span></code></p></td>
+<td><p>Backend token for the current publication attempt, obtained before commit/finish. It changes after successful publication and contains no credentials.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">resolve</span></code></p></td>
+<td><p>Observe or retry the same uncertain publication. Rust takes <code class="docutils literal notranslate"><span class="pre">RecoveryAction</span></code>; Python takes <code class="docutils literal notranslate"><span class="pre">retry=False</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Unsupported modes/options must fail before writes. A Python writer’s clean context exit
+commits and closes; exceptional exit aborts. Unknown publication outcomes preserve recovery
+information and must not be treated as proof that publication failed. Recovery tokens and
+successful receipts have separate purposes: tokens resolve attempts, while receipts establish
+committed progress. Generic code must retain the concrete writer or return its token when a
+publication fails; it must not silently reopen and append the same work.</p>
+<p>These interfaces are synchronous. Database/Kafka sink adapters, write capabilities on source
+facets, schema evolution and the data-sink C ABI are not implemented by these interfaces.</p>
 </section>
 <section id="rust-manifest-snapshots">
 <h2>Rust manifest snapshots<a class="headerlink" href="#rust-manifest-snapshots" title="Link to this heading">¶</a></h2>
@@ -1827,6 +1904,9 @@ separately by any future read-sharing implementation.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#data-sources">Data sources</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#shared-sink-interfaces">Shared sink interfaces</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#rust-manifest-snapshots">Rust manifest snapshots</a>

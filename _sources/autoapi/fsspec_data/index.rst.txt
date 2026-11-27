@@ -21,6 +21,7 @@ Submodules
    /autoapi/fsspec_data/s3/index
    /autoapi/fsspec_data/scan_identity/index
    /autoapi/fsspec_data/schema/index
+   /autoapi/fsspec_data/sink/index
    /autoapi/fsspec_data/tables/index
    /autoapi/fsspec_data/tests/index
    /autoapi/fsspec_data/view/index
@@ -81,6 +82,8 @@ Classes
    fsspec_data.SchemaProvenance
    fsspec_data.SchemaRef
    fsspec_data.SchemaResolverRegistry
+   fsspec_data.DataSink
+   fsspec_data.DataWriter
    fsspec_data.AsyncTableWatcher
    fsspec_data.BatchReceipt
    fsspec_data.CleanupReport
@@ -1044,6 +1047,94 @@ Package Contents
 
 .. py:function:: resolve_schema(value: pyarrow.Schema | SchemaRef | None, registry: SchemaResolverRegistry | None = None) -> ResolvedSchema | None
 
+.. py:class:: DataSink
+
+   Bases: :py:obj:`Protocol`\ [\ :py:obj:`_Options_contra`\ , :py:obj:`_Writer_co`\ ]
+
+
+   One configured table destination; existing ManifestTable conforms structurally.
+
+   Options and writer receipts are backend-specific. Implementations reject unsupported
+   modes/options before writes. No inheritance or process-global registration is required.
+   A protocol check verifies interface shape, not publication guarantees.
+
+
+   .. py:method:: open_writer(schema: pyarrow.Schema, *, mode: Literal['create', 'append', 'replace'] = 'create', options: _Options_contra | None = None) -> _Writer_co
+
+
+.. py:class:: DataWriter
+
+   Bases: :py:obj:`Protocol`\ [\ :py:obj:`_BatchReceipt_co`\ , :py:obj:`_PublicationReceipt_co`\ , :py:obj:`_RecoveryToken_co`\ ]
+
+
+   Positioned Arrow writes; receipts and recovery stay backend-specific.
+
+   Exact retries must not duplicate data. Forward positions are gaps; conflicting
+   positions or key/payload reuse are conflicts. commit publishes and keeps the
+   writer open; finish publishes and completes it. abort/close/drop discard pending
+   work without undoing earlier commits. Clean context exit commits then closes;
+   an exception aborts. Uncertain publications retain backend recovery information.
+
+
+   .. py:property:: schema
+      :type: pyarrow.Schema
+
+
+
+   .. py:property:: progress_unit
+      :type: str
+
+
+      Unit of expected_position and position, independently of output row counts.
+
+
+   .. py:property:: position
+      :type: int
+
+
+      Accepted progress, including unpublished work; not a durable checkpoint.
+
+
+   .. py:property:: recovery_token
+      :type: _RecoveryToken_co
+
+
+      Persist before publication; identifies the current attempt, not credentials.
+
+
+   .. py:method:: resolve(*, retry: bool = False) -> _PublicationReceipt_co
+
+      Observe or retry the same uncertain publication; never append it again.
+
+
+
+   .. py:method:: write_batch(batch: pyarrow.RecordBatch, *, expected_position: int, key: str) -> _BatchReceipt_co
+
+
+   .. py:method:: flush() -> None
+
+      Stage pending data without publishing or completing the table.
+
+
+
+   .. py:method:: commit() -> _PublicationReceipt_co
+
+
+   .. py:method:: finish() -> _PublicationReceipt_co
+
+
+   .. py:method:: abort() -> None
+
+
+   .. py:method:: close() -> None
+
+
+   .. py:method:: __enter__() -> Self
+
+
+   .. py:method:: __exit__(exc_type: type[BaseException] | None, exc: BaseException | None, traceback: types.TracebackType | None) -> None
+
+
 .. py:class:: AsyncTableWatcher(schema: pyarrow.Schema, native: Any, position: WatchPosition)
 
    Async batches with resumable checkpoints. Closing drains in-flight work.
@@ -1473,6 +1564,13 @@ Package Contents
    .. py:attribute:: _closed
       :value: False
 
+
+
+   .. py:property:: progress_unit
+      :type: str
+
+
+      The unit of expected_position and position; manifest writers use rows.
 
 
    .. py:property:: position
