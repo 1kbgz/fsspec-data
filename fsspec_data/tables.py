@@ -308,6 +308,11 @@ class TableWriter:
         self._closed = False
 
     @property
+    def progress_unit(self) -> str:
+        """The unit of expected_position and position; manifest writers use rows."""
+        return "rows"
+
+    @property
     def position(self) -> int:
         """Accepted rows, including unpublished work. Checkpoint receipt.progress instead."""
         return self._native.position

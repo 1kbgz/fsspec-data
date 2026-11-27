@@ -35,6 +35,7 @@ from .schema import (
     SchemaResolverRegistry,
     resolve_schema,
 )
+from .sink import DataSink, DataWriter
 from .tables import (
     AsyncTableWatcher,
     BatchReceipt,
@@ -71,8 +72,10 @@ __all__ = [
     "Converter",
     "ConverterRegistry",
     "DataFormat",
+    "DataSink",
     "DataSource",
     "DataViewFileSystem",
+    "DataWriter",
     "DecodedBatchStream",
     "DecodedBatches",
     "Facet",
