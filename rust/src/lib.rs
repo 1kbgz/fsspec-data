@@ -1,4 +1,5 @@
 mod async_parquet;
+pub mod async_tables;
 mod avro;
 pub mod cleanup;
 mod codec;

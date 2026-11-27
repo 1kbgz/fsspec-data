@@ -36,6 +36,7 @@ from .schema import (
     resolve_schema,
 )
 from .tables import (
+    AsyncTableWatcher,
     BatchReceipt,
     CleanupReport,
     ManifestTable,
@@ -61,6 +62,7 @@ __all__ = [
     "DEFAULT_REGISTRY",
     "DEFAULT_SCHEMA_RESOLVERS",
     "AsyncDecodedBatchStream",
+    "AsyncTableWatcher",
     "BatchReceipt",
     "CleanupReport",
     "Codec",

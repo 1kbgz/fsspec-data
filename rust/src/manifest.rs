@@ -467,25 +467,48 @@ impl Default for ReadLimits {
     }
 }
 
+impl ReadLimits {
+    fn validate(&self) -> Result<()> {
+        if self.max_manifest_bytes == 0
+            || self.max_manifest_bytes > MAX_MANIFEST_BYTES
+            || self.max_part_bytes == 0
+            || self.max_part_bytes == usize::MAX
+            || self.max_manifest_reads == 0
+        {
+            return Err(error(ErrorKind::Invalid, "invalid manifest read limits"));
+        }
+        Ok(())
+    }
+}
+
 /// Uses a filesystem instance directly; no process-global snapshot/credential cache.
+#[derive(Clone)]
 pub struct ManifestReader {
-    fs: SharedFileSystem,
+    pub(crate) fs: crate::async_tables::ReadSource,
     root: String,
     limits: ReadLimits,
 }
 
 impl ManifestReader {
     pub fn new(fs: SharedFileSystem, root: impl Into<String>, limits: ReadLimits) -> Result<Self> {
-        if limits.max_manifest_bytes == 0
-            || limits.max_manifest_bytes > MAX_MANIFEST_BYTES
-            || limits.max_part_bytes == 0
-            || limits.max_part_bytes == usize::MAX
-            || limits.max_manifest_reads == 0
-        {
-            return Err(error(ErrorKind::Invalid, "invalid manifest read limits"));
-        }
+        limits.validate()?;
         Ok(Self {
-            fs,
+            fs: crate::async_tables::ReadSource::sync(fs),
+            root: root.into(),
+            limits,
+        })
+    }
+
+    /// Borrow native async handles for reads executed by `read_async`/`scan_async`.
+    /// The caller owns filesystem/context shutdown. Synchronous methods block their caller.
+    pub fn new_async(
+        fs: fsspec_rs::async_files::AsyncFilesystem,
+        root: impl Into<String>,
+        limits: ReadLimits,
+    ) -> Result<Self> {
+        limits.validate()?;
+        Ok(Self {
+            fs: crate::async_tables::ReadSource::asynchronous(fs),
             root: root.into(),
             limits,
         })
@@ -566,8 +589,9 @@ impl ManifestReader {
 }
 
 /// Frozen metadata, bound to the filesystem and partition it was read from.
+#[derive(Clone)]
 pub struct Snapshot {
-    fs: SharedFileSystem,
+    pub(crate) fs: crate::async_tables::ReadSource,
     root: String,
     limits: ReadLimits,
     manifest: Manifest,
@@ -611,7 +635,9 @@ impl Snapshot {
                 "part exceeds configured read limit",
             ));
         }
-        let bytes = bounded_read(&self.fs, &join(&self.root, &part.key), part.size as usize)
+        let bytes = self
+            .fs
+            .read(&join(&self.root, &part.key), part.size as usize)
             .map_err(|e| {
                 if e.kind() == ErrorKind::NotFound {
                     error(ErrorKind::Corrupt, "manifest references a missing part")
@@ -650,11 +676,11 @@ impl Session<'_> {
             &self.reader.root,
             &format!("manifests/{generation:020}/manifest.json"),
         );
-        let bytes = match bounded_read(
-            &self.reader.fs,
-            &path,
-            self.reader.limits.max_manifest_bytes,
-        ) {
+        let bytes = match self
+            .reader
+            .fs
+            .read(&path, self.reader.limits.max_manifest_bytes)
+        {
             Ok(bytes) => bytes,
             Err(error) if error.kind() == ErrorKind::NotFound => return Ok(None),
             Err(error) => return Err(error),
