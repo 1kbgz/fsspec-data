@@ -578,6 +578,22 @@ impl Snapshot {
     pub fn manifest(&self) -> &Manifest {
         &self.manifest
     }
+    /// Authoritative visible state; unavailable timestamps/distinct values are omitted.
+    pub fn state(&self) -> crate::Metadata {
+        let m = &self.manifest;
+        let mut state = serde_json::json!({
+            "generation": m.generation, "num_rows": m.num_rows, "num_rows_exact": true,
+            "complete": m.complete, "progress": m.progress, "progress_unit": m.progress_unit,
+        })
+        .as_object()
+        .unwrap()
+        .clone();
+        for (column, value) in &m.partition_values {
+            state.insert(format!("distinct.{column}"), serde_json::json!([value]));
+        }
+        state
+    }
+
     pub fn checksum(&self) -> Checksum {
         self.checksum
     }

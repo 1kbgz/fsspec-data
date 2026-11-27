@@ -44,7 +44,11 @@ from .tables import (
     RecoveryToken,
     SinkOptions,
     TableSnapshot,
+    TableWatcher,
     TableWriter,
+    WatchBatch,
+    WatchEnd,
+    WatchPosition,
 )
 from .view import DEFAULT_MAPPING, DataViewFileSystem, ViewEntry
 
@@ -94,8 +98,12 @@ __all__ = [
     "SinkOptions",
     "SourceIdentity",
     "TableSnapshot",
+    "TableWatcher",
     "TableWriter",
     "ViewEntry",
+    "WatchBatch",
+    "WatchEnd",
+    "WatchPosition",
     "__version__",
     "json_schema_to_arrow",
     "plan_schema",

@@ -65,6 +65,33 @@ constructing the table to cap encoded part reads. Use `batch_size`, `row_limit`,
 `byte_limit` to bound scan output; decoder allocations are not a process memory cap.
 Cancel a scan with `stream.cancel()` if stopping early.
 
+## Watch appended rows and save a checkpoint
+
+Read existing rows and wait for subsequent commits with `watch()`. Save each position
+after processing its batch:
+
+```python
+from pathlib import Path
+from fsspec_data import WatchEnd, WatchPosition
+
+checkpoint = Path("watch-position.json")
+start = WatchPosition.from_json(checkpoint.read_text()) if checkpoint.exists() else None
+
+with table.watch(start=start, columns=["value"], idle_timeout=30) as watcher:
+    for item in watcher:
+        print(item.batch.to_pydict())
+        checkpoint.write_text(item.position.to_json())
+    reason = watcher.end_reason
+
+if reason == WatchEnd.REPLACED:
+    print("Table replaced; start a new watch when ready to read the replacement.")
+```
+
+Reopen the same table and pass the saved position to resume after a restart. Make your
+processing and checkpoint storage durable together if duplicate side effects are unacceptable.
+For an incomplete table, use an idle timeout or call `watcher.cancel()` from another thread
+to stop waiting. See [watch reference](manifest-tables.md#tablewatcher) for end reasons and limits.
+
 ## Recover an uncertain publication
 
 Persist the current recovery token before each `commit()` or `finish()`. The token changes

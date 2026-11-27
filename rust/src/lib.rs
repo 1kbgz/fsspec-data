@@ -19,6 +19,8 @@ mod scan_identity;
 mod schema;
 pub mod sink;
 mod stream;
+mod table_scan;
+pub mod watch;
 
 pub use async_parquet::{AsyncDecodedStream, AsyncScanOptions};
 pub use avro::{avro_arrow_schema, AvroCodec, AvroFraming, AvroValueDecoder, AvroValueEncoder};
