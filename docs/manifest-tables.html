@@ -266,6 +266,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_async_tables/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_async_tables</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_cleanup/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_cleanup</span>
     </a>
@@ -357,6 +362,9 @@
     <a href="#tablewatcher">TableWatcher</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
+    <a href="#asynchronous-reads">Asynchronous reads</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
     <a href="#sinkoptions">SinkOptions</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
@@ -379,9 +387,10 @@
 <h1>Manifest table reference<a class="headerlink" href="#manifest-table-reference" title="Link to this heading">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">ManifestTable</span></code>, <code class="docutils literal notranslate"><span class="pre">TableSnapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">TableWriter</span></code>, <code class="docutils literal notranslate"><span class="pre">SinkOptions</span></code>, <code class="docutils literal notranslate"><span class="pre">BatchReceipt</span></code>,
 <code class="docutils literal notranslate"><span class="pre">PublicationReceipt</span></code>, <code class="docutils literal notranslate"><span class="pre">RecoveryToken</span></code>, <code class="docutils literal notranslate"><span class="pre">OrphanCollector</span></code>, <code class="docutils literal notranslate"><span class="pre">CleanupReport</span></code>, <code class="docutils literal notranslate"><span class="pre">TableWatcher</span></code>,
-<code class="docutils literal notranslate"><span class="pre">WatchBatch</span></code>, <code class="docutils literal notranslate"><span class="pre">WatchPosition</span></code>, and <code class="docutils literal notranslate"><span class="pre">WatchEnd</span></code> are exported from <code class="docutils literal notranslate"><span class="pre">fsspec_data</span></code>. The bindings
-use the Rust manifest reader and file sink. Operations are synchronous and release the
-Python GIL during storage access and encoding/decoding.</p>
+<code class="docutils literal notranslate"><span class="pre">WatchBatch</span></code>, <code class="docutils literal notranslate"><span class="pre">WatchPosition</span></code>, <code class="docutils literal notranslate"><span class="pre">WatchEnd</span></code>, and <code class="docutils literal notranslate"><span class="pre">AsyncTableWatcher</span></code> are exported from <code class="docutils literal notranslate"><span class="pre">fsspec_data</span></code>. The bindings
+use the Rust manifest reader and file sink. Synchronous operations release the Python GIL
+during storage access and encoding/decoding. Async readers use native S3 handles or local-file
+workers, with Parquet decoding on a worker.</p>
 <section id="manifesttable">
 <h2>ManifestTable<a class="headerlink" href="#manifesttable" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">ManifestTable(root,</span> <span class="pre">*,</span> <span class="pre">storage_options=None,</span> <span class="pre">max_manifest_bytes=8388608,</span> <span class="pre">max_part_bytes=67108864,</span> <span class="pre">max_manifest_reads=256)</span></code> configures one table partition on native
@@ -476,9 +485,46 @@ from another thread. Errors propagate and terminate iteration without setting an
 or advancing the last returned checkpoint. Resume can retry from that checkpoint.</p>
 <p>The watcher verifies encoded parts before decoding and skips parts before the saved progress.
 It does not switch to replacement data, infer event/array positions from row counts, watch
-filesystem notifications, or provide asynchronous iteration. Standalone scans remain pinned.
+filesystem notifications. Use <code class="docutils literal notranslate"><span class="pre">watch_async</span></code> for asynchronous iteration. Standalone scans remain pinned.
 The Rust equivalents are <code class="docutils literal notranslate"><span class="pre">watch::ManifestWatcher</span></code>, <code class="docutils literal notranslate"><span class="pre">WatchOptions</span></code>, <code class="docutils literal notranslate"><span class="pre">WatchPosition</span></code>,
 <code class="docutils literal notranslate"><span class="pre">WatchBatch</span></code>, and <code class="docutils literal notranslate"><span class="pre">WatchEnd</span></code>; Rust callers provide a stable non-secret source label.</p>
+</section>
+<section id="asynchronous-reads">
+<h2>Asynchronous reads<a class="headerlink" href="#asynchronous-reads" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">table.snapshot_async(generation=None,</span> <span class="pre">*,</span> <span class="pre">deadline=None)</span></code> returns a <code class="docutils literal notranslate"><span class="pre">TableSnapshot</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">snapshot.scan_async(*,</span> <span class="pre">columns=None,</span> <span class="pre">row_offset=0,</span> <span class="pre">batch_size=1024,</span> <span class="pre">row_limit=None,</span> <span class="pre">byte_limit=None,</span> <span class="pre">max_batch_bytes=67108864,</span> <span class="pre">read_chunk_size=1048576,</span> <span class="pre">deadline=None)</span></code> returns <code class="docutils literal notranslate"><span class="pre">AsyncDecodedBatchStream</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">table.watch_async(*,</span> <span class="pre">start=None,</span> <span class="pre">columns=None,</span> <span class="pre">batch_size=1024,</span> <span class="pre">poll_interval=0.1,</span> <span class="pre">idle_timeout=None,</span> <span class="pre">max_batch_bytes=67108864,</span> <span class="pre">read_chunk_size=1048576,</span> <span class="pre">deadline=None)</span></code> returns <code class="docutils literal notranslate"><span class="pre">AsyncTableWatcher</span></code>.</p></li>
+</ul>
+<p>Async scans and watchers support <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">for</span></code>, async context management and <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">aclose()</span></code>.
+Watch batches, positions and terminal reasons have the synchronous API’s meanings.
+Concurrent calls to <code class="docutils literal notranslate"><span class="pre">anext</span></code> on one iterator raise <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code>. Closing during a pending
+request cancels it and suppresses undelivered rows without advancing the Python checkpoint.
+Errors terminate iteration and preserve the last delivered checkpoint.</p>
+<p><code class="docutils literal notranslate"><span class="pre">deadline</span></code> is an absolute <code class="docutils literal notranslate"><span class="pre">asyncio</span></code> loop time, including discovery, reads, decoding and time
+between batch requests. Expiry raises <code class="docutils literal notranslate"><span class="pre">TimeoutError</span></code>; it is distinct from a watch’s idle
+timeout. Task cancellation raises <code class="docutils literal notranslate"><span class="pre">asyncio.CancelledError</span></code>. <code class="docutils literal notranslate"><span class="pre">aclose</span></code> waits for pending I/O
+and decoder cleanup; cleanup continues if its Python awaiter is cancelled. A local system
+call or decoder computation cannot be forcibly interrupted, so cleanup can exceed a deadline.
+Dropping an iterator requests cancellation; deterministic cleanup requires <code class="docutils literal notranslate"><span class="pre">aclose</span></code>.</p>
+<p>A scan fetches parts only on demand. It retains one encoded part at a time, capped by the
+table’s <code class="docutils literal notranslate"><span class="pre">max_part_bytes</span></code>, plus transport read chunks and decoder/output allocations.
+<code class="docutils literal notranslate"><span class="pre">read_chunk_size</span></code> must be positive and at most 8 MiB. <code class="docutils literal notranslate"><span class="pre">max_batch_bytes</span></code> must be positive
+and is checked after decoding/projection. One batch request may be outstanding per iterator;
+there is no background batch prefetch. These are per-scan limits, not a total process memory
+cap. Caller-retained batches and Parquet internal allocations are not capped.</p>
+<p>Each part’s full size and SHA-256 are verified before any of its rows are returned. Schema
+and row-count checks also match synchronous scans. No range/predicate pushdown or physical
+read sharing is provided for manifest parts. Snapshots from <code class="docutils literal notranslate"><span class="pre">snapshot_async</span></code> use native
+async S3 reads; snapshots from <code class="docutils literal notranslate"><span class="pre">snapshot</span></code> use their existing synchronous filesystem on the
+scan worker. Local reads use a worker in both cases. Closing one scan leaves its snapshot
+and other scans usable.</p>
+<p>Rust provides <code class="docutils literal notranslate"><span class="pre">ManifestReader::read_async</span></code>, <code class="docutils literal notranslate"><span class="pre">Snapshot::scan_async</span></code>, <code class="docutils literal notranslate"><span class="pre">AsyncTableScan</span></code>,
+<code class="docutils literal notranslate"><span class="pre">AsyncManifestWatcher</span></code> and <code class="docutils literal notranslate"><span class="pre">AsyncTableOptions</span></code> in <code class="docutils literal notranslate"><span class="pre">async_tables</span></code>. <code class="docutils literal notranslate"><span class="pre">ManifestReader::new_async</span></code>
+borrows an <code class="docutils literal notranslate"><span class="pre">fsspec_rs::async_files::AsyncFilesystem</span></code>; its caller retains and closes the
+filesystem/context after readers finish. Existing <code class="docutils literal notranslate"><span class="pre">ManifestReader::new</span></code> uses synchronous
+storage on a worker. Rust <code class="docutils literal notranslate"><span class="pre">next().await</span></code> returns <code class="docutils literal notranslate"><span class="pre">Result&lt;Option&lt;_&gt;&gt;</span></code>; <code class="docutils literal notranslate"><span class="pre">close().await</span></code> drains
+cleanup, and cancellation uses <code class="docutils literal notranslate"><span class="pre">CancellationToken</span></code>. Rust deadlines use <code class="docutils literal notranslate"><span class="pre">std::time::Instant</span></code>.</p>
 </section>
 <section id="sinkoptions">
 <h2>SinkOptions<a class="headerlink" href="#sinkoptions" title="Link to this heading">¶</a></h2>
@@ -666,6 +712,9 @@ successful earlier deletions; the sweep is repeatable.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#tablewatcher">TableWatcher</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#asynchronous-reads">Asynchronous reads</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#sinkoptions">SinkOptions</a>

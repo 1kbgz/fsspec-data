@@ -1,0 +1,37 @@
+fsspec_data.tests.test_async_tables
+===================================
+
+.. py:module:: fsspec_data.tests.test_async_tables
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tests.test_async_tables.publish
+   fsspec_data.tests.test_async_tables.test_async_snapshots_selection_limits_and_reuse
+   fsspec_data.tests.test_async_tables.test_async_watch_resumes_appends_finishes_and_replaces
+   fsspec_data.tests.test_async_tables.test_cancellation_concurrent_close_and_deadline_preserve_checkpoint
+   fsspec_data.tests.test_async_tables.test_corruption_and_buffer_errors_do_not_advance_watch
+   fsspec_data.tests.test_async_tables.test_invalid_async_limits
+   fsspec_data.tests.test_async_tables.test_native_s3_async_snapshot_and_watch
+
+
+Module Contents
+---------------
+
+.. py:function:: publish(table, *, complete=False)
+
+.. py:function:: test_async_snapshots_selection_limits_and_reuse(tmp_path)
+
+.. py:function:: test_async_watch_resumes_appends_finishes_and_replaces(tmp_path)
+
+.. py:function:: test_cancellation_concurrent_close_and_deadline_preserve_checkpoint(tmp_path)
+
+.. py:function:: test_corruption_and_buffer_errors_do_not_advance_watch(tmp_path)
+
+.. py:function:: test_invalid_async_limits(tmp_path, argument, value)
+
+.. py:function:: test_native_s3_async_snapshot_and_watch(s3_store)
+

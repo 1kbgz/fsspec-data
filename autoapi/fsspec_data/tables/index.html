@@ -266,6 +266,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../tests/test_async_tables/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_async_tables</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../tests/test_cleanup/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_cleanup</span>
     </a>
@@ -355,6 +360,9 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#classes">Classes</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#functions">Functions</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#module-contents">Module Contents</a>
@@ -451,6 +459,12 @@
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.snapshot">ManifestTable.snapshot()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.ManifestTable.snapshot_async">ManifestTable.snapshot_async()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.ManifestTable.watch_async">ManifestTable.watch_async()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.watch">ManifestTable.watch()</a>
@@ -653,6 +667,72 @@
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.TableSnapshot.scan">TableSnapshot.scan()</a>
   </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableSnapshot.scan_async">TableSnapshot.scan_async()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables._timeout">_timeout()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables._AsyncTableNative">_AsyncTableNative</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables._AsyncTableNative.native">_AsyncTableNative.native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables._AsyncTableNative.next">_AsyncTableNative.next()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables._AsyncTableNative.close">_AsyncTableNative.close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.AsyncTableWatcher">AsyncTableWatcher</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.schema">AsyncTableWatcher.schema</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._native">AsyncTableWatcher._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._position">AsyncTableWatcher._position</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._end_reason">AsyncTableWatcher._end_reason</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._closed">AsyncTableWatcher._closed</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._pending">AsyncTableWatcher._pending</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._failed">AsyncTableWatcher._failed</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._close_waiter">AsyncTableWatcher._close_waiter</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.position">AsyncTableWatcher.position</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.end_reason">AsyncTableWatcher.end_reason</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.__aiter__">AsyncTableWatcher.__aiter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.__anext__">AsyncTableWatcher.__anext__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.aclose">AsyncTableWatcher.aclose()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.__aenter__">AsyncTableWatcher.__aenter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.__aexit__">AsyncTableWatcher.__aexit__()</a>
+  </li>
 </ul>
 </div>
   </div>
@@ -728,6 +808,22 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tables.TableSnapshot" title="fsspec_data.tables.TableSnapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableSnapshot</span></code></a></p></td>
 <td><p>Frozen published metadata and checksum-verified, demand-driven part reads.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fsspec_data.tables._AsyncTableNative" title="fsspec_data.tables._AsyncTableNative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_AsyncTableNative</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tables.AsyncTableWatcher" title="fsspec_data.tables.AsyncTableWatcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncTableWatcher</span></code></a></p></td>
+<td><p>Async batches with resumable checkpoints. Closing drains in-flight work.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fsspec_data.tables._timeout" title="fsspec_data.tables._timeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_timeout</span></code></a>(deadline) → float | None</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -880,7 +976,7 @@
 <dt class="sig sig-object py" id="fsspec_data.tables.ManifestTable">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tables.</span></span><span class="sig-name descname"><span class="pre">ManifestTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">os.PathLike</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_manifest_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_part_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_manifest_reads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">256</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#ManifestTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.ManifestTable" title="Link to this definition">¶</a></dt>
 <dd><p>One partition on native local or S3 storage, with retained saved generations.</p>
-<p>Reads and writes are synchronous. Storage must provide durable, atomic
+<p>Writers are synchronous; readers also offer async methods. Storage must provide durable, atomic
 create-if-absent and consistent reads; capability support is not certification.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fsspec_data.tables.ManifestTable._native">
@@ -891,6 +987,21 @@ create-if-absent and consistent reads; capability support is not certification.<
 <dt class="sig sig-object py" id="fsspec_data.tables.ManifestTable.snapshot">
 <span class="sig-name descname"><span class="pre">snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.TableSnapshot" title="fsspec_data.tables.TableSnapshot"><span class="pre">TableSnapshot</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#ManifestTable.snapshot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.ManifestTable.snapshot" title="Link to this definition">¶</a></dt>
 <dd><p>Resolve latest publication or a saved generation without directory listing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.ManifestTable.snapshot_async">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">snapshot_async</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.TableSnapshot" title="fsspec_data.tables.TableSnapshot"><span class="pre">TableSnapshot</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#ManifestTable.snapshot_async"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.ManifestTable.snapshot_async" title="Link to this definition">¶</a></dt>
+<dd><p>Resolve a snapshot using native async S3 reads or a local-file worker.</p>
+<p><code class="docutils literal notranslate"><span class="pre">deadline</span></code> uses asyncio loop time. Discovery does not read table parts.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.ManifestTable.watch_async">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">watch_async</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.tables.WatchPosition" title="fsspec_data.tables.WatchPosition"><span class="pre">WatchPosition</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idle_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_batch_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.AsyncTableWatcher" title="fsspec_data.tables.AsyncTableWatcher"><span class="pre">AsyncTableWatcher</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#ManifestTable.watch_async"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.ManifestTable.watch_async" title="Link to this definition">¶</a></dt>
+<dd><p>Watch committed rows without blocking the event loop.</p>
+<p>Use an async context manager or await <code class="docutils literal notranslate"><span class="pre">aclose()</span></code> to drain pending reads.
+Checkpoints and terminal reasons match <code class="docutils literal notranslate"><span class="pre">watch</span></code>. Deadlines raise TimeoutError.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1266,6 +1377,125 @@ partition values provide cheap distinct.&lt;column&gt; entries.</p>
 max_part_bytes bounds encoded input, not decoder allocations.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.TableSnapshot.scan_async">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scan_async</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_batch_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../async_scan/index.html#fsspec_data.async_scan.AsyncDecodedBatchStream" title="fsspec_data.async_scan.AsyncDecodedBatchStream"><span class="pre">fsspec_data.async_scan.AsyncDecodedBatchStream</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#TableSnapshot.scan_async"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.TableSnapshot.scan_async" title="Link to this definition">¶</a></dt>
+<dd><p>Scan verified parts on demand, with I/O and decoding off the event loop.</p>
+<p>A snapshot from <code class="docutils literal notranslate"><span class="pre">snapshot_async</span></code> uses native async S3 handles; synchronous
+snapshots use their existing filesystem on a worker. One encoded part is
+buffered at a time, bounded by max_part_bytes. max_batch_bytes is checked
+after decoding; internal decoder allocations are not a process memory cap.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fsspec_data.tables._timeout">
+<span class="sig-prename descclassname"><span class="pre">fsspec_data.tables.</span></span><span class="sig-name descname"><span class="pre">_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deadline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#_timeout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables._timeout" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.tables._AsyncTableNative">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tables.</span></span><span class="sig-name descname"><span class="pre">_AsyncTableNative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#_AsyncTableNative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables._AsyncTableNative" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables._AsyncTableNative.native">
+<span class="sig-name descname"><span class="pre">native</span></span><a class="headerlink" href="#fsspec_data.tables._AsyncTableNative.native" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables._AsyncTableNative.next">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.RecordBatch</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#_AsyncTableNative.next"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables._AsyncTableNative.next" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables._AsyncTableNative.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">asyncio.Future</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#_AsyncTableNative.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables._AsyncTableNative.close" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fsspec_data.tables.</span></span><span class="sig-name descname"><span class="pre">AsyncTableWatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">native</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#fsspec_data.tables.WatchPosition" title="fsspec_data.tables.WatchPosition"><span class="pre">WatchPosition</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#AsyncTableWatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher" title="Link to this definition">¶</a></dt>
+<dd><p>Async batches with resumable checkpoints. Closing drains in-flight work.</p>
+<p>A checkpoint advances only when a batch is returned. Persist it after processing
+that batch. Local blocking calls and decoder work finish before cleanup returns.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher.schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher._native">
+<span class="sig-name descname"><span class="pre">_native</span></span><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher._native" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher._position">
+<span class="sig-name descname"><span class="pre">_position</span></span><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher._position" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher._end_reason">
+<span class="sig-name descname"><span class="pre">_end_reason</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#fsspec_data.tables.WatchEnd" title="fsspec_data.tables.WatchEnd"><span class="pre">WatchEnd</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher._end_reason" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher._closed">
+<span class="sig-name descname"><span class="pre">_closed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher._closed" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher._pending">
+<span class="sig-name descname"><span class="pre">_pending</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher._pending" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher._failed">
+<span class="sig-name descname"><span class="pre">_failed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher._failed" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher._close_waiter">
+<span class="sig-name descname"><span class="pre">_close_waiter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">asyncio.Future</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher._close_waiter" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher.position">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#fsspec_data.tables.WatchPosition" title="fsspec_data.tables.WatchPosition"><span class="pre">WatchPosition</span></a></em><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher.position" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher.end_reason">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">end_reason</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#fsspec_data.tables.WatchEnd" title="fsspec_data.tables.WatchEnd"><span class="pre">WatchEnd</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher.end_reason" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher.__aiter__">
+<span class="sig-name descname"><span class="pre">__aiter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#AsyncTableWatcher.__aiter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher.__aiter__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher.__anext__">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__anext__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fsspec_data.tables.WatchBatch" title="fsspec_data.tables.WatchBatch"><span class="pre">WatchBatch</span></a></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#AsyncTableWatcher.__anext__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher.__anext__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher.aclose">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aclose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#AsyncTableWatcher.aclose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher.aclose" title="Link to this definition">¶</a></dt>
+<dd><p>Cancel and drain pending I/O; cleanup continues if this await is cancelled.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher.__aenter__">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__aenter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#AsyncTableWatcher.__aenter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher.__aenter__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fsspec_data.tables.AsyncTableWatcher.__aexit__">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__aexit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseException</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">types.TracebackType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/fsspec_data/tables.html#AsyncTableWatcher.__aexit__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fsspec_data.tables.AsyncTableWatcher.__aexit__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </section>
@@ -1309,6 +1539,9 @@ max_part_bytes bounds encoded input, not decoder allocations.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#classes">Classes</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#functions">Functions</a>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#module-contents">Module Contents</a>
@@ -1405,6 +1638,12 @@ max_part_bytes bounds encoded input, not decoder allocations.</p>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.snapshot">ManifestTable.snapshot()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.ManifestTable.snapshot_async">ManifestTable.snapshot_async()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.ManifestTable.watch_async">ManifestTable.watch_async()</a>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.ManifestTable.watch">ManifestTable.watch()</a>
@@ -1606,6 +1845,72 @@ max_part_bytes bounds encoded input, not decoder allocations.</p>
   </li>
   <li class="fd-toc-item" data-depth="3">
     <a href="#fsspec_data.tables.TableSnapshot.scan">TableSnapshot.scan()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.TableSnapshot.scan_async">TableSnapshot.scan_async()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables._timeout">_timeout()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables._AsyncTableNative">_AsyncTableNative</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables._AsyncTableNative.native">_AsyncTableNative.native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables._AsyncTableNative.next">_AsyncTableNative.next()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables._AsyncTableNative.close">_AsyncTableNative.close()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="2">
+    <a href="#fsspec_data.tables.AsyncTableWatcher">AsyncTableWatcher</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.schema">AsyncTableWatcher.schema</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._native">AsyncTableWatcher._native</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._position">AsyncTableWatcher._position</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._end_reason">AsyncTableWatcher._end_reason</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._closed">AsyncTableWatcher._closed</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._pending">AsyncTableWatcher._pending</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._failed">AsyncTableWatcher._failed</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher._close_waiter">AsyncTableWatcher._close_waiter</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.position">AsyncTableWatcher.position</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.end_reason">AsyncTableWatcher.end_reason</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.__aiter__">AsyncTableWatcher.__aiter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.__anext__">AsyncTableWatcher.__anext__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.aclose">AsyncTableWatcher.aclose()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.__aenter__">AsyncTableWatcher.__aenter__()</a>
+  </li>
+  <li class="fd-toc-item" data-depth="3">
+    <a href="#fsspec_data.tables.AsyncTableWatcher.__aexit__">AsyncTableWatcher.__aexit__()</a>
   </li>
 </ul>
 

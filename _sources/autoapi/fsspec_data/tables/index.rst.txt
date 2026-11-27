@@ -35,6 +35,16 @@ Classes
    fsspec_data.tables.OrphanCollector
    fsspec_data.tables.TableWriter
    fsspec_data.tables.TableSnapshot
+   fsspec_data.tables._AsyncTableNative
+   fsspec_data.tables.AsyncTableWatcher
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   fsspec_data.tables._timeout
 
 
 Module Contents
@@ -161,7 +171,7 @@ Module Contents
 
    One partition on native local or S3 storage, with retained saved generations.
 
-   Reads and writes are synchronous. Storage must provide durable, atomic
+   Writers are synchronous; readers also offer async methods. Storage must provide durable, atomic
    create-if-absent and consistent reads; capability support is not certification.
 
 
@@ -171,6 +181,27 @@ Module Contents
    .. py:method:: snapshot(generation: int | None = None) -> TableSnapshot
 
       Resolve latest publication or a saved generation without directory listing.
+
+
+
+   .. py:method:: snapshot_async(generation: int | None = None, *, deadline: float | None = None) -> TableSnapshot
+      :async:
+
+
+      Resolve a snapshot using native async S3 reads or a local-file worker.
+
+      ``deadline`` uses asyncio loop time. Discovery does not read table parts.
+
+
+
+   .. py:method:: watch_async(*, start: WatchPosition | None = None, columns: collections.abc.Sequence[str] | None = None, batch_size: int = 1024, poll_interval: float = 0.1, idle_timeout: float | None = None, max_batch_bytes: int = 64 * 1024 * 1024, read_chunk_size: int = 1024 * 1024, deadline: float | None = None) -> AsyncTableWatcher
+      :async:
+
+
+      Watch committed rows without blocking the event loop.
+
+      Use an async context manager or await ``aclose()`` to drain pending reads.
+      Checkpoints and terminal reasons match ``watch``. Deadlines raise TimeoutError.
 
 
 
@@ -499,6 +530,114 @@ Module Contents
 
       Selection and output limits apply across parts. A part is read in full;
       max_part_bytes bounds encoded input, not decoder allocations.
+
+
+
+   .. py:method:: scan_async(*, columns: collections.abc.Sequence[str] | None = None, row_offset: int = 0, batch_size: int = 1024, row_limit: int | None = None, byte_limit: int | None = None, max_batch_bytes: int = 64 * 1024 * 1024, read_chunk_size: int = 1024 * 1024, deadline: float | None = None) -> fsspec_data.async_scan.AsyncDecodedBatchStream
+      :async:
+
+
+      Scan verified parts on demand, with I/O and decoding off the event loop.
+
+      A snapshot from ``snapshot_async`` uses native async S3 handles; synchronous
+      snapshots use their existing filesystem on a worker. One encoded part is
+      buffered at a time, bounded by max_part_bytes. max_batch_bytes is checked
+      after decoding; internal decoder allocations are not a process memory cap.
+
+
+
+.. py:function:: _timeout(deadline: float | None) -> float | None
+
+.. py:class:: _AsyncTableNative(native: Any)
+
+   .. py:attribute:: native
+
+
+   .. py:method:: next() -> pyarrow.RecordBatch | None
+      :async:
+
+
+
+   .. py:method:: close() -> asyncio.Future[None]
+
+
+.. py:class:: AsyncTableWatcher(schema: pyarrow.Schema, native: Any, position: WatchPosition)
+
+   Async batches with resumable checkpoints. Closing drains in-flight work.
+
+   A checkpoint advances only when a batch is returned. Persist it after processing
+   that batch. Local blocking calls and decoder work finish before cleanup returns.
+
+
+   .. py:attribute:: schema
+
+
+   .. py:attribute:: _native
+
+
+   .. py:attribute:: _position
+
+
+   .. py:attribute:: _end_reason
+      :type:  WatchEnd | None
+      :value: None
+
+
+
+   .. py:attribute:: _closed
+      :value: False
+
+
+
+   .. py:attribute:: _pending
+      :value: False
+
+
+
+   .. py:attribute:: _failed
+      :value: False
+
+
+
+   .. py:attribute:: _close_waiter
+      :type:  asyncio.Future[None] | None
+      :value: None
+
+
+
+   .. py:property:: position
+      :type: WatchPosition
+
+
+
+   .. py:property:: end_reason
+      :type: WatchEnd | None
+
+
+
+   .. py:method:: __aiter__() -> Self
+
+
+   .. py:method:: __anext__() -> WatchBatch
+      :async:
+
+
+
+   .. py:method:: aclose() -> None
+      :async:
+
+
+      Cancel and drain pending I/O; cleanup continues if this await is cancelled.
+
+
+
+   .. py:method:: __aenter__() -> Self
+      :async:
+
+
+
+   .. py:method:: __aexit__(exc_type: type[BaseException] | None, exc: BaseException | None, traceback: types.TracebackType | None) -> None
+      :async:
 
 
 

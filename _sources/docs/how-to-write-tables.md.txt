@@ -176,3 +176,49 @@ Record the client and server versions, endpoint configuration, and mount options
 results. Also test interrupted requests and server restarts on the intended deployment;
 passing these client checks does not establish power-loss durability or cross-host NFS
 visibility. Local or simulated results do not certify another store.
+
+## Read and watch without blocking an event loop
+
+Use `snapshot_async` to discover a saved version, then `scan_async` to consume it.
+Run this code inside an async function or a notebook with top-level `await`:
+
+```python
+import asyncio
+from fsspec_data import ManifestTable
+
+table = ManifestTable("events")
+deadline = asyncio.get_running_loop().time() + 30
+snapshot = await table.snapshot_async(deadline=deadline)
+async with await snapshot.scan_async(batch_size=1024, deadline=deadline) as batches:
+    async for batch in batches:
+        print(batch.to_pydict())
+```
+
+Use `generation=` on `snapshot_async` to pin an older publication. For S3, pass
+`s3://bucket/prefix` and `storage_options=` to `ManifestTable`.
+
+To consume later publications, use `watch_async`. Save a position after processing
+its batch, and supply it as `start=` when resuming:
+
+```python
+from pathlib import Path
+from fsspec_data import WatchPosition
+
+checkpoint = Path("watch-position.json")
+start = WatchPosition.from_json(checkpoint.read_text()) if checkpoint.exists() else None
+async with await table.watch_async(start=start, idle_timeout=10) as watcher:
+    async for item in watcher:
+        print(item.batch.to_pydict())
+        checkpoint.write_text(item.position.to_json())
+print(watcher.end_reason)
+```
+
+Inspect `end_reason` before restarting a watch. If it is `WatchEnd.REPLACED`, explicitly
+choose whether to read the replacement table without the old position. A deadline raises
+`TimeoutError`; task cancellation raises `asyncio.CancelledError`. Resume either from the
+last position saved after successful processing. Use an async context manager or await
+`aclose()` when stopping early so outstanding reads finish cleanup.
+
+Set `max_part_bytes` on the table to bound encoded parts and `max_batch_bytes` on the
+scan/watch to reject large decoded batches. See the [async reference](manifest-tables.md#asynchronous-reads)
+for allocation and cancellation limits.

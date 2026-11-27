@@ -2,9 +2,10 @@
 
 `ManifestTable`, `TableSnapshot`, `TableWriter`, `SinkOptions`, `BatchReceipt`,
 `PublicationReceipt`, `RecoveryToken`, `OrphanCollector`, `CleanupReport`, `TableWatcher`,
-`WatchBatch`, `WatchPosition`, and `WatchEnd` are exported from `fsspec_data`. The bindings
-use the Rust manifest reader and file sink. Operations are synchronous and release the
-Python GIL during storage access and encoding/decoding.
+`WatchBatch`, `WatchPosition`, `WatchEnd`, and `AsyncTableWatcher` are exported from `fsspec_data`. The bindings
+use the Rust manifest reader and file sink. Synchronous operations release the Python GIL
+during storage access and encoding/decoding. Async readers use native S3 handles or local-file
+workers, with Parquet decoding on a worker.
 
 ## ManifestTable
 
@@ -80,9 +81,49 @@ or advancing the last returned checkpoint. Resume can retry from that checkpoint
 
 The watcher verifies encoded parts before decoding and skips parts before the saved progress.
 It does not switch to replacement data, infer event/array positions from row counts, watch
-filesystem notifications, or provide asynchronous iteration. Standalone scans remain pinned.
+filesystem notifications. Use `watch_async` for asynchronous iteration. Standalone scans remain pinned.
 The Rust equivalents are `watch::ManifestWatcher`, `WatchOptions`, `WatchPosition`,
 `WatchBatch`, and `WatchEnd`; Rust callers provide a stable non-secret source label.
+
+## Asynchronous reads
+
+- `await table.snapshot_async(generation=None, *, deadline=None)` returns a `TableSnapshot`.
+- `await snapshot.scan_async(*, columns=None, row_offset=0, batch_size=1024, row_limit=None, byte_limit=None, max_batch_bytes=67108864, read_chunk_size=1048576, deadline=None)` returns `AsyncDecodedBatchStream`.
+- `await table.watch_async(*, start=None, columns=None, batch_size=1024, poll_interval=0.1, idle_timeout=None, max_batch_bytes=67108864, read_chunk_size=1048576, deadline=None)` returns `AsyncTableWatcher`.
+
+Async scans and watchers support `async for`, async context management and `await aclose()`.
+Watch batches, positions and terminal reasons have the synchronous API's meanings.
+Concurrent calls to `anext` on one iterator raise `RuntimeError`. Closing during a pending
+request cancels it and suppresses undelivered rows without advancing the Python checkpoint.
+Errors terminate iteration and preserve the last delivered checkpoint.
+
+`deadline` is an absolute `asyncio` loop time, including discovery, reads, decoding and time
+between batch requests. Expiry raises `TimeoutError`; it is distinct from a watch's idle
+timeout. Task cancellation raises `asyncio.CancelledError`. `aclose` waits for pending I/O
+and decoder cleanup; cleanup continues if its Python awaiter is cancelled. A local system
+call or decoder computation cannot be forcibly interrupted, so cleanup can exceed a deadline.
+Dropping an iterator requests cancellation; deterministic cleanup requires `aclose`.
+
+A scan fetches parts only on demand. It retains one encoded part at a time, capped by the
+table's `max_part_bytes`, plus transport read chunks and decoder/output allocations.
+`read_chunk_size` must be positive and at most 8 MiB. `max_batch_bytes` must be positive
+and is checked after decoding/projection. One batch request may be outstanding per iterator;
+there is no background batch prefetch. These are per-scan limits, not a total process memory
+cap. Caller-retained batches and Parquet internal allocations are not capped.
+
+Each part's full size and SHA-256 are verified before any of its rows are returned. Schema
+and row-count checks also match synchronous scans. No range/predicate pushdown or physical
+read sharing is provided for manifest parts. Snapshots from `snapshot_async` use native
+async S3 reads; snapshots from `snapshot` use their existing synchronous filesystem on the
+scan worker. Local reads use a worker in both cases. Closing one scan leaves its snapshot
+and other scans usable.
+
+Rust provides `ManifestReader::read_async`, `Snapshot::scan_async`, `AsyncTableScan`,
+`AsyncManifestWatcher` and `AsyncTableOptions` in `async_tables`. `ManifestReader::new_async`
+borrows an `fsspec_rs::async_files::AsyncFilesystem`; its caller retains and closes the
+filesystem/context after readers finish. Existing `ManifestReader::new` uses synchronous
+storage on a worker. Rust `next().await` returns `Result<Option<_>>`; `close().await` drains
+cleanup, and cancellation uses `CancellationToken`. Rust deadlines use `std::time::Instant`.
 
 ## SinkOptions
 

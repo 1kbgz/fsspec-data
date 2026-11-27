@@ -266,6 +266,11 @@
     </a>
   </li>
   <li class="fd-tree-item">
+    <a class="fd-link" href="../autoapi/fsspec_data/tests/test_async_tables/index.html">
+      <span class="fd-link-text">fsspec_data.tests.test_async_tables</span>
+    </a>
+  </li>
+  <li class="fd-tree-item">
     <a class="fd-link" href="../autoapi/fsspec_data/tests/test_cleanup/index.html">
       <span class="fd-link-text">fsspec_data.tests.test_cleanup</span>
     </a>
@@ -370,6 +375,9 @@
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#check-publication-and-cleanup-on-a-deployment">Check publication and cleanup on a deployment</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#read-and-watch-without-blocking-an-event-loop">Read and watch without blocking an event loop</a>
   </li>
 </ul>
 </div>
@@ -541,6 +549,46 @@ results. Also test interrupted requests and server restarts on the intended depl
 passing these client checks does not establish power-loss durability or cross-host NFS
 visibility. Local or simulated results do not certify another store.</p>
 </section>
+<section id="read-and-watch-without-blocking-an-event-loop">
+<h2>Read and watch without blocking an event loop<a class="headerlink" href="#read-and-watch-without-blocking-an-event-loop" title="Link to this heading">¶</a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">snapshot_async</span></code> to discover a saved version, then <code class="docutils literal notranslate"><span class="pre">scan_async</span></code> to consume it.
+Run this code inside an async function or a notebook with top-level <code class="docutils literal notranslate"><span class="pre">await</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">ManifestTable</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">ManifestTable</span><span class="p">(</span><span class="s2">"events"</span><span class="p">)</span>
+<span class="n">deadline</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_running_loop</span><span class="p">()</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="mi">30</span>
+<span class="n">snapshot</span> <span class="o">=</span> <span class="k">await</span> <span class="n">table</span><span class="o">.</span><span class="n">snapshot_async</span><span class="p">(</span><span class="n">deadline</span><span class="o">=</span><span class="n">deadline</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">with</span> <span class="k">await</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">scan_async</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">deadline</span><span class="o">=</span><span class="n">deadline</span><span class="p">)</span> <span class="k">as</span> <span class="n">batches</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">generation=</span></code> on <code class="docutils literal notranslate"><span class="pre">snapshot_async</span></code> to pin an older publication. For S3, pass
+<code class="docutils literal notranslate"><span class="pre">s3://bucket/prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">storage_options=</span></code> to <code class="docutils literal notranslate"><span class="pre">ManifestTable</span></code>.</p>
+<p>To consume later publications, use <code class="docutils literal notranslate"><span class="pre">watch_async</span></code>. Save a position after processing
+its batch, and supply it as <code class="docutils literal notranslate"><span class="pre">start=</span></code> when resuming:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fsspec_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">WatchPosition</span>
+
+<span class="n">checkpoint</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"watch-position.json"</span><span class="p">)</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">WatchPosition</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span> <span class="k">if</span> <span class="n">checkpoint</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span>
+<span class="k">async</span> <span class="k">with</span> <span class="k">await</span> <span class="n">table</span><span class="o">.</span><span class="n">watch_async</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">as</span> <span class="n">watcher</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">watcher</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">())</span>
+        <span class="n">checkpoint</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">watcher</span><span class="o">.</span><span class="n">end_reason</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Inspect <code class="docutils literal notranslate"><span class="pre">end_reason</span></code> before restarting a watch. If it is <code class="docutils literal notranslate"><span class="pre">WatchEnd.REPLACED</span></code>, explicitly
+choose whether to read the replacement table without the old position. A deadline raises
+<code class="docutils literal notranslate"><span class="pre">TimeoutError</span></code>; task cancellation raises <code class="docutils literal notranslate"><span class="pre">asyncio.CancelledError</span></code>. Resume either from the
+last position saved after successful processing. Use an async context manager or await
+<code class="docutils literal notranslate"><span class="pre">aclose()</span></code> when stopping early so outstanding reads finish cleanup.</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">max_part_bytes</span></code> on the table to bound encoded parts and <code class="docutils literal notranslate"><span class="pre">max_batch_bytes</span></code> on the
+scan/watch to reject large decoded batches. See the <a class="reference internal" href="manifest-tables.html#asynchronous-reads"><span class="std std-ref">async reference</span></a>
+for allocation and cancellation limits.</p>
+</section>
 </section>
 
 
@@ -596,6 +644,9 @@ visibility. Local or simulated results do not certify another store.</p>
   </li>
   <li class="fd-toc-item" data-depth="1">
     <a href="#check-publication-and-cleanup-on-a-deployment">Check publication and cleanup on a deployment</a>
+  </li>
+  <li class="fd-toc-item" data-depth="1">
+    <a href="#read-and-watch-without-blocking-an-event-loop">Read and watch without blocking an event loop</a>
   </li>
 </ul>
 
