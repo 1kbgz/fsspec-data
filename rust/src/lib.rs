@@ -48,4 +48,5 @@ pub use schema::{
     SchemaProvenance, SchemaProvider, SchemaReference, SchemaResolverRegistry, SharedFileSystem,
     DEFAULT_SCHEMA_RESOLVERS,
 };
+pub use sink::{DataSink, DataWriter, ManifestTableSink};
 pub use stream::{CancellationToken, DecodedStream, ScanSelection, StreamOptions};

@@ -142,6 +142,8 @@ writer encoding. Progress is measured in rows, stored separately from `num_rows`
 
 ## TableWriter
 
+`TableWriter` implements the shared `DataWriter` protocol; its `progress_unit` is `"rows"`.
+
 | Member                                          | Behavior                                                                           |
 | ----------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `schema`                                        | Input Arrow schema.                                                                |

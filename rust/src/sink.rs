@@ -76,6 +76,86 @@ impl Default for SinkOptions {
     }
 }
 
+/// A configured destination for one logical table. Options and receipts remain
+/// backend-specific; implementing this contract does not require manifests.
+pub trait DataSink: Send + Sync {
+    type Options;
+    type Writer: DataWriter;
+
+    fn open_writer(
+        &self,
+        schema: SchemaRef,
+        mode: WriteMode,
+        options: Self::Options,
+    ) -> Result<Self::Writer>;
+}
+
+/// Positioned Arrow writes with retry keys and explicit publication.
+///
+/// Positions count `progress_unit`, independently of output row counts. Identical
+/// retries must not duplicate data; forward positions are Gap, conflicting positions
+/// or key/payload reuse are Conflict. Unsupported modes/options must fail before writes.
+/// `commit` publishes and keeps the writer open; `finish` publishes and completes it.
+/// `abort`, `close`, and drop discard pending work without undoing earlier commits.
+/// Implementations preserve backend recovery information on uncertain publication.
+pub trait DataWriter: Send {
+    type BatchReceipt;
+    type PublicationReceipt;
+    type RecoveryToken;
+
+    fn schema(&self) -> SchemaRef;
+    fn progress_unit(&self) -> &str;
+    /// Accepted progress, including unpublished batches. Not a durable checkpoint.
+    fn position(&self) -> u64;
+    /// Persist before publication; identifies the current attempt, not credentials.
+    fn recovery_token(&self) -> Self::RecoveryToken;
+    /// Observe or retry the same uncertain publication; never append it again.
+    fn resolve(&mut self, action: RecoveryAction) -> Result<Self::PublicationReceipt>;
+    fn write_batch(
+        &mut self,
+        expected_position: u64,
+        key: &str,
+        batch: &RecordBatch,
+    ) -> Result<Self::BatchReceipt>;
+    /// Stage pending data without publishing or completing the table.
+    fn flush(&mut self) -> Result<()>;
+    fn commit(&mut self) -> Result<Self::PublicationReceipt>;
+    fn finish(&mut self) -> Result<Self::PublicationReceipt>;
+    fn abort(&mut self) -> Result<()>;
+    fn close(&mut self) -> Result<()> {
+        self.abort()
+    }
+}
+
+/// A manifest-table destination, bound to the same filesystem instance and root
+/// for each writer. Opening a writer validates storage capabilities and schema.
+/// Storage capability advertisement is not deployment certification.
+pub struct ManifestTableSink {
+    fs: SharedFileSystem,
+    root: String,
+}
+impl ManifestTableSink {
+    pub fn new(fs: SharedFileSystem, root: impl Into<String>) -> Self {
+        Self {
+            fs,
+            root: root.into(),
+        }
+    }
+}
+impl DataSink for ManifestTableSink {
+    type Options = SinkOptions;
+    type Writer = FileDataSink;
+
+    fn open_writer(
+        &self,
+        schema: SchemaRef,
+        mode: WriteMode,
+        options: SinkOptions,
+    ) -> Result<FileDataSink> {
+        FileDataSink::open(self.fs.clone(), &self.root, mode, schema, options)
+    }
+}
+
 /// Persist this token before commit/finish. Recover using the same source and
 /// credential context; credentials are deliberately not serialized here.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -144,6 +224,48 @@ pub struct FileDataSink {
     state: State,
     candidate: Option<Candidate>,
     last: Option<PublicationReceipt>,
+}
+
+impl DataWriter for FileDataSink {
+    type BatchReceipt = BatchReceipt;
+    type PublicationReceipt = PublicationReceipt;
+    type RecoveryToken = RecoveryToken;
+
+    fn schema(&self) -> SchemaRef {
+        self.schema.clone()
+    }
+    fn progress_unit(&self) -> &str {
+        "rows"
+    }
+    fn position(&self) -> u64 {
+        FileDataSink::position(self)
+    }
+    fn recovery_token(&self) -> RecoveryToken {
+        FileDataSink::recovery_token(self)
+    }
+    fn resolve(&mut self, action: RecoveryAction) -> Result<PublicationReceipt> {
+        FileDataSink::resolve(self, action)
+    }
+    fn write_batch(
+        &mut self,
+        expected_position: u64,
+        key: &str,
+        batch: &RecordBatch,
+    ) -> Result<BatchReceipt> {
+        FileDataSink::write_batch(self, expected_position, key, batch)
+    }
+    fn flush(&mut self) -> Result<()> {
+        FileDataSink::flush(self)
+    }
+    fn commit(&mut self) -> Result<PublicationReceipt> {
+        FileDataSink::commit(self)
+    }
+    fn finish(&mut self) -> Result<PublicationReceipt> {
+        FileDataSink::finish(self)
+    }
+    fn abort(&mut self) -> Result<()> {
+        FileDataSink::abort(self)
+    }
 }
 
 impl FileDataSink {
