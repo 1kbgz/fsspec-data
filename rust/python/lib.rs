@@ -1,5 +1,6 @@
 mod async_file;
 mod async_parquet;
+mod async_tables;
 mod scan_identity;
 mod shared_reads;
 mod tables;

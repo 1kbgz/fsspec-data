@@ -499,7 +499,7 @@ fn cancelled(message: String) -> PyErr {
     })
 }
 
-fn scan_error(error: InterchangeError) -> PyErr {
+pub(super) fn scan_error(error: InterchangeError) -> PyErr {
     match error {
         InterchangeError::StreamCancelled => cancelled(error.to_string()),
         InterchangeError::StreamDeadlineExceeded => PyTimeoutError::new_err(error.to_string()),

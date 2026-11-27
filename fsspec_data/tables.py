@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
+import math
 import os
 from collections.abc import Mapping, Sequence
+from contextlib import suppress
 from dataclasses import asdict, dataclass, field
 from enum import StrEnum
 from importlib import import_module
@@ -13,7 +16,7 @@ from typing import Any, Literal, Self
 
 import pyarrow as pa
 
-from .async_scan import _s3_options
+from .async_scan import AsyncDecodedBatchStream, _s3_options
 from .interchange import DecodedBatchStream
 
 _rust = import_module(".fsspec_data", __package__)
@@ -75,7 +78,7 @@ class PublicationReceipt:
 class ManifestTable:
     """One partition on native local or S3 storage, with retained saved generations.
 
-    Reads and writes are synchronous. Storage must provide durable, atomic
+    Writers are synchronous; readers also offer async methods. Storage must provide durable, atomic
     create-if-absent and consistent reads; capability support is not certification.
     """
 
@@ -95,6 +98,42 @@ class ManifestTable:
     def snapshot(self, generation: int | None = None) -> TableSnapshot:
         """Resolve latest publication or a saved generation without directory listing."""
         return TableSnapshot(self._native.snapshot(generation))
+
+    async def snapshot_async(self, generation: int | None = None, *, deadline: float | None = None) -> TableSnapshot:
+        """Resolve a snapshot using native async S3 reads or a local-file worker.
+
+        ``deadline`` uses asyncio loop time. Discovery does not read table parts.
+        """
+        return TableSnapshot(await self._native.snapshot_async(generation, _timeout(deadline)))
+
+    async def watch_async(
+        self,
+        *,
+        start: WatchPosition | None = None,
+        columns: Sequence[str] | None = None,
+        batch_size: int = 1024,
+        poll_interval: float = 0.1,
+        idle_timeout: float | None = None,
+        max_batch_bytes: int = 64 * 1024 * 1024,
+        read_chunk_size: int = 1024 * 1024,
+        deadline: float | None = None,
+    ) -> AsyncTableWatcher:
+        """Watch committed rows without blocking the event loop.
+
+        Use an async context manager or await ``aclose()`` to drain pending reads.
+        Checkpoints and terminal reasons match ``watch``. Deadlines raise TimeoutError.
+        """
+        schema, position, native = await self._native.watch_async(
+            None if start is None else start.to_json(),
+            None if columns is None else list(columns),
+            batch_size,
+            poll_interval,
+            idle_timeout,
+            max_batch_bytes,
+            read_chunk_size,
+            _timeout(deadline),
+        )
+        return AsyncTableWatcher(schema, native, WatchPosition.from_json(position))
 
     def watch(
         self,
@@ -392,3 +431,129 @@ class TableSnapshot:
         """
         schema, native = self._native.scan(None if columns is None else list(columns), batch_size, row_limit, byte_limit, row_offset)
         return DecodedBatchStream(schema, native)
+
+    async def scan_async(
+        self,
+        *,
+        columns: Sequence[str] | None = None,
+        row_offset: int = 0,
+        batch_size: int = 1024,
+        row_limit: int | None = None,
+        byte_limit: int | None = None,
+        max_batch_bytes: int = 64 * 1024 * 1024,
+        read_chunk_size: int = 1024 * 1024,
+        deadline: float | None = None,
+    ) -> AsyncDecodedBatchStream:
+        """Scan verified parts on demand, with I/O and decoding off the event loop.
+
+        A snapshot from ``snapshot_async`` uses native async S3 handles; synchronous
+        snapshots use their existing filesystem on a worker. One encoded part is
+        buffered at a time, bounded by max_part_bytes. max_batch_bytes is checked
+        after decoding; internal decoder allocations are not a process memory cap.
+        """
+        schema, native = await self._native.scan_async(
+            None if columns is None else list(columns),
+            batch_size,
+            row_limit,
+            byte_limit,
+            row_offset,
+            max_batch_bytes,
+            read_chunk_size,
+            _timeout(deadline),
+        )
+        return AsyncDecodedBatchStream(schema, _AsyncTableNative(native))
+
+
+def _timeout(deadline: float | None) -> float | None:
+    if deadline is None:
+        return None
+    if not math.isfinite(deadline):
+        raise ValueError("deadline must be finite")
+    return max(0.0, deadline - asyncio.get_running_loop().time())
+
+
+class _AsyncTableNative:
+    def __init__(self, native: Any) -> None:
+        self.native = native
+
+    async def next(self) -> pa.RecordBatch | None:
+        batch, _, _ = await self.native.next()
+        return batch
+
+    def close(self) -> asyncio.Future[None]:
+        return self.native.close()
+
+
+class AsyncTableWatcher:
+    """Async batches with resumable checkpoints. Closing drains in-flight work.
+
+    A checkpoint advances only when a batch is returned. Persist it after processing
+    that batch. Local blocking calls and decoder work finish before cleanup returns.
+    """
+
+    def __init__(self, schema: pa.Schema, native: Any, position: WatchPosition) -> None:
+        self.schema = schema
+        self._native = native
+        self._position = position
+        self._end_reason: WatchEnd | None = None
+        self._closed = False
+        self._pending = False
+        self._failed = False
+        self._close_waiter: asyncio.Future[None] | None = None
+
+    @property
+    def position(self) -> WatchPosition:
+        return self._position
+
+    @property
+    def end_reason(self) -> WatchEnd | None:
+        return self._end_reason
+
+    def __aiter__(self) -> Self:
+        return self
+
+    async def __anext__(self) -> WatchBatch:
+        if self._closed:
+            raise StopAsyncIteration
+        if self._pending:
+            raise RuntimeError("another batch request is already pending")
+        self._pending = True
+        try:
+            batch, position, end = await self._native.next()
+        except BaseException as error:
+            self._failed = not isinstance(error, asyncio.CancelledError)
+            with suppress(Exception, asyncio.CancelledError):
+                await self.aclose()
+            raise
+        finally:
+            self._pending = False
+        if self._closed:
+            raise StopAsyncIteration
+        if end is not None:
+            self._end_reason = WatchEnd(end)
+        if batch is None:
+            await self.aclose()
+            raise StopAsyncIteration
+        self._position = WatchPosition.from_json(position)
+        return WatchBatch(batch, self._position)
+
+    async def aclose(self) -> None:
+        """Cancel and drain pending I/O; cleanup continues if this await is cancelled."""
+        self._closed = True
+        if self._end_reason is None and not self._failed:
+            self._end_reason = WatchEnd.CANCELLED
+        if self._close_waiter is None:
+            self._close_waiter = self._native.close()
+        await asyncio.shield(self._close_waiter)
+
+    async def __aenter__(self) -> Self:
+        if self._closed:
+            raise RuntimeError("watch is closed")
+        return self
+
+    async def __aexit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, traceback: TracebackType | None) -> None:
+        if exc is None:
+            await self.aclose()
+        else:
+            with suppress(Exception, asyncio.CancelledError):
+                await self.aclose()

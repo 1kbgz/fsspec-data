@@ -42,12 +42,36 @@ fn receipt(value: PublicationReceipt) -> String {
     }).to_string()
 }
 
+fn watch_options(
+    start: Option<String>,
+    columns: Option<Vec<String>>,
+    batch_size: usize,
+    poll_interval: f64,
+    idle_timeout: Option<f64>,
+) -> PyResult<WatchOptions> {
+    Ok(WatchOptions {
+        start: start
+            .map(|s| serde_json::from_str::<WatchPosition>(&s))
+            .transpose()
+            .map_err(|e| invalid(&e.to_string()))?,
+        columns,
+        batch_size,
+        poll_interval: Duration::try_from_secs_f64(poll_interval)
+            .map_err(|_| invalid("poll_interval must be finite and positive"))?,
+        idle_timeout: idle_timeout
+            .map(Duration::try_from_secs_f64)
+            .transpose()
+            .map_err(|_| invalid("idle_timeout must be finite and nonnegative"))?,
+    })
+}
+
 #[pyclass]
-struct NativeManifestTable {
-    fs: SharedFileSystem,
-    root: String,
-    limits: ReadLimits,
-    source: String,
+pub(super) struct NativeManifestTable {
+    pub(super) fs: SharedFileSystem,
+    pub(super) root: String,
+    pub(super) limits: ReadLimits,
+    pub(super) source: String,
+    pub(super) async_storage: Option<(String, FsOptions)>,
 }
 #[pymethods]
 impl NativeManifestTable {
@@ -86,7 +110,22 @@ impl NativeManifestTable {
                 options.get("region")
             ])
             .to_string();
+            let async_storage = if fs.protocol().contains(&"s3") {
+                let location = fs.unstrip_protocol(&root);
+                let bucket = location
+                    .split_once("://")
+                    .unwrap()
+                    .1
+                    .split('/')
+                    .next()
+                    .unwrap()
+                    .to_owned();
+                Some((bucket, options))
+            } else {
+                None
+            };
             Ok(Self {
+                async_storage,
                 fs,
                 root,
                 limits,
@@ -111,6 +150,7 @@ impl NativeManifestTable {
             }
             Ok(NativeTableSnapshot {
                 snapshot: Arc::new(snapshot),
+                resources: None,
             })
         })
     }
@@ -125,20 +165,7 @@ impl NativeManifestTable {
         poll_interval: f64,
         idle_timeout: Option<f64>,
     ) -> PyResult<NativeTableWatcher> {
-        let options = WatchOptions {
-            start: start
-                .map(|s| serde_json::from_str::<WatchPosition>(&s))
-                .transpose()
-                .map_err(|e| invalid(&e.to_string()))?,
-            columns,
-            batch_size,
-            poll_interval: Duration::try_from_secs_f64(poll_interval)
-                .map_err(|_| invalid("poll_interval must be finite and positive"))?,
-            idle_timeout: idle_timeout
-                .map(Duration::try_from_secs_f64)
-                .transpose()
-                .map_err(|_| invalid("idle_timeout must be finite and nonnegative"))?,
-        };
+        let options = watch_options(start, columns, batch_size, poll_interval, idle_timeout)?;
         let cancellation = CancellationToken::new();
         let watcher = py
             .detach(|| {
@@ -150,6 +177,41 @@ impl NativeManifestTable {
             watcher: Mutex::new(watcher),
             cancellation,
         })
+    }
+
+    fn snapshot_async<'py>(
+        &self,
+        py: Python<'py>,
+        generation: Option<u64>,
+        timeout: Option<f64>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        super::async_tables::snapshot(
+            self,
+            py,
+            generation,
+            super::async_tables::options(64 * 1024 * 1024, 1024 * 1024, timeout)?,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn watch_async<'py>(
+        &self,
+        py: Python<'py>,
+        start: Option<String>,
+        columns: Option<Vec<String>>,
+        batch_size: usize,
+        poll_interval: f64,
+        idle_timeout: Option<f64>,
+        max_batch_bytes: usize,
+        read_chunk_size: usize,
+        timeout: Option<f64>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        super::async_tables::watch(
+            self,
+            py,
+            watch_options(start, columns, batch_size, poll_interval, idle_timeout)?,
+            super::async_tables::options(max_batch_bytes, read_chunk_size, timeout)?,
+        )
     }
 
     fn orphan_collector(
@@ -351,8 +413,9 @@ impl NativeTableWriter {
 }
 
 #[pyclass]
-struct NativeTableSnapshot {
-    snapshot: Arc<Snapshot>,
+pub(super) struct NativeTableSnapshot {
+    pub(super) snapshot: Arc<Snapshot>,
+    pub(super) resources: Option<Arc<super::async_tables::Resources>>,
 }
 #[pymethods]
 impl NativeTableSnapshot {
@@ -367,6 +430,36 @@ impl NativeTableSnapshot {
     #[getter]
     fn metadata(&self) -> String {
         json!(self.snapshot.manifest()).to_string()
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn scan_async<'py>(
+        &self,
+        py: Python<'py>,
+        columns: Option<Vec<String>>,
+        batch_size: usize,
+        row_limit: Option<usize>,
+        byte_limit: Option<usize>,
+        row_offset: usize,
+        max_batch_bytes: usize,
+        read_chunk_size: usize,
+        timeout: Option<f64>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        super::async_tables::scan_with_resources(
+            py,
+            self.snapshot.clone(),
+            ScanSelection {
+                columns,
+                row_offset,
+            },
+            StreamOptions {
+                batch_size,
+                row_limit,
+                byte_limit,
+            },
+            super::async_tables::options(max_batch_bytes, read_chunk_size, timeout)?,
+            self.resources.clone(),
+        )
     }
 
     #[allow(clippy::too_many_arguments)]
