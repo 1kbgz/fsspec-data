@@ -6,6 +6,7 @@ import json
 import os
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, field
+from enum import StrEnum
 from importlib import import_module
 from types import TracebackType
 from typing import Any, Literal, Self
@@ -95,6 +96,31 @@ class ManifestTable:
         """Resolve latest publication or a saved generation without directory listing."""
         return TableSnapshot(self._native.snapshot(generation))
 
+    def follow(
+        self,
+        *,
+        start: FollowPosition | None = None,
+        columns: Sequence[str] | None = None,
+        batch_size: int = 1024,
+        poll_interval: float = 0.1,
+        idle_timeout: float | None = None,
+    ) -> TableFollower:
+        """Follow existing and newly published rows, or resume a saved position.
+
+        Requires an already published table with row progress. A new follow starts
+        at the latest generation. A resume visits its saved generation and each
+        successor; replacement ends the follow. Storage calls are synchronous.
+        """
+        return TableFollower(
+            self._native.follow(
+                None if start is None else start.to_json(),
+                None if columns is None else list(columns),
+                batch_size,
+                poll_interval,
+                idle_timeout,
+            )
+        )
+
     def orphan_collector(self, *, retention_seconds: float, max_generations: int = 256, max_entries: int = 100_000) -> OrphanCollector:
         """Create a collector whose retention clock starts when it observes a file.
 
@@ -131,6 +157,83 @@ class ManifestTable:
                 options.max_history_reads,
             )
         )
+
+
+@dataclass(frozen=True)
+class FollowPosition:
+    """Serializable checkpoint for the same source location and saved table generation."""
+
+    source: str
+    namespace_id: str
+    table_id: str
+    generation: int
+    manifest_sha256: str
+    progress: int
+    progress_unit: str
+
+    def to_json(self) -> str:
+        return json.dumps(asdict(self), allow_nan=False)
+
+    @classmethod
+    def from_json(cls, value: str) -> Self:
+        return cls(**json.loads(value))
+
+
+class FollowEnd(StrEnum):
+    COMPLETE = "complete"
+    IDLE_TIMEOUT = "idle_timeout"
+    CANCELLED = "cancelled"
+    REPLACED = "replaced"
+
+
+@dataclass(frozen=True)
+class FollowBatch:
+    batch: pa.RecordBatch
+    position: FollowPosition
+
+
+class TableFollower:
+    """Iterator of batches and checkpoints. Inspect end_reason after exhaustion.
+
+    Persist an item's position after processing its batch. Cancellation wakes
+    polling waits, but cannot interrupt a synchronous storage call in progress.
+    """
+
+    def __init__(self, native: Any) -> None:
+        self._native = native
+        self.schema: pa.Schema = native.schema
+
+    @property
+    def position(self) -> FollowPosition:
+        return FollowPosition.from_json(self._native.position)
+
+    @property
+    def end_reason(self) -> FollowEnd | None:
+        value = self._native.end_reason
+        return None if value is None else FollowEnd(value)
+
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> FollowBatch:
+        item = self._native.next_batch()
+        if item is None:
+            raise StopIteration
+        batch, position = item
+        return FollowBatch(batch, FollowPosition.from_json(position))
+
+    def cancel(self) -> None:
+        """Request cancellation; next iteration reports CANCELLED."""
+        self._native.cancel()
+
+    def close(self) -> None:
+        self.cancel()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        self.close()
 
 
 @dataclass(frozen=True)
@@ -242,6 +345,15 @@ class TableSnapshot:
     @property
     def schema(self) -> pa.Schema:
         return self._native.schema
+
+    @property
+    def state(self) -> dict[str, Any]:
+        """Visible counts, generation, completion and progress from this manifest.
+
+        Counts are exact. Unavailable timestamps/distinct values are absent;
+        partition values provide cheap distinct.<column> entries.
+        """
+        return json.loads(self._native.state)
 
     @property
     def metadata(self) -> dict[str, Any]:

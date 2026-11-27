@@ -399,3 +399,22 @@ def test_scan_rejects_unsupported_encoding_options(tmp_path, changes):
     path.write_text(json.dumps(manifest))
     with pytest.raises(NotImplementedError):
         values(table.snapshot())
+
+
+def test_follow_positions_include_s3_bucket_endpoint_and_exclude_credentials(s3_store):
+    table, _, options = s3_store
+    with table.open_writer(batch().schema) as writer:
+        writer.write_batch(batch(), expected_position=0, key="first")
+    saved = next(table.follow()).position
+    for root, changed_options in [
+        ("s3://different/table", options),
+        ("s3://test/other", options),
+        ("s3://test/table", {**options, "endpoint_url": "http://127.0.0.1:1"}),
+    ]:
+        with pytest.raises(ValueError, match="different source"):
+            ManifestTable(root, storage_options=changed_options).follow(start=saved)
+    credentialed = {**options, "anon": False, "key": "test-access-key", "secret": "test-secret-key"}
+    resumed = ManifestTable("s3://test/table", storage_options=credentialed).follow(start=saved, idle_timeout=0)
+    assert resumed.position == saved
+    assert "test-access-key" not in saved.to_json() and "test-secret-key" not in saved.to_json()
+    assert list(resumed) == []

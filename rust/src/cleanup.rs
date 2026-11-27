@@ -363,6 +363,8 @@ mod tests {
         delete_fail_after: Mutex<Option<usize>>,
         list_hook: Mutex<Option<Box<dyn FnOnce() + Send>>>,
         fail_listing: Mutex<bool>,
+        bad_entries: Mutex<bool>,
+        delete_disappears: Mutex<bool>,
     }
     impl Store {
         fn new() -> Arc<Self> {
@@ -372,6 +374,8 @@ mod tests {
                 delete_fail_after: Mutex::new(None),
                 list_hook: Mutex::new(None),
                 fail_listing: Mutex::new(false),
+                bad_entries: Mutex::new(false),
+                delete_disappears: Mutex::new(false),
             })
         }
         fn writer(self: &Arc<Self>, mode: WriteMode) -> FileDataSink {
@@ -427,7 +431,18 @@ mod tests {
             if *self.fail_listing.lock().unwrap() {
                 return Err(FsError::PermissionDenied(p.into()));
             }
-            self.inner.ls(p, detail)
+            let mut entries = self.inner.ls(p, detail)?;
+            if *self.bad_entries.lock().unwrap() {
+                entries.push(FileInfo {
+                    name: format!("{p}/../outside"),
+                    size: 1,
+                    file_type: fsspec_rs::FileType::Directory,
+                    created: None,
+                    modified: None,
+                    extra: Default::default(),
+                });
+            }
+            Ok(entries)
         }
         fn info(&self, p: &str) -> FsResult<FileInfo> {
             self.inner.info(p)
@@ -447,6 +462,10 @@ mod tests {
                     return Err(FsError::PermissionDenied(p.into()));
                 }
                 *remaining -= 1;
+            }
+            if *self.delete_disappears.lock().unwrap() {
+                self.inner.rm_file(p)?;
+                return Err(FsError::NotFound(p.into()));
             }
             self.inner.rm_file(p)
         }
@@ -669,6 +688,98 @@ mod tests {
     }
 
     #[test]
+    fn escaped_listing_entries_and_already_deleted_orphans_are_safe() {
+        let store = Store::new();
+        store.writer(WriteMode::Create).commit().unwrap();
+        let key = "parts/00000000000000000000/loser/file";
+        store.put(key, b"orphan");
+        *store.bad_entries.lock().unwrap() = true;
+        let mut collector = store.collector();
+        assert_eq!(collector.collect(true).unwrap().pending, 1);
+        *store.delete_disappears.lock().unwrap() = true;
+        let report = sweep(&mut collector, false, Instant::now(), 61);
+        assert_eq!(report.eligible, [key]);
+        assert!(report.deleted.is_empty());
+        assert!(collector.observed.is_empty());
+    }
+
+    #[test]
+    fn unprobed_history_corruption_prevents_deletion() {
+        for failure in ["generation", "parent", "bytes"] {
+            let store = Store::new();
+            store.writer(WriteMode::Create).commit().unwrap();
+            for _ in 0..15 {
+                store.writer(WriteMode::Replace).commit().unwrap();
+            }
+            let key = "parts/00000000000000000000/loser/file";
+            store.put(key, b"orphan");
+            let mut collector = store.collector();
+            let start = Instant::now();
+            sweep(&mut collector, true, start, 0);
+            let path = "manifests/00000000000000000004/manifest.json";
+            let bytes = store
+                .inner
+                .cat_file(&join(&store.root, path), None, None)
+                .unwrap();
+            let mut manifest = Manifest::decode(&bytes).unwrap();
+            let bytes = match failure {
+                "generation" => {
+                    manifest.generation = 5;
+                    manifest.parent.as_mut().unwrap().generation = 4;
+                    manifest.encode().unwrap()
+                }
+                "parent" => {
+                    manifest.parent.as_mut().unwrap().sha256 = Checksum::of(b"wrong");
+                    manifest.encode().unwrap()
+                }
+                "bytes" => vec![b' '; MAX_MANIFEST_BYTES + 1],
+                _ => unreachable!(),
+            };
+            store.put(path, &bytes);
+            assert!(collector
+                .collect_with_clock(false, || start + Duration::from_secs(60))
+                .is_err());
+            assert!(store.exists(key));
+            assert!(collector.observed.is_empty());
+        }
+    }
+
+    #[test]
+    fn malformed_generation_and_attempt_directories_are_ignored() {
+        let store = Store::new();
+        store.writer(WriteMode::Create).commit().unwrap();
+        for path in [
+            "parts/18446744073709551616/attempt/file",
+            "parts/0000000000000000000x/attempt/file",
+            "parts/0/attempt/file",
+            "parts/00000000000000000000/bad.attempt/file",
+            "parts/00000000000000000000/attempt/nested/file",
+        ] {
+            store.put(path, b"keep");
+        }
+        let mut collector = store.collector();
+        let start = Instant::now();
+        assert_eq!(sweep(&mut collector, false, start, 0).pending, 0);
+        assert!(sweep(&mut collector, false, start, 60).eligible.is_empty());
+    }
+
+    #[test]
+    fn disappeared_observation_restarts_retention() {
+        let store = Store::new();
+        store.writer(WriteMode::Create).commit().unwrap();
+        let key = "parts/00000000000000000000/loser/file";
+        store.put(key, b"orphan");
+        let mut collector = store.collector();
+        let start = Instant::now();
+        assert_eq!(sweep(&mut collector, false, start, 0).pending, 1);
+        store.inner.rm_file(&join(&store.root, key)).unwrap();
+        assert_eq!(sweep(&mut collector, false, start, 60).pending, 0);
+        store.put(key, b"orphan");
+        assert_eq!(sweep(&mut collector, false, start, 61).pending, 1);
+        assert_eq!(sweep(&mut collector, false, start, 121).deleted, [key]);
+    }
+
+    #[test]
     fn relative_memory_roots_match_absolute_listing_names() {
         let store = Store::new();
         store.writer(WriteMode::Create).commit().unwrap();
@@ -709,5 +820,76 @@ mod tests {
         *store.delete_fail_after.lock().unwrap() = None;
         assert_eq!(sweep(&mut collector, false, start, 61).pending, 1);
         assert_eq!(sweep(&mut collector, false, start, 121).deleted.len(), 1);
+    }
+}
+
+#[cfg(test)]
+mod listing_tests {
+    use super::*;
+    use fsspec_rs::{FileType, MemoryFs};
+    use std::sync::Arc;
+
+    #[test]
+    fn child_names_reject_escapes_nested_paths_and_file_delimiters() {
+        for (path, directory, expected) in [
+            ("/table/parts/child", false, Some("child")),
+            ("/table/parts/child/", true, Some("child")),
+            ("/table/parts/child/", false, None),
+            ("/other/child", false, None),
+            ("/table/partsExtra/child", false, None),
+            ("/table/parts/nested/child", false, None),
+            ("/table/parts/.", false, None),
+            ("/table/parts/..", false, None),
+            ("/table/parts/", true, None),
+        ] {
+            let info = FileInfo {
+                name: path.into(),
+                size: 0,
+                file_type: if directory {
+                    FileType::Directory
+                } else {
+                    FileType::File
+                },
+                created: None,
+                modified: None,
+                extra: Default::default(),
+            };
+            assert_eq!(child_name(&info, "/table/parts"), expected, "{path}");
+        }
+    }
+
+    #[test]
+    fn invalid_limits_are_rejected_before_any_storage_access() {
+        let fs: SharedFileSystem = Arc::new(MemoryFs::new());
+        for limits in [
+            CleanupLimits {
+                max_manifest_bytes: 0,
+                ..Default::default()
+            },
+            CleanupLimits {
+                max_manifest_bytes: MAX_MANIFEST_BYTES + 1,
+                ..Default::default()
+            },
+            CleanupLimits {
+                max_generations: 0,
+                ..Default::default()
+            },
+            CleanupLimits {
+                max_entries: 0,
+                ..Default::default()
+            },
+        ] {
+            assert!(OrphanCollector::new(
+                fs.clone(),
+                "/unpublished",
+                Duration::from_secs(1),
+                limits
+            )
+            .is_err());
+        }
+        assert!(
+            OrphanCollector::new(fs, "/unpublished", Duration::ZERO, CleanupLimits::default())
+                .is_err()
+        );
     }
 }

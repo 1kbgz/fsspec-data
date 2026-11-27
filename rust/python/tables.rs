@@ -4,18 +4,16 @@ use std::time::Duration;
 use arrow::array::RecordBatch;
 use arrow::datatypes::Schema;
 use arrow::pyarrow::PyArrowType;
-use bytes::Bytes;
 use fsspec_data::cleanup::{CleanupLimits, OrphanCollector};
+use fsspec_data::follow::{FollowOptions, FollowPosition, ManifestFollower};
 use fsspec_data::manifest::{ManifestReader, ReadLimits, Selection, Snapshot};
 use fsspec_data::parts::PartLimits;
 use fsspec_data::sink::{
     recover, FileDataSink, PublicationReceipt, RecoveryAction, RecoveryToken, SinkOptions,
     WriteMode,
 };
-use fsspec_data::{CancellationToken, DecodedStream, InterchangeError, StreamOptions};
+use fsspec_data::{CancellationToken, ScanSelection, StreamOptions};
 use fsspec_rs::{ErrorKind, FilesystemRegistry, FsOptions, OperationError, SharedFileSystem};
-use parquet::arrow::arrow_reader::{ParquetRecordBatchReader, ParquetRecordBatchReaderBuilder};
-use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use serde_json::json;
 
@@ -28,14 +26,6 @@ fn invalid(message: &str) -> PyErr {
         message: message.into(),
         retry_safe: false,
     })
-}
-fn corrupt(error: impl std::fmt::Display) -> InterchangeError {
-    OperationError::Detailed {
-        kind: ErrorKind::Corrupt,
-        message: error.to_string(),
-        retry_safe: false,
-    }
-    .into()
 }
 fn action(retry: bool) -> RecoveryAction {
     if retry {
@@ -57,6 +47,7 @@ struct NativeManifestTable {
     fs: SharedFileSystem,
     root: String,
     limits: ReadLimits,
+    source: String,
 }
 #[pymethods]
 impl NativeManifestTable {
@@ -88,7 +79,19 @@ impl NativeManifestTable {
                 max_manifest_reads,
             };
             ManifestReader::new(fs.clone(), &root, limits).map_err(storage_error)?;
-            Ok(Self { fs, root, limits })
+            // Location identity excludes credentials and is stable across process restarts.
+            let source = json!([
+                fs.unstrip_protocol(&root),
+                options.get("endpoint_url"),
+                options.get("region")
+            ])
+            .to_string();
+            Ok(Self {
+                fs,
+                root,
+                limits,
+                source,
+            })
         })
     }
 
@@ -109,6 +112,43 @@ impl NativeManifestTable {
             Ok(NativeTableSnapshot {
                 snapshot: Arc::new(snapshot),
             })
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn follow(
+        &self,
+        py: Python<'_>,
+        start: Option<String>,
+        columns: Option<Vec<String>>,
+        batch_size: usize,
+        poll_interval: f64,
+        idle_timeout: Option<f64>,
+    ) -> PyResult<NativeTableFollower> {
+        let options = FollowOptions {
+            start: start
+                .map(|s| serde_json::from_str::<FollowPosition>(&s))
+                .transpose()
+                .map_err(|e| invalid(&e.to_string()))?,
+            columns,
+            batch_size,
+            poll_interval: Duration::try_from_secs_f64(poll_interval)
+                .map_err(|_| invalid("poll_interval must be finite and positive"))?,
+            idle_timeout: idle_timeout
+                .map(Duration::try_from_secs_f64)
+                .transpose()
+                .map_err(|_| invalid("idle_timeout must be finite and nonnegative"))?,
+        };
+        let cancellation = CancellationToken::new();
+        let follower = py
+            .detach(|| {
+                let reader = ManifestReader::new(self.fs.clone(), &self.root, self.limits)?;
+                ManifestFollower::new(reader, self.source.clone(), options, cancellation.clone())
+            })
+            .map_err(to_python_error)?;
+        Ok(NativeTableFollower {
+            follower: Mutex::new(follower),
+            cancellation,
         })
     }
 
@@ -211,6 +251,41 @@ impl NativeManifestTable {
 }
 
 #[pyclass]
+struct NativeTableFollower {
+    follower: Mutex<ManifestFollower>,
+    cancellation: CancellationToken,
+}
+#[pymethods]
+impl NativeTableFollower {
+    #[getter]
+    fn schema(&self, py: Python<'_>) -> PyArrowType<Schema> {
+        PyArrowType(py.detach(|| lock(&self.follower).schema().as_ref().clone()))
+    }
+    #[getter]
+    fn position(&self, py: Python<'_>) -> String {
+        py.detach(|| json!(lock(&self.follower).position()).to_string())
+    }
+    #[getter]
+    fn end_reason(&self, py: Python<'_>) -> Option<String> {
+        py.detach(|| {
+            lock(&self.follower)
+                .end_reason()
+                .map(|reason| json!(reason).as_str().unwrap().to_owned())
+        })
+    }
+    fn next_batch(&self, py: Python<'_>) -> PyResult<Option<(PyArrowType<RecordBatch>, String)>> {
+        py.detach(|| lock(&self.follower).next().transpose())
+            .map(|value| {
+                value.map(|item| (PyArrowType(item.batch), json!(item.position).to_string()))
+            })
+            .map_err(to_python_error)
+    }
+    fn cancel(&self) {
+        self.cancellation.cancel();
+    }
+}
+
+#[pyclass]
 struct NativeOrphanCollector {
     collector: Mutex<OrphanCollector>,
 }
@@ -286,6 +361,10 @@ impl NativeTableSnapshot {
         PyArrowType(self.snapshot.manifest().schema.clone())
     }
     #[getter]
+    fn state(&self) -> String {
+        json!(self.snapshot.state()).to_string()
+    }
+    #[getter]
     fn metadata(&self) -> String {
         json!(self.snapshot.manifest()).to_string()
     }
@@ -300,107 +379,32 @@ impl NativeTableSnapshot {
         byte_limit: Option<usize>,
         row_offset: usize,
     ) -> PyResult<(PyArrowType<Schema>, Py<NativeBatchStream>)> {
-        let schema = &self.snapshot.manifest().schema;
-        let indices = match columns {
-            Some(columns) => columns
-                .iter()
-                .map(|name| schema.index_of(name))
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(|e| PyValueError::new_err(e.to_string()))?,
-            None => (0..schema.fields().len()).collect(),
-        };
-        let schema = schema
-            .project(&indices)
-            .map_err(|e| PyValueError::new_err(e.to_string()))?;
-        let source = PartBatches {
-            snapshot: self.snapshot.clone(),
-            index: 0,
-            reader: None,
-            batch_size,
-            indices,
-            schema: Arc::new(schema.clone()),
-        };
-        let stream = DecodedStream::new_with_offset(
-            Arc::new(schema.clone()),
-            Box::new(source),
-            StreamOptions {
-                batch_size,
-                row_limit,
-                byte_limit,
-            },
-            CancellationToken::new(),
-            row_offset,
-        )
-        .map_err(to_python_error)?;
+        let stream = self
+            .snapshot
+            .scan(
+                ScanSelection {
+                    columns,
+                    row_offset,
+                },
+                StreamOptions {
+                    batch_size,
+                    row_limit,
+                    byte_limit,
+                },
+                CancellationToken::new(),
+            )
+            .map_err(to_python_error)?;
         Ok((
-            PyArrowType(schema),
+            PyArrowType(stream.schema.as_ref().clone()),
             Py::new(py, NativeBatchStream::new(stream))?,
         ))
-    }
-}
-
-struct PartBatches {
-    snapshot: Arc<Snapshot>,
-    index: usize,
-    reader: Option<ParquetRecordBatchReader>,
-    batch_size: usize,
-    indices: Vec<usize>,
-    schema: Arc<Schema>,
-}
-impl Iterator for PartBatches {
-    type Item = fsspec_data::Result<RecordBatch>;
-    fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            if let Some(reader) = &mut self.reader {
-                if let Some(batch) = reader.next() {
-                    return Some(
-                        batch
-                            .and_then(|b| b.project(&self.indices))
-                            .and_then(|b| b.with_schema(self.schema.clone()))
-                            .map_err(corrupt),
-                    );
-                }
-                self.reader = None;
-            }
-            let part = self.snapshot.manifest().parts.get(self.index)?;
-            let result = (|| {
-                if part.encoding != "parquet" || !part.options.is_empty() {
-                    return Err(InterchangeError::Operation(OperationError::Detailed {
-                        kind: ErrorKind::NotSupported,
-                        message: "table scans require Parquet parts without encoding options"
-                            .into(),
-                        retry_safe: false,
-                    }));
-                }
-                let bytes = self.snapshot.read_part(self.index)?;
-                let builder = ParquetRecordBatchReaderBuilder::try_new(Bytes::from(bytes))
-                    .map_err(corrupt)?;
-                if builder.schema().as_ref() != &self.snapshot.manifest().schema
-                    || builder.metadata().file_metadata().num_rows() as u64 != part.num_rows
-                {
-                    return Err(InterchangeError::Operation(OperationError::Detailed {
-                        kind: ErrorKind::Corrupt,
-                        message: "Parquet schema or row count differs from manifest".into(),
-                        retry_safe: false,
-                    }));
-                }
-                builder
-                    .with_batch_size(self.batch_size)
-                    .build()
-                    .map_err(corrupt)
-            })();
-            self.index += 1;
-            match result {
-                Ok(reader) => self.reader = Some(reader),
-                Err(error) => return Some(Err(error)),
-            }
-        }
     }
 }
 
 pub(super) fn register(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<NativeManifestTable>()?;
     module.add_class::<NativeOrphanCollector>()?;
+    module.add_class::<NativeTableFollower>()?;
     module.add_class::<NativeTableWriter>()?;
     module.add_class::<NativeTableSnapshot>()?;
     Ok(())
