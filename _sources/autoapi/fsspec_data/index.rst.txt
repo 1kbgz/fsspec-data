@@ -2041,6 +2041,6 @@ Package Contents
 
 
 .. py:data:: __version__
-   :value: '0.9.0'
+   :value: '0.10.0'
 
 
